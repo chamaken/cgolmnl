@@ -57,11 +57,15 @@ func SocketBind(nl *SocketDescriptor, groups uint, pid Pid_t) error {
  * ssize_t
  * mnl_socket_sendto(const struct mnl_socket *nl, const void *buf, size_t len)
  */
-func SocketSendto(nl *SocketDescriptor, buf []byte) error {
-	_, err := C.mnl_socket_sendto((*[0]byte)(nl), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
-	return err
+func SocketSendto(nl *SocketDescriptor, buf []byte) (Ssize_t, error) {
+	ret, err := C.mnl_socket_sendto((*[0]byte)(nl), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
+	return Ssize_t(ret), err
 }
 
+func SocketSendNlmsg(nl *SocketDescriptor, nlh *Nlmsghdr) (Ssize_t, error) {
+	b := C.GoBytes(unsafe.Pointer(nlh), C.int(nlh.Len))
+	return SocketSendto(nl, b)
+}
 /**
  * mnl_socket_recvfrom - receive a netlink message
  *
