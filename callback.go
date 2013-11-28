@@ -56,10 +56,11 @@ func GoCtlCb(nlh *C.struct_nlmsghdr, msgtype C.uint16_t, argp unsafe.Pointer) C.
  *	       mnl_cb_t *cb_ctl_array, unsigned int cb_ctl_array_len)
  */
 func CbRun3(buf []byte, seq, portid uint32,
-	cb_data MnlCb, data interface{}, cb_ctl MnlCtlCb) int {
+	cb_data MnlCb, data interface{}, cb_ctl MnlCtlCb) (int, error) {
 	args := [3]unsafe.Pointer{unsafe.Pointer(&cb_ctl), unsafe.Pointer(&cb_data), unsafe.Pointer(&data)}
-	return int(C.cb_run3_wrapper(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),
-		C.uint32_t(seq), C.uint32_t(portid), unsafe.Pointer(&args)))
+	ret, err := C.cb_run3_wrapper(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),
+		C.uint32_t(seq), C.uint32_t(portid), unsafe.Pointer(&args))
+	return int(ret), err
 }
 
 /**
@@ -69,8 +70,9 @@ func CbRun3(buf []byte, seq, portid uint32,
  * mnl_cb_run(const void *buf, size_t numbytes, uint32_t seq,
  *	      uint32_t portid, mnl_cb_t cb_data, void *data)
  */
-func CbRun(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{}) int {
+func CbRun(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{}) (int, error) {
 	args := [3]unsafe.Pointer{unsafe.Pointer(nil), unsafe.Pointer(&cb_data), unsafe.Pointer(&data)}
-	return int(C.cb_run_wrapper(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),
-		C.uint32_t(seq), C.uint32_t(portid), unsafe.Pointer(&args)))
+	ret, err := C.cb_run_wrapper(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),
+		C.uint32_t(seq), C.uint32_t(portid), unsafe.Pointer(&args))
+	return int(ret), err
 }

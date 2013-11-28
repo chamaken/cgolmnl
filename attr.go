@@ -138,10 +138,11 @@ func GoAttrCb(nla *C.struct_nlattr, argp unsafe.Pointer) C.int {
  * mnl_attr_parse(const struct nlmsghdr *nlh, unsigned int offset,
  *	          mnl_attr_cb_t cb, void *data)
  */
-func AttrParse(nlh *Nlmsghdr, offset Size_t, cb MnlAttrCb, data interface{}) int {
+func AttrParse(nlh *Nlmsghdr, offset Size_t, cb MnlAttrCb, data interface{}) (int, error) {
 	args := [2]unsafe.Pointer{unsafe.Pointer(&cb), unsafe.Pointer(&data)}
-	return int(C.attr_parse_wrapper((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
-		C.size_t(offset), unsafe.Pointer(&args)))
+	ret, err := C.attr_parse_wrapper((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
+		C.size_t(offset), unsafe.Pointer(&args))
+	return int(ret), err
 }
 
 /**
@@ -151,9 +152,10 @@ func AttrParse(nlh *Nlmsghdr, offset Size_t, cb MnlAttrCb, data interface{}) int
  * mnl_attr_parse_nested(const struct nlattr *nested, mnl_attr_cb_t cb,
  * 			 void *data)
  */
-func AttrParseNested(nested *Nlattr, cb MnlAttrCb, data interface{}) int {
+func AttrParseNested(nested *Nlattr, cb MnlAttrCb, data interface{}) (int, error) {
 	args := [2]unsafe.Pointer{unsafe.Pointer(&cb), unsafe.Pointer(&data)}
-	return int(C.attr_parse_nested_wrapper((*C.struct_nlattr)(unsafe.Pointer(nested)), unsafe.Pointer(&args)))
+	ret, err := C.attr_parse_nested_wrapper((*C.struct_nlattr)(unsafe.Pointer(nested)), unsafe.Pointer(&args))
+	return int(ret), err
 }
 		
 /**
@@ -163,9 +165,10 @@ func AttrParseNested(nested *Nlattr, cb MnlAttrCb, data interface{}) int {
  * mnl_attr_parse_payload(const void *payload, size_t payload_len,
  *			  mnl_attr_cb_t cb, void *data)
  */
-func AttrParsePayload(payload []byte, cb MnlAttrCb, data interface{}) int {
+func AttrParsePayload(payload []byte, cb MnlAttrCb, data interface{}) (int, error) {
 	args := [2]unsafe.Pointer{unsafe.Pointer(&cb), unsafe.Pointer(&data)}
-	return int(C.attr_parse_payload_wrapper(unsafe.Pointer(&payload), C.size_t(len(payload)), unsafe.Pointer(&args)))
+	ret, err := C.attr_parse_payload_wrapper(unsafe.Pointer(&payload), C.size_t(len(payload)), unsafe.Pointer(&args))
+	return int(ret), err
 }
 
 /**
