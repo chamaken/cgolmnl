@@ -86,6 +86,15 @@ func (nlh *Nlmsghdr) PutHeader() {
 	C.mnl_nlmsg_put_header(unsafe.Pointer(nlh))
 }
 
+func PutNewNlmsghdr(size int) (*Nlmsghdr, error) {
+	nlh, err := NewNlmsghdr(size)
+	if err != nil {
+		return nil, err
+	}
+	nlh.PutHeader()
+	return nlh, nil
+}
+
 
 /*
  * socket.go
@@ -93,7 +102,8 @@ func (nlh *Nlmsghdr) PutHeader() {
 func (nl *SocketDescriptor) Fd() int { return SocketGetFd(nl) }
 func (nl *SocketDescriptor) Portid() uint32 { return SocketGetPortid(nl) }
 func (nl *SocketDescriptor) Bind(groups uint, pid Pid_t) error { return SocketBind(nl, groups, pid) }
-func (nl *SocketDescriptor) Sendto(buf []byte) error { return SocketSendto(nl, buf) }
+func (nl *SocketDescriptor) Sendto(buf []byte) (Ssize_t, error) { return SocketSendto(nl, buf) }
+func (nl *SocketDescriptor) SendNlmsg(nlh *Nlmsghdr) (Ssize_t, error) { return SocketSendNlmsg(nl, nlh) }
 func (nl *SocketDescriptor) Recvfrom(buf []byte) (Ssize_t, error) { return SocketRecvfrom(nl, buf) }
 func (nl *SocketDescriptor) Close() error { return SocketClose(nl) }
 func (nl *SocketDescriptor) Setsockopt(optype int, buf []byte) error { return SocketSetsockopt(nl, optype, buf) }
