@@ -10,17 +10,31 @@ import "C"
 import (
 	"unsafe"
 	"os"
-	"reflect"
 )
+
+/**
+ * mnl_nlmsg_size - calculate the size of Netlink message (without alignment)
+ *
+ * size_t mnl_nlmsg_size(size_t len)
+ */
+func NlmsgSize(size Size_t) Size_t {
+	return Size_t(C.mnl_nlmsg_size(C.size_t(size)))
+}
+
+/**
+ * mnl_nlmsg_get_payload_len - get the length of the Netlink payload
+ *
+ * size_t mnl_nlmsg_get_payload_len(const struct nlmsghdr *nlh)
+ */
+func NlmsgGetPayloadLen(nlh *Nlmsghdr) Size_t {
+	return Size_t(C.mnl_nlmsg_get_payload_len((*C.struct_nlmsghdr)(unsafe.Pointer(nlh))))
+}
 
 /**
  * mnl_nlmsg_put_header - reserve and prepare room for Netlink header
  *
  * struct nlmsghdr *mnl_nlmsg_put_header(void *buf)
  */
-// func NlmsgPutHeader(buf []byte) *Nlmsghdr {
-// 	return (*Nlmsghdr)(unsafe.Pointer(C.mnl_nlmsg_put_header(unsafe.Pointer(&buf[0]))))
-// }
 func NlmsgPutHeader(buf unsafe.Pointer) *Nlmsghdr {
 	return (*Nlmsghdr)(unsafe.Pointer(C.mnl_nlmsg_put_header(buf)))
 }
@@ -43,6 +57,9 @@ func NlmsgPutExtraHeader(nlh *Nlmsghdr, size Size_t) unsafe.Pointer {
 func NlmsgGetPayload(nlh *Nlmsghdr) unsafe.Pointer {
 	return C.mnl_nlmsg_get_payload((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)))
 }
+func NlmsgGetPayloadBytes(nlh *Nlmsghdr) []byte {
+	return C.GoBytes(NlmsgGetPayload(nlh), C.int(NlmsgGetPayloadLen(nlh)))
+}
 
 /**
  * mnl_nlmsg_get_payload_offset - get a pointer to the payload of the message
@@ -52,6 +69,9 @@ func NlmsgGetPayload(nlh *Nlmsghdr) unsafe.Pointer {
  */
 func NlmsgGetPayloadOffset(nlh *Nlmsghdr, offset Size_t) unsafe.Pointer {
 	return C.mnl_nlmsg_get_payload_offset((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.size_t(offset))
+}
+func NlmsgGetPayloadOffsetBytes(nlh *Nlmsghdr, offset Size_t) []byte {
+	return C.GoBytes(NlmsgGetPayloadOffset(nlh, offset), C.int(NlmsgGetPayloadLen(nlh) - offset))
 }
 
 /**
@@ -179,14 +199,7 @@ func NlmsgBatchHead(b *NlmsgBatchDescriptor) unsafe.Pointer {
 	return C.mnl_nlmsg_batch_head((*[0]byte)(b))
 }
 func NlmsgBatchHeadBytes(b *NlmsgBatchDescriptor) []byte {
-	p := C.mnl_nlmsg_batch_head((*[0]byte)(b))
-	batch_size := NlmsgBatchSize(b)
-	var goSlice []byte
-	header := (*reflect.SliceHeader)(unsafe.Pointer(&goSlice))
-	header.Cap = int(batch_size)
-	header.Len = int(batch_size)
-	header.Data = uintptr(unsafe.Pointer(p))
-	return goSlice
+	return C.GoBytes(NlmsgBatchHead(b), C.int(NlmsgBatchSize(b)))
 }
 
 /**
