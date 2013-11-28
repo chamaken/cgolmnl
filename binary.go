@@ -1,12 +1,7 @@
 package cgolmnl
 
-/*
-#include <libmnl/libmnl.h>
-*/
-import "C"
-
 import (
-	"errors"
+	"C"
 	"unsafe"
 	"syscall"
 )
@@ -55,18 +50,4 @@ func (attr *Nlattr) UnmarshalBinary(data []byte) error {
 	attr = (*Nlattr)(unsafe.Pointer(&data[0]))
 
 	return nil
-}
-
-
-// constructor specifying buffer size
-func NewNlmsghdr(size int) (*Nlmsghdr, error) {
-	if size < int(MNL_NLMSG_HDRLEN) {
-		return nil, errors.New("too short size")
-	}
-	b := make([]byte, size)
-	return (*Nlmsghdr)(unsafe.Pointer(&b[0])), nil
-}
-
-func (nlh *Nlmsghdr) PutHeader() {
-	C.mnl_nlmsg_put_header(unsafe.Pointer(nlh))
 }
