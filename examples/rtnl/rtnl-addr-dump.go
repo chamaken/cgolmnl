@@ -78,7 +78,6 @@ func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 func main() {
 	var nl *mnl.SocketDescriptor
 	var err error
-	var snd_buf []byte
 	rcv_buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE)
 
 	if len(os.Args) != 2 {
@@ -86,15 +85,14 @@ func main() {
 		os.Exit(C.EXIT_FAILURE)
 	}
 
-	seq := uint32(time.Now().Unix())
-	nlh, err := mnl.NewNlmsghdr(mnl.MNL_SOCKET_BUFFER_SIZE)
+	nlh, err := mnl.PutNewNlmsghdr(mnl.MNL_SOCKET_BUFFER_SIZE)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "NewNlmsghdr: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
-	nlh.PutHeader()
 	nlh.Type = C.RTM_GETADDR
 	nlh.Flags = C.NLM_F_REQUEST | C.NLM_F_DUMP
+	seq := uint32(time.Now().Unix())
 	nlh.Seq = seq
 	rt := (*Rtgenmsg)(nlh.PutExtraHeader(SizeofRtgenmsg))
 	if os.Args[1] == "inet" {
@@ -115,13 +113,8 @@ func main() {
 	}
 	portid := nl.Portid()
 
-	if snd_buf, err = nlh.MarshalBinary(); err != nil {
-		fmt.Fprintf(os.Stderr, "nlh.MarshalBinary: %s\n", err)
-		os.Exit(C.EXIT_FAILURE)
-	}
-
-	if err = nl.Sendto(snd_buf); err != nil {
-		fmt.Fprintf(os.Stderr, "mnl_soket_sendto: %s\n", err)
+	if _, err = nl.SendNlmsg(nlh); err != nil {
+		fmt.Fprintf(os.Stderr, "mnl_socket_sendto: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
 
@@ -132,8 +125,8 @@ func main() {
 			fmt.Fprintf(os.Stderr, "mnl_socket_recvfrom: %s\n", err)
 			os.Exit(C.EXIT_FAILURE)
 		}
-		if ret = mnl.CbRun(rcv_buf[:rsize], seq, portid, data_cb, nil); ret < 0 {
-			fmt.Fprintf(os.Stderr, "error")
+		if ret, err = mnl.CbRun(rcv_buf[:rsize], seq, portid, data_cb, nil); ret < 0 {
+			fmt.Fprintf(os.Stderr, "error: %s", err)
 			os.Exit(C.EXIT_FAILURE)
 		}
 	}

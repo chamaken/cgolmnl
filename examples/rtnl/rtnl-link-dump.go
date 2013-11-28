@@ -14,7 +14,6 @@ import (
 	"os"
 	"syscall"
 	"time"
-	"unsafe"
 	mnl "cgolmnl"
 )
 
@@ -30,12 +29,12 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	case C.IFLA_ADDRESS:
 		if ret, err := attr.Validate(mnl.MNL_TYPE_BINARY); ret < 0 {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
-			return mnl.MNL_CB_ERROR, 0
+			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
 	case C.IFLA_MTU:
 		if ret, err := attr.Validate(mnl.MNL_TYPE_U32); ret < 0 {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
-			return mnl.MNL_CB_ERROR, 0
+			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
 	case C.IFLA_IFNAME:
 		if ret, err := attr.Validate(mnl.MNL_TYPE_STRING); ret < 0 {
@@ -88,11 +87,14 @@ func main() {
 	var err error
 	rcv_buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE)
 
-	seq := uint32(time.Now().Unix())
-	nlh := mnl.NewNlmsghdr(mnl.MNL_SOCKET_BUFFER_SIZE)
-	nlh.PutHeader()
+	nlh, err := mnl.PutNewNlmsghdr(mnl.MNL_SOCKET_BUFFER_SIZE)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "NewNlmsghdr: %s\n", err)
+		os.Exit(C.EXIT_FAILURE)
+	}
 	nlh.Type = C.RTM_GETLINK
 	nlh.Flags = C.NLM_F_REQUEST | C.NLM_F_DUMP
+	seq := uint32(time.Now().Unix())
 	nlh.Seq = seq
 	rt := (*Rtgenmsg)(nlh.PutExtraHeader(SizeofRtgenmsg))
 	rt.Family = C.AF_PACKET
@@ -109,12 +111,7 @@ func main() {
 	}
 	portid := nl.Portid()
 
-	if snd_buf, err = nlh.MarshalBinary(); err != nil {
-		fmt.Fprintf(os.Stderr, "nlh.MarshalBinary: %s\n", err)
-		os.Exit(C.EXIT_FAILURE)
-	}
-
-	if err = nl.Sendto(snd_buf); err != nil {
+	if _, err = nl.SendNlmsg(nlh); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_sendto: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
@@ -126,8 +123,8 @@ func main() {
 			fmt.Fprintf(os.Stderr, "mnl_socket_recvfrom: %s\n", err)
 			os.Exit(C.EXIT_FAILURE)
 		}
-		if ret = mnl.CbRun(rcv_buf[:rsize], seq, portid, data_cb, nil); ret < 0 {
-			fmt.Fprintf(os.Stderr, "error")
+		if ret, err = mnl.CbRun(rcv_buf[:rsize], seq, portid, data_cb, nil); ret < 0 {
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
 			os.Exit(C.EXIT_FAILURE)
 		}
 	}
