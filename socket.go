@@ -63,8 +63,8 @@ func SocketSendto(nl *SocketDescriptor, buf []byte) (Ssize_t, error) {
 }
 
 func SocketSendNlmsg(nl *SocketDescriptor, nlh *Nlmsghdr) (Ssize_t, error) {
-	b := C.GoBytes(unsafe.Pointer(nlh), C.int(nlh.Len))
-	return SocketSendto(nl, b)
+	ret, err := C.mnl_socket_sendto((*[0]byte)(nl), unsafe.Pointer(nlh), C.size_t(nlh.Len))
+	return Ssize_t(ret), err
 }
 /**
  * mnl_socket_recvfrom - receive a netlink message
