@@ -32,6 +32,8 @@ func init() {
 	}
 }
 
+var MNL_ATTR_HDRLEN	= MnlAlign(SizeofNlattr)
+
 type AttrDataType C.enum_mnl_attr_data_type
 // type AttrDataType uint32
 const (
