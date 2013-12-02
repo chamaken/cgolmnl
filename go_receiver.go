@@ -20,7 +20,7 @@ func (attr *Nlattr) PayloadBytes() []byte { return AttrGetPayloadBytes(attr) } /
 func (attr *Nlattr) Ok(size int) bool { return AttrOk(attr, size) }
 func (attr *Nlattr) Next() *Nlattr { return AttrNext(attr) }
 func (attr *Nlattr) TypeValid(max uint16) (int, error) { return AttrTypeValid(attr, max) }
-func (attr *Nlattr) Validate(data_type AttrDataType) (int, error) { return AttrValidate(attr, data_type) } 
+func (attr *Nlattr) Validate(data_type AttrDataType) (int, error) { return AttrValidate(attr, data_type) }
 func (attr *Nlattr) Validate2(data_type AttrDataType, exp_len Size_t) (int, error) { return AttrValidate2(attr, data_type, exp_len) } 
 func (nlh *Nlmsghdr) Parse(offset Size_t, cb MnlAttrCb, data interface{}) (int, error) { return AttrParse(nlh, offset, cb, data) }
 func (attr *Nlattr) ParseNested(cb MnlAttrCb, data interface{}) (int, error) { return AttrParseNested(attr, cb, data) }
@@ -47,6 +47,21 @@ func (nlh *Nlmsghdr) PutStrzCheck(buflen Size_t, attr_type uint16, data string) 
 func (nlh *Nlmsghdr) NestEnd(start *Nlattr) { AttrNestEnd(nlh, start) }
 func (nlh *Nlmsghdr) NestCancel(start *Nlattr) { AttrNestCancel(nlh, start) }
 
+// helper function
+func NewNlattr(size int) (*Nlattr, error) {
+	if size < SizeofNlattr {
+		return nil, errors.New("too short size")
+	}
+	b := make([]byte, size)
+	return (*Nlattr)(unsafe.Pointer(&b[0])), nil
+}
+
+func NlattrPointer(b []byte) *Nlattr {
+	// ???: check buf len
+	//      len(b) >= SizeofNlattr
+	//      nla.len <= len(b)
+	return (*Nlattr)(unsafe.Pointer(&b[0]))
+}
 
 /*
  * nlmsg.go
@@ -83,6 +98,9 @@ func NlmsghdrPointer(b []byte) *Nlmsghdr {
 }
 
 func (nlh *Nlmsghdr) PutHeader() {
+	// ???: check buf len
+	//      len(b) >= SizeofNlmsghdr
+	//      nlh.len <= len(buf)
 	C.mnl_nlmsg_put_header(unsafe.Pointer(nlh))
 }
 
