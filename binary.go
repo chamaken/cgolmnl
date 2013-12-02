@@ -4,6 +4,7 @@ import (
 	"C"
 	"unsafe"
 	"syscall"
+	"reflect"
 )
 
 // make copy
@@ -50,4 +51,14 @@ func (attr *Nlattr) UnmarshalBinary(data []byte) error {
 	attr = (*Nlattr)(unsafe.Pointer(&data[0]))
 
 	return nil
+}
+
+// C.GoBytes() returns copy
+func SharedBytes(p unsafe.Pointer, plen int) []byte {
+	var b []byte
+	h := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+        h.Cap = plen
+        h.Len = plen
+        h.Data = uintptr(p)
+	return b
 }

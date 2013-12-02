@@ -52,7 +52,7 @@ func AttrGetPayload(attr *Nlattr) unsafe.Pointer {
 }
 
 func AttrGetPayloadBytes(attr *Nlattr) []byte {
-	return C.GoBytes(AttrGetPayload(attr), C.int(AttrGetPayloadLen(attr)))
+	return SharedBytes(AttrGetPayload(attr), int(AttrGetPayloadLen(attr)))
 }
 
 /**

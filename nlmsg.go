@@ -58,7 +58,7 @@ func NlmsgGetPayload(nlh *Nlmsghdr) unsafe.Pointer {
 	return C.mnl_nlmsg_get_payload((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)))
 }
 func NlmsgGetPayloadBytes(nlh *Nlmsghdr) []byte {
-	return C.GoBytes(NlmsgGetPayload(nlh), C.int(NlmsgGetPayloadLen(nlh)))
+	return SharedBytes(NlmsgGetPayload(nlh), int(NlmsgGetPayloadLen(nlh)))
 }
 
 /**
@@ -71,7 +71,7 @@ func NlmsgGetPayloadOffset(nlh *Nlmsghdr, offset Size_t) unsafe.Pointer {
 	return C.mnl_nlmsg_get_payload_offset((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.size_t(offset))
 }
 func NlmsgGetPayloadOffsetBytes(nlh *Nlmsghdr, offset Size_t) []byte {
-	return C.GoBytes(NlmsgGetPayloadOffset(nlh, offset), C.int(NlmsgGetPayloadLen(nlh) - offset))
+	return SharedBytes(NlmsgGetPayloadOffset(nlh, offset), int(NlmsgGetPayloadLen(nlh) - offset))
 }
 
 /**
@@ -199,7 +199,7 @@ func NlmsgBatchHead(b *NlmsgBatchDescriptor) unsafe.Pointer {
 	return C.mnl_nlmsg_batch_head((*[0]byte)(b))
 }
 func NlmsgBatchHeadBytes(b *NlmsgBatchDescriptor) []byte {
-	return C.GoBytes(NlmsgBatchHead(b), C.int(NlmsgBatchSize(b)))
+	return SharedBytes(NlmsgBatchHead(b), int(NlmsgBatchSize(b)))
 }
 
 /**
