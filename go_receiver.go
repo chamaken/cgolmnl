@@ -69,7 +69,9 @@ func NlattrPointer(b []byte) *Nlattr {
 func (nlh *Nlmsghdr) PayloadLen() Size_t { return NlmsgGetPayloadLen(nlh) }
 func (nlh *Nlmsghdr) PutExtraHeader(size Size_t) unsafe.Pointer { return NlmsgPutExtraHeader(nlh, size) }
 func (nlh *Nlmsghdr) Payload() unsafe.Pointer { return NlmsgGetPayload(nlh) }
+func (nlh *Nlmsghdr) PayloadBytes() []byte { return NlmsgGetPayloadBytes(nlh) }
 func (nlh *Nlmsghdr) PayloadOffset(offset Size_t) unsafe.Pointer { return NlmsgGetPayloadOffset(nlh, offset) }
+func (nlh *Nlmsghdr) PayloadOffsetBytes(offset Size_t) []byte { return NlmsgGetPayloadOffsetBytes(nlh, offset) }
 func (nlh *Nlmsghdr) Ok(size int) bool { return NlmsgOk(nlh, size) }
 func (nlh *Nlmsghdr) Next(size int) (*Nlmsghdr, int) { return NlmsgNext(nlh, size) }
 func (nlh *Nlmsghdr) PayloadTail() unsafe.Pointer { return NlmsgGetPayloadTail(nlh) }
