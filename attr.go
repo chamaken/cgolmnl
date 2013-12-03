@@ -4,6 +4,7 @@ import (
 	"syscall"
 	"unsafe"
 	// "fmt"
+	// "os"
 )
 
 /*
@@ -167,7 +168,7 @@ func AttrParseNested(nested *Nlattr, cb MnlAttrCb, data interface{}) (int, error
  */
 func AttrParsePayload(payload []byte, cb MnlAttrCb, data interface{}) (int, error) {
 	args := [2]unsafe.Pointer{unsafe.Pointer(&cb), unsafe.Pointer(&data)}
-	ret, err := C.attr_parse_payload_wrapper(unsafe.Pointer(&payload), C.size_t(len(payload)), unsafe.Pointer(&args))
+	ret, err := C.attr_parse_payload_wrapper(unsafe.Pointer(&payload[0]), C.size_t(len(payload)), unsafe.Pointer(&args))
 	return int(ret), err
 }
 
