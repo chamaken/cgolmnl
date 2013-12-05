@@ -111,7 +111,7 @@ func NlmsgGetPayloadTail(nlh *Nlmsghdr) unsafe.Pointer {
  * mnl_nlmsg_seq_ok(const struct nlmsghdr *nlh, uint32_t seq)
  */
 func NlmsgSeqOk(nlh *Nlmsghdr, seq uint32) bool {
-	return bool(C.mnl_nlmsg_seq_ok((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.uint32_t(seq)))
+	return bool(C.mnl_nlmsg_seq_ok((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.uint(seq)))
 }
 
 /**
@@ -121,7 +121,7 @@ func NlmsgSeqOk(nlh *Nlmsghdr, seq uint32) bool {
  * mnl_nlmsg_portid_ok(const struct nlmsghdr *nlh, uint32_t portid)
  */
 func NlmsgPortidOk(nlh *Nlmsghdr, portid uint32) bool {
-	return bool(C.mnl_nlmsg_portid_ok((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.uint32_t(portid)))
+	return bool(C.mnl_nlmsg_portid_ok((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.uint(portid)))
 }
 
 

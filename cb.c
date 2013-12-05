@@ -3,7 +3,7 @@
 
 int attr_parse_wrapper(const struct nlmsghdr *nlh, size_t offset, void *data)
 {
-	return mnl_attr_parse(nlh, offset, (mnl_attr_cb_t)GoAttrCb, data);
+	return mnl_attr_parse(nlh, (unsigned int)offset, (mnl_attr_cb_t)GoAttrCb, data);
 }
 
 int attr_parse_nested_wrapper(const struct nlattr *nested, void *data)
@@ -13,14 +13,14 @@ int attr_parse_nested_wrapper(const struct nlattr *nested, void *data)
 
 int attr_parse_payload_wrapper(const void *payload, size_t payload_len, void *data)
 {
-	return mnl_attr_parse_payload(payload, payload_len, (mnl_attr_cb_t)GoAttrCb, data);
+	return mnl_attr_parse_payload(payload, (unsigned int)payload_len, (mnl_attr_cb_t)GoAttrCb, data);
 }
 
 int
 cb_run_wrapper(const void *buf, size_t numbytes, uint32_t seq,
 	       uint32_t portid, void *data)
 {
-	return mnl_cb_run(buf, numbytes, seq, portid, (mnl_cb_t)GoCb, data);
+	return mnl_cb_run(buf, numbytes, (unsigned int)seq, (unsigned int)portid, (mnl_cb_t)GoCb, data);
 }
 
 /*
@@ -83,7 +83,7 @@ int
 cb_run3_wrapper(const void *buf, size_t numbytes, uint32_t seq,
 		uint32_t portid, void *data)
 {
-	return mnl_cb_run3(buf, numbytes, seq,
-			   portid, (mnl_cb_t)GoCb, data,
+	return mnl_cb_run3(buf, numbytes, (unsigned int)seq,
+			   (unsigned int)portid, (mnl_cb_t)GoCb, data,
 			   (mnl_ctl_cb_t)GoCtlCb);
 }
