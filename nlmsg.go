@@ -71,7 +71,7 @@ func NlmsgGetPayloadOffset(nlh *Nlmsghdr, offset Size_t) unsafe.Pointer {
 	return C.mnl_nlmsg_get_payload_offset((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.size_t(offset))
 }
 func NlmsgGetPayloadOffsetBytes(nlh *Nlmsghdr, offset Size_t) []byte {
-	return SharedBytes(NlmsgGetPayloadOffset(nlh, offset), int(NlmsgGetPayloadLen(nlh) - offset))
+	return SharedBytes(NlmsgGetPayloadOffset(nlh, offset), int(NlmsgGetPayloadLen(nlh) - Size_t(MnlAlign(uint32(offset)))))
 }
 
 /**
