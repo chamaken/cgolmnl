@@ -75,7 +75,7 @@ func TestAttrParse(t *testing.T) {
 
 
 var _ = Describe("Attr", func() {
-	fmt.Fprintf(os.Stdout, "Hello, world!\n") // to import os, sys for debugging
+	fmt.Fprintf(os.Stdout, "Hello, attr tester!\n") // to import os, sys for debugging
 	var (
 		BUFLEN		= 512
 		r		*rand.Rand
@@ -140,7 +140,7 @@ var _ = Describe("Attr", func() {
 			abuf.SetLen(4)
 			Expect(nla.Len).To(Equal(uint16(4)))
 		})
-		It("should share uint16 2 len", func() {
+		It("should share uint16 2 type", func() {
 			abuf.SetType(2)
 			Expect(nla.Type).To(Equal(uint16(2)))
 		})
@@ -350,7 +350,7 @@ var _ = Describe("Attr", func() {
 		It("should return MNL_CB_ERROR, nil", func() {
 			nlh, _ := PutNewNlmsghdr(512)
 			nlh.PutU8(uint16(MNL_TYPE_U8), 0x00)
-			ret, err := nlh.Parse(0, cb, 3)
+			ret, err := nlh.Parse(0, cb, syscall.Errno(3))
 			Expect(ret).To(Equal(MNL_CB_ERROR))
 			// XXX: discard err at GoAttrCb::attr.go
 			Expect(err).To(BeNil())
