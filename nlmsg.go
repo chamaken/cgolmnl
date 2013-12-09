@@ -80,6 +80,11 @@ func NlmsgGetPayloadOffsetBytes(nlh *Nlmsghdr, offset Size_t) []byte {
  * bool mnl_nlmsg_ok(const struct nlmsghdr *nlh, int len)
  */
 func NlmsgOk(nlh *Nlmsghdr, size int) bool {
+	// test fails
+	//   unexpected fault address 0x--------
+	//   fatal error: fault
+	// sometimes without below
+	if size < SizeofNlmsghdr { return false }
 	return bool(C.mnl_nlmsg_ok((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.int(size)))
 }
 
