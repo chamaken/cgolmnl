@@ -119,12 +119,12 @@ var _ = Describe("Attr", func() {
 	BeforeEach(func() {
 		r = rand.New(rand.NewSource(time.Now().Unix()))
 		hbuf = NewNlmsghdrBuf(BUFLEN)
-		nlh = NlmsghdrPointer(*hbuf)
+		nlh = NlmsghdrBytes(*hbuf)
 		rand_hbuf = NewNlmsghdrBuf(BUFLEN)
 		for i := 0; i < BUFLEN; i++ {
 			(*(*[]byte)(rand_hbuf))[i] = byte(r.Int() % 256)
 		}
-		rand_nlh = NlmsghdrPointer(*rand_hbuf)
+		rand_nlh = NlmsghdrBytes(*rand_hbuf)
 
 		abuf = NewNlattrBuf(BUFLEN)
 		nla = NlattrPointer(*abuf)
@@ -679,7 +679,7 @@ var _ = Describe("Attr", func() {
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsghdrBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
-			_nlh := NlmsghdrPointer(*_hbuf)
+			_nlh := NlmsghdrBytes(*_hbuf)
 			_nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
@@ -711,7 +711,7 @@ var _ = Describe("Attr", func() {
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsghdrBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
-			_nlh := NlmsghdrPointer(*_hbuf)
+			_nlh := NlmsghdrBytes(*_hbuf)
 			_nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
@@ -743,7 +743,7 @@ var _ = Describe("Attr", func() {
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsghdrBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
-			_nlh := NlmsghdrPointer(*_hbuf)
+			_nlh := NlmsghdrBytes(*_hbuf)
 			_nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
@@ -775,7 +775,7 @@ var _ = Describe("Attr", func() {
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsghdrBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
-			_nlh := NlmsghdrPointer(*_hbuf)
+			_nlh := NlmsghdrBytes(*_hbuf)
 			_nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
@@ -807,7 +807,7 @@ var _ = Describe("Attr", func() {
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsghdrBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
-			_nlh := NlmsghdrPointer(*_hbuf)
+			_nlh := NlmsghdrBytes(*_hbuf)
 			_nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
@@ -848,7 +848,7 @@ var _ = Describe("Attr", func() {
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsghdrBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
-			_nlh := NlmsghdrPointer(*_hbuf)
+			_nlh := NlmsghdrBytes(*_hbuf)
 			_nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
@@ -889,7 +889,7 @@ var _ = Describe("Attr", func() {
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsghdrBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
-			_nlh := NlmsghdrPointer(*_hbuf)
+			_nlh := NlmsghdrBytes(*_hbuf)
 			_nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)

@@ -95,7 +95,7 @@ func NewNlmsghdr(size int) (*Nlmsghdr, error) {
 	return (*Nlmsghdr)(unsafe.Pointer(&b[0])), nil
 }
 
-func NlmsghdrPointer(b []byte) *Nlmsghdr {
+func NlmsghdrBytes(b []byte) *Nlmsghdr {
 	return (*Nlmsghdr)(unsafe.Pointer(&b[0]))
 }
 
@@ -114,7 +114,6 @@ func PutNewNlmsghdr(size int) (*Nlmsghdr, error) {
 	nlh.PutHeader()
 	return nlh, nil
 }
-
 
 /*
  * socket.go
