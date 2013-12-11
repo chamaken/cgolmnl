@@ -97,7 +97,7 @@ func NlmsgOk(nlh *Nlmsghdr, size int) bool {
 func NlmsgNext(nlh *Nlmsghdr, size int) (*Nlmsghdr, int) {
 	c_size := C.int(size)
 	h := (*Nlmsghdr)(unsafe.Pointer(C.mnl_nlmsg_next((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), &c_size)))
-	return h, size
+	return h, int(c_size)
 }
 
 /**
