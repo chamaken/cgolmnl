@@ -47,6 +47,51 @@ func (nlh *Nlmsghdr) PutStrzCheck(buflen Size_t, attr_type uint16, data string) 
 func (nlh *Nlmsghdr) NestEnd(start *Nlattr) { AttrNestEnd(nlh, start) }
 func (nlh *Nlmsghdr) NestCancel(start *Nlattr) { AttrNestCancel(nlh, start) }
 
+// mnl_attr_for_each macro in libmnl.h
+func (nlh *Nlmsghdr) Attributes(offset Size_t) <-chan *Nlattr {
+	c := make(chan *Nlattr)
+	go func() {
+		attr := (*Nlattr)(nlh.PayloadOffset(offset))
+		for attr.Ok(int(uintptr(nlh.PayloadTail()) - uintptr(unsafe.Pointer(attr)))) {
+			c <- attr
+			attr = attr.Next()
+		}
+		close(c)
+	}()
+	return c
+}
+
+// mnl_attr_for_each_nested macro in libmnl.h
+func (nest *Nlattr) Nesteds() <-chan *Nlattr {
+	c := make(chan *Nlattr)
+	go func() {
+		attr := (*Nlattr)(nest.Payload())
+		for attr.Ok(int(uintptr(nest.Payload()) + uintptr(nest.PayloadLen()) - uintptr(unsafe.Pointer(attr)))) {
+			c <- attr
+			attr = attr.Next()
+		}
+		close(c)
+	}()
+	return c
+}
+
+// mnl_attr_for_each_payload macro in libmnl.h
+func PayloadAttributes(payload []byte) <-chan *Nlattr {
+	p := unsafe.Pointer(&payload[0])
+	attr := (*Nlattr)(p)
+	c := make(chan *Nlattr)
+
+	go func() {
+		for attr.Ok(int(uintptr(p) + uintptr(len(payload)) - uintptr(p))) {
+			c <- attr
+			attr = attr.Next()
+		}
+		close(c)
+	}()
+
+	return c
+}
+
 // helper function
 func NewNlattr(size int) (*Nlattr, error) {
 	if size < SizeofNlattr {

@@ -929,4 +929,55 @@ var _ = Describe("Attr", func() {
 			Expect(hbuf.Len()).To(Equal(uint32(MNL_NLMSG_HDRLEN)))
 		})
 	})
+
+	Context("Attributes", func() {
+		It("has valid 4 attrs", func() {
+			nlh.PutHeader()
+			AttrPutU8(nlh, uint16(0), 0x10)
+			AttrPutU8(nlh, uint16(1), 0x11)
+			AttrPutU8(nlh, uint16(2), 0x12)
+			AttrPutU8(nlh, uint16(3), 0x13)
+			i := 0
+			for attr := range(nlh.Attributes(0)) {
+				Expect(attr.Type).To(Equal(uint16(i)))
+				Expect(attr.U8()).To(Equal(uint8(0x10 + i)))
+				i += 1
+			}
+		})
+	})
+	Context("Nesteds", func() {
+		It("nested 4 valid attributes", func() {
+			// XXX: using functions defined here nlmsg.go
+			nlh.PutHeader()
+			nested := nlh.NestStart(1)
+			nlh.PutU8(uint16(0), 0)
+			nlh.PutU8(uint16(1), 10)
+			nlh.PutU8(uint16(2), 20)
+			nlh.PutU8(uint16(3), 30)
+			nlh.NestEnd(nested)
+			i := 0
+			for attr := range(nested.Nesteds()) {
+				Expect(attr.Type).To(Equal(uint16(i)))
+				Expect(attr.U8()).To(Equal(uint8(10 * i)))
+				i += 1
+			}
+		})
+	})
+
+	Context("PayloadAttributes", func() {
+		It("has 4 valid attributes", func() {
+			nlh.PutHeader()
+			nlh.PutU8(uint16(1), 10)
+			nlh.PutU8(uint16(2), 20)
+			nlh.PutU8(uint16(3), 30)
+			nlh.PutU8(uint16(4), 40)
+
+			i := 0
+			for attr := range(PayloadAttributes(*hbuf)) {
+				Expect(attr.Type).To(Equal(uint16(i)))
+				Expect(attr.U8()).To(Equal(uint8(10 * i)))
+				i += 1
+			}
+		})
+	})
 })
