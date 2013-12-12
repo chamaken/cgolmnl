@@ -36,17 +36,17 @@ issues
 ### callback ###
 
 in my horrible understanding, Go function which called from C has to be
-exported. To follow this, functions which uses callback was implemented in hacky
-way. callback is classified into two major - for nlmsghdr, cb_run and
+exported. To follow this, functions which uses callback was implemented in a
+hacky way. callback is classified into two major - for nlmsghdr, cb_run and
 nlattr. both of C functions are wrapped in cb.c
 
-1. call Go function wrapping C function in cb.c. it creates psuedo data param from
-   (non exported) requested Go callback function and real data param.
-2. wrapped function calls real libmnl function
+1. call Go function wrapping C function in cb.c. it creates pseudo data param from
+   (non exported, real) Go callback function and real data param.
+2. wrapping C function calls real libmnl function
 3. real libmnl function call Go callback, GoAttrCb (attr.go) in case of nlattr,
    GoCb (callback.go) nlmsghdr.
 4. Go callback above demultiplex data param into Go function and real data param
-5. requested Go callback will be called
+5. call real Go callback
 
 cb_run2() is too complicated for me to implement. then I added new one -
 cb_run3() which introduce new callback prototype.
@@ -58,10 +58,72 @@ As you know though, this is called in case of control type message (NLMSG_...)
 
 ### errno ###
 
-I can not find the way of set C's errno. I think it's important for callback and
-made callback function type in Go can return err, but ignore, discard in
-exported Go callback functions - GoCb and GoCtlCb in callback.go, GoAttrCb in
-attr.go. Please tell me how to set C's errno from Go.
+I can not find the way of passing Go callback error, in other words set C's
+errno from Go. I am not good at English let me show why I need to do in code
+snippets below
+
+* C library header (lib.h)
+
+    typedef int cbf_t(void *data);
+    extern int c_func(cbf_t cbfunc, void *data);
+
+* C wrapper header
+
+    #include "lib.h"
+    #include "_cgo_export.h"
+    extern int wrap(void *data);
+
+* C wrapper source
+
+    #include "cblib.h"
+    int wrap(void *data)
+    {
+        return c_func((cbf_t)CallFromC, data);
+    }
+
+
+* Go
+    /*
+    #include "cbwrap.h"
+    */
+    import "C"
+    import "unsafe"
+
+    type Cb_t func(interface {}) (int, error)
+
+    func Doit(cbfunc Cb_t, data interface{}) (int, error) {
+        // multiplexing
+        pseudo_data := [2]unsafe.Pointer{unsafe.Pointer(&cbfunc), unsafe.Pointer(&data)}
+        return C.wrap(unsafe.Pointer(&pseudo_data))
+    }
+
+    //export CallFromC
+    func CallFromC(pseudo_data interface) C.int {
+        // demultiplexing
+        args := *(*[2]unsafe.Porinter)(pseudo_data)
+        cbfunc := *(*Cb_t)(args[0])
+        real_data := *(*interface{})(args[1])
+        ret, err := cbfunc(real_data)
+	// set C errno here
+    }
+     
+    func cb(data interface{}) (int, error) {
+        i := data.(int)
+        if i < 0:
+	    return -1, syscall.Errno(-i)
+        else:
+	    return i, syscall.Errno(0)
+    }
+
+    func main() {
+        Doit(cb, 7)
+    }
+
+call chain will be:
+Go main() -> Go Doit() -> C wrap() -> C c_func() -> Go CallFromC() -> Go cb()
+
+I need to know the way of tossing last Go cb() error up to Go Doit()
+
 
 
 comparison
@@ -88,6 +150,8 @@ comparison
 | mnl_attr_get_u64			| AttrGetU64			|				|
 | mnl_attr_get_str			| AttrGetStr			|				|
 | mnl_attr_put				| AttrPut			|				|
+| (add)					| AttrPutData			|				|
+| (add)					| AttrPutBytes			|				|
 | mnl_attr_put_u8			| AttrPutU8			|				|
 | mnl_attr_put_u16			| AttrPutU16			|				|
 | mnl_attr_put_u32			| AttrPutU32			|				|

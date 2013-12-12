@@ -1,6 +1,7 @@
 package cgolmnl
 
 import (
+	"reflect"
 	"syscall"
 	"unsafe"
 	// "fmt"
@@ -224,7 +225,18 @@ func AttrGetStr(attr *Nlattr) string {
  * void
  * mnl_attr_put(struct nlmsghdr *nlh, uint16_t type, size_t len, const void *data)
  */
-func AttrPut(nlh *Nlmsghdr, attr_type uint16, data []byte) {
+func AttrPut(nlh *Nlmsghdr, attr_type uint16, size Size_t, data unsafe.Pointer) {
+	C.mnl_attr_put((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.uint16_t(attr_type), C.size_t(size), data)
+}
+func AttrPutData(nlh *Nlmsghdr, attr_type uint16, data interface{}) {
+	v := reflect.ValueOf(data)
+	if v.Kind() != reflect.Ptr {
+		panic("pointer required for data")
+	}
+	t := reflect.Indirect(v).Type()
+	AttrPut(nlh, attr_type, Size_t(t.Size()), unsafe.Pointer(v.Pointer()))
+}
+func AttrPutBytes(nlh *Nlmsghdr, attr_type uint16, data []byte) {
 	C.mnl_attr_put((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
 		C.uint16_t(attr_type), C.size_t(len(data)), unsafe.Pointer(&data[0]))
 }

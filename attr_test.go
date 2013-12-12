@@ -471,11 +471,53 @@ var _ = Describe("Attr", func() {
 	})
 
 	Context("AttrPut", func() {
+		var _tbuf NlattrBuf
+		BeforeEach(func() {
+			nlh.PutHeader()
+			nlh.Put(3, SizeofNlmsghdr, unsafe.Pointer(rand_nlh))
+			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
+		})
+		It("nlh len should be 16 + 4 + 16", func() {
+			Expect(nlh.Len).To(Equal(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN + MNL_NLMSG_HDRLEN))
+		})
+		It("attr type should be 3", func() {
+			Expect(_tbuf.Type()).To(Equal(uint16(3)))
+		})
+		It("attr len should be 4 + MNL_NLMSG_HDRLEN", func() {
+			Expect(_tbuf.Len()).To(Equal(uint16(MNL_ATTR_HDRLEN + MNL_NLMSG_HDRLEN)))
+		})
+		It("attr contents should be equal", func() {
+			Expect(([]byte)(_tbuf)[MNL_ATTR_HDRLEN:int(MNL_ATTR_HDRLEN + MNL_NLMSG_HDRLEN)]).To(Equal((*(*[]byte)(rand_hbuf))[:MNL_NLMSG_HDRLEN]))
+		})
+	})
+
+	Context("AttrPutData", func() {
+		var _tbuf NlattrBuf
+		BeforeEach(func() {
+			nlh.PutHeader()
+			nlh.PutData(3, rand_nlh)
+			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
+		})
+		It("nlh len should be 16 + 4 + 16", func() {
+			Expect(nlh.Len).To(Equal(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN + MNL_NLMSG_HDRLEN))
+		})
+		It("attr type should be 3", func() {
+			Expect(_tbuf.Type()).To(Equal(uint16(3)))
+		})
+		It("attr len should be 4 + MNL_NLMSG_HDRLEN", func() {
+			Expect(_tbuf.Len()).To(Equal(uint16(MNL_ATTR_HDRLEN + MNL_NLMSG_HDRLEN)))
+		})
+		It("attr contents should be equal", func() {
+			Expect(([]byte)(_tbuf)[MNL_ATTR_HDRLEN:int(MNL_ATTR_HDRLEN + MNL_NLMSG_HDRLEN)]).To(Equal((*(*[]byte)(rand_hbuf))[:MNL_NLMSG_HDRLEN]))
+		})
+	})
+
+	Context("AttrPutBytes", func() {
 		b := []byte{1, 2, 3}
 		var _tbuf NlattrBuf
 		BeforeEach(func() {
 			nlh.PutHeader()
-			nlh.Put(1, b)
+			nlh.PutBytes(1, b)
 			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
 		})
 		It("nlh len should be 16 + 4 + align(3)", func() {

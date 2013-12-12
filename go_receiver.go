@@ -29,7 +29,9 @@ func (attr *Nlattr) U16() uint16 { return AttrGetU16(attr) }
 func (attr *Nlattr) U32() uint32 { return AttrGetU32(attr) }
 func (attr *Nlattr) U64() uint64 { return AttrGetU64(attr) }
 func (attr *Nlattr) Str() string { return AttrGetStr(attr) }
-func (nlh *Nlmsghdr) Put(attr_type uint16, data []byte) { AttrPut(nlh, attr_type, data) }
+func (nlh *Nlmsghdr) Put(attr_type uint16, size Size_t, p unsafe.Pointer) { AttrPut(nlh, attr_type, size, p) }
+func (nlh *Nlmsghdr) PutData(attr_type uint16, data interface{}) { AttrPutData(nlh, attr_type, data) }
+func (nlh *Nlmsghdr) PutBytes(attr_type uint16, data []byte) { AttrPutBytes(nlh, attr_type, data) }
 func (nlh *Nlmsghdr) PutU8(attr_type uint16, data uint8) { AttrPutU8(nlh, attr_type, data) }
 func (nlh *Nlmsghdr) PutU16(attr_type uint16, data uint16) { AttrPutU16(nlh, attr_type, data) }
 func (nlh *Nlmsghdr) PutU32(attr_type uint16, data uint32) { AttrPutU32(nlh, attr_type, data) }
