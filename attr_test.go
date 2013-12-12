@@ -352,8 +352,7 @@ var _ = Describe("Attr", func() {
 			nlh.PutU8(uint16(MNL_TYPE_U8), 0x00)
 			ret, err := nlh.Parse(0, cb, syscall.Errno(3))
 			Expect(ret).To(Equal(MNL_CB_ERROR))
-			// XXX: discard err at GoAttrCb::attr.go
-			Expect(err).To(BeNil())
+			Expect(err).To(Equal(syscall.Errno(3)))
 		})
 	})
 
@@ -393,7 +392,7 @@ var _ = Describe("Attr", func() {
 			It("should return MNL_CB_ERROR, nil", func() {
 				ret, err := nested.ParseNested(cb_f(0), true)
 				Expect(ret).To(Equal(MNL_CB_ERROR))
-				Expect(err).To(BeNil())
+				Expect(err).To(Equal(syscall.Errno(123)))
 			})
 		})
 
@@ -418,7 +417,7 @@ var _ = Describe("Attr", func() {
 			It("should return MNL_CB_ERROR, nil", func() {
 				ret, err := AttrParsePayload(nlh.PayloadBytes(), cb_f(0), true)
 				Expect(ret).To(Equal(MNL_CB_ERROR))
-				Expect(err).To(BeNil())
+				Expect(err).To(Equal(syscall.Errno(123)))
 			})
 		})
 	})

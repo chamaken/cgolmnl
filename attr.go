@@ -10,9 +10,9 @@ import (
 /*
 #cgo LDFLAGS: -lmnl
 #include <stdlib.h>
-#include <errno.h>
 #include <libmnl/libmnl.h>
 #include "cb.h"
+#include "set_errno.h"
 */
 import "C"
 
@@ -125,10 +125,11 @@ func GoAttrCb(nla *C.struct_nlattr, argp unsafe.Pointer) C.int {
 	args := *(*[2]unsafe.Pointer)(argp)
 	cb := *(*MnlAttrCb)(args[0])
 	data := *(*interface{})(args[1])
-	ret, _ := cb((*Nlattr)(unsafe.Pointer(nla)), data) // returns (int, syscall.Errno)
-	// if err != nil {
-	// 	C.errno = int(err) // ``cannot refer to errno directly; see documentation''
-	// }
+	ret, err := cb((*Nlattr)(unsafe.Pointer(nla)), data) // returns (int, syscall.Errno)
+	if err != 0 {
+		// C.errno = int(err) // ``cannot refer to errno directly; see documentation''
+		C.SetErrno(C.int(err))
+	}
 	return C.int(ret)
 }
 

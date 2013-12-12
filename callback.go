@@ -4,6 +4,7 @@ package cgolmnl
 #cgo LDFLAGS: -lmnl
 #include <libmnl/libmnl.h>
 #include "cb.h"
+#include "set_errno.h"
 */
 import "C"
 
@@ -31,10 +32,11 @@ func GoCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 	args := *(*[3]unsafe.Pointer)(argp)
 	cb := *(*MnlCb)(args[1])
 	data := *(*interface{})(args[2])
-	ret, _ := cb((*Nlmsghdr)(unsafe.Pointer(nlh)), data) // returns (int, syscall.Errno)
-	// if err != nil {
-	//	C.errno = int(err) // cannot refer to errno directly; see documentation
-	// }
+	ret, err := cb((*Nlmsghdr)(unsafe.Pointer(nlh)), data) // returns (int, syscall.Errno)
+	if err != 0 {
+		// C.errno = int(err) // cannot refer to errno directly; see documentation
+		C.SetErrno(C.int(err))
+	}
 	return C.int(ret)
 }
 	
@@ -43,7 +45,10 @@ func GoCtlCb(nlh *C.struct_nlmsghdr, msgtype C.uint16_t, argp unsafe.Pointer) C.
 	args := *(*[3]unsafe.Pointer)(argp)
 	cb := *(*MnlCtlCb)(args[0])
 	data := *(*interface{})(args[2])
-	ret, _ := cb((*Nlmsghdr)(unsafe.Pointer(nlh)), uint16(msgtype), data)
+	ret, err := cb((*Nlmsghdr)(unsafe.Pointer(nlh)), uint16(msgtype), data)
+	if err != 0 {
+		C.SetErrno(C.int(err))
+	}
 	return C.int(ret)
 }
 	

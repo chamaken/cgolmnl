@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <libmnl/libmnl.h>
 #include "_cgo_export.h"
 
