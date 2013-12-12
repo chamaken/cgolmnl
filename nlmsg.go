@@ -38,6 +38,9 @@ func NlmsgGetPayloadLen(nlh *Nlmsghdr) Size_t {
 func NlmsgPutHeader(buf unsafe.Pointer) *Nlmsghdr {
 	return (*Nlmsghdr)(unsafe.Pointer(C.mnl_nlmsg_put_header(buf)))
 }
+func NlmsgPutHeaderBytes(buf []byte) *Nlmsghdr {
+	return NlmsgPutHeader(unsafe.Pointer(&buf[0]))
+}
 
 /**
  * mnl_nlmsg_put_extra_header - reserve and prepare room for an extra header
