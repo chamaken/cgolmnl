@@ -14,6 +14,8 @@ requires
 
 libmnl
 
+  * test reqs (optional): **ginkgo (http://onsi.github.io/ginkgo/)
+
 
 links
 -----
@@ -25,7 +27,7 @@ struct
 ------
 
 nlmsghdr and nlattr has real - Nlmsghdr and Nlattr. mnl_nlmsg_batch and
-mnl_socket are opaque, [0]byte as cgo said. these are receiver, see
+mnl_socket are opaque, [0]byte as cgo said. there are receivers, see
 go_receiver.go
 
 
@@ -58,7 +60,11 @@ As you know though, this is called in case of control type message (NLMSG_...)
 
 ### errno ###
 
-I can not find the way of passing Go callback error, in other words set C's
+I currently use an incredibly childish C function in set_errno.c
+
+    void SetErrno(int n) { errno = n; }
+
+I can not find the way of tossing up Go callback error, in other words set C's
 errno from Go. I am not good at English let me show why I need to do in code
 snippets below
 
@@ -80,7 +86,6 @@ snippets below
     {
         return c_func((cbf_t)CallFromC, data);
     }
-
 
 * Go
     /*
@@ -172,7 +177,8 @@ comparison
 | ------------------------------------- | ----------------------------- | ----------------------------- |
 | mnl_nlmsg_size			| NlmsgSize			|				|
 | mnl_nlmsg_get_payload_len		| NlmsgGetPayloadLen		|				|
-| mnl_nlmsg_put_header			| NlmsgPutHeader		|				|
+| mnl_nlmsg_put_header			| NlmsgPutHeader		| require unsafe.Pointer	|
+| (add)					| NlmsgPutHeaderBytes		| wrap above, require []byte	|
 | mnl_nlmsg_put_extra_header		| NlmsgPutExtraHeader		|  				|
 | mnl_nlmsg_get_paylod			| NlmsgGetPayload		| 				|
 | (add)					| NlmsgGetPayloadBytes		| returns []byte		|
