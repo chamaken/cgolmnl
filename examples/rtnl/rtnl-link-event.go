@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"os"
 	"syscall"
-	"time"
 	mnl "cgolmnl"
 )
 
@@ -48,8 +47,8 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 
 func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 	tb := make(map[uint16]*mnl.Nlattr, C.IFLA_MAX + 1)
-
 	ifm := (*Ifinfomsg)(nlh.Payload())
+
 	fmt.Printf("index=%d type=%d flags=%d family=%d ", ifm.Index, ifm.Type, ifm.Flags, ifm.Family)
 
 	if ifm.Flags & C.IFF_RUNNING == C.IFF_RUNNING {
@@ -65,37 +64,12 @@ func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 	if tb[C.IFLA_IFNAME] != nil {
 		fmt.Printf("name=%s ", tb[C.IFLA_IFNAME].Str())
 	}
-
-	if tb[C.IFLA_ADDRESS] != nil {
-		hwaddr := *(*[8]byte)(tb[C.IFLA_ADDRESS].Payload())
-		// hwaddr := tb[C.IFLA_ADDRESS].PayloadBytes()
-		fmt.Printf("hwaddr=")
-		var i uint16
-		for i = 0; i < tb[C.IFLA_ADDRESS].PayloadLen(); i++ {
-			fmt.Printf("%.2x", hwaddr[i] & 0xff)
-			if i + 1 != tb[C.IFLA_ADDRESS].PayloadLen() {
-				fmt.Printf(":")
-			}
-		}
-	}
 	fmt.Printf("\n")
 	return mnl.MNL_CB_OK, 0
 }
 
 func main() {
 	buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE)
-	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
-		os.Exit(C.EXIT_FAILURE)
-	}
-
-	nlh.Type = C.RTM_GETLINK
-	nlh.Flags = C.NLM_F_REQUEST | C.NLM_F_DUMP
-	seq := uint32(time.Now().Unix())
-	nlh.Seq = seq
-	rt := (*Rtgenmsg)(nlh.PutExtraHeader(SizeofRtgenmsg))
-	rt.Family = C.AF_PACKET
 
 	nl, err := mnl.SocketOpen(C.NETLINK_ROUTE)
 	if err != nil {
@@ -104,14 +78,8 @@ func main() {
 	}
 	defer nl.Close()
 
-	if err = nl.Bind(0, mnl.MNL_SOCKET_AUTOPID); err != nil {
+	if err = nl.Bind(C.RTMGRP_LINK, mnl.MNL_SOCKET_AUTOPID); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_bind: %s\n", err)
-		os.Exit(C.EXIT_FAILURE)
-	}
-	portid := nl.Portid()
-
-	if _, err = nl.SendNlmsg(nlh); err != nil {
-		fmt.Fprintf(os.Stderr, "mnl_socket_sendto: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
 
@@ -122,7 +90,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "mnl_socket_recvfrom: %s\n", err)
 			os.Exit(C.EXIT_FAILURE)
 		}
-		ret, err = mnl.CbRun(buf[:nrcv], seq, portid, data_cb, nil)
+		ret, err = mnl.CbRun(buf[:nrcv], 0, 0, data_cb, nil)
 	}
 	if ret < mnl.MNL_CB_STOP {
 		fmt.Fprintf(os.Stderr, "mnl_cb_run: %s\n", err)

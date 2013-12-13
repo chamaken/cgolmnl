@@ -14,8 +14,8 @@ import (
 	"os"
 	"syscall"
 	"time"
-	"unsafe"
 	mnl "cgolmnl"
+	. "cgolmnl/inet"
 )
 
 func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -23,7 +23,7 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	attr_type := attr.GetType()
 
 	if ret, _ := attr.TypeValid(C.IFA_MAX); ret < 0 {
-		return mnl.MNL_CB_OK, syscall.Errno(0)
+		return mnl.MNL_CB_OK, 0
 	}
 
 	switch attr_type {
@@ -34,7 +34,7 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 		}
 	}
 	tb[attr_type] = attr
-	return mnl.MNL_CB_OK, syscall.Errno(0)
+	return mnl.MNL_CB_OK, 0
 }
 
 func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
@@ -46,13 +46,10 @@ func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 	nlh.Parse(SizeofIfaddrmsg, data_attr_cb, tb)
 	fmt.Printf("addr=")
 	if tb[C.IFA_ADDRESS] != nil {
-		addr := *(*[C.INET6_ADDRSTRLEN]byte)(tb[C.IFA_ADDRESS].Payload())
-		out := make([]byte, C.INET6_ADDRSTRLEN)
-		if s, err := C.inet_ntop(C.int(ifa.Family), unsafe.Pointer(&addr[0]), (*C.char)(unsafe.Pointer(&out[0])), C.socklen_t(len(out))); err != nil {
-			fmt.Fprintf(os.Stderr, "C.inet_ntop: %s\n", err)
+		if s, err := InetNtop(int(ifa.Family), tb[C.IFA_ADDRESS].Payload()); err != nil {
+			fmt.Fprintf(os.Stderr, "InetNtop: %s\n", err)
 		} else {
-			// fmt.Printf("%#v ", out)
-			fmt.Printf("%s ", C.GoString(s))
+			fmt.Printf("%s ", s)
 		}
 	}
 	fmt.Printf("scope=")
@@ -72,22 +69,19 @@ func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 	}
 
 	fmt.Printf("\n")
-	return mnl.MNL_CB_OK, syscall.Errno(0)
+	return mnl.MNL_CB_OK, 0
 }
 
 func main() {
-	var nl *mnl.SocketDescriptor
-	var err error
-	rcv_buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE)
-
 	if len(os.Args) != 2 {
 		fmt.Fprintf(os.Stderr, "Usage: %s <inet|inet6>\n", os.Args[0])
 		os.Exit(C.EXIT_FAILURE)
 	}
 
-	nlh, err := mnl.PutNewNlmsghdr(mnl.MNL_SOCKET_BUFFER_SIZE)
+	buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE)
+	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "NewNlmsghdr: %s\n", err)
+		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
 	nlh.Type = C.RTM_GETADDR
@@ -101,7 +95,8 @@ func main() {
 		rt.Family = C.AF_INET6
 	}
 
-	if nl, err = mnl.SocketOpen(C.NETLINK_ROUTE); err != nil {
+	if nl, err := mnl.SocketOpen(C.NETLINK_ROUTE)
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_open: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
@@ -120,14 +115,16 @@ func main() {
 
 	ret := mnl.MNL_CB_OK
 	for ret > mnl.MNL_CB_STOP {
-		rsize, err := nl.Recvfrom(rcv_buf)
+		nrcv, err := nl.Recvfrom(buf)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_socket_recvfrom: %s\n", err)
 			os.Exit(C.EXIT_FAILURE)
 		}
-		if ret, err = mnl.CbRun(rcv_buf[:rsize], seq, portid, data_cb, nil); ret < 0 {
-			fmt.Fprintf(os.Stderr, "error: %s", err)
-			os.Exit(C.EXIT_FAILURE)
-		}
+		ret, err = mnl.CbRun(buf[:nrcv], seq, portid, data_cb, nil)		
+	}
+
+	if ret < mnl.MNL_CB_STOP {
+		fmt.Fprintf(os.Stderr, "mnl_cb_run: %s", err)
+		os.Exit(C.EXIT_FAILURE)
 	}
 }

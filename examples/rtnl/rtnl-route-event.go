@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"os"
 	"syscall"
-	"time"
 	mnl "cgolmnl"
 	. "cgolmnl/inet"
 )
@@ -73,7 +72,6 @@ func attributes_show_ipv4(tb map[uint16]*mnl.Nlattr) {
 			}
 		}
 	}
-	fmt.Println()
 }
 
 func attributes_show_ipv6(tb map[uint16]*mnl.Nlattr) {
@@ -111,7 +109,6 @@ func attributes_show_ipv6(tb map[uint16]*mnl.Nlattr) {
 			}
 		}
 	}
-	fmt.Println()
 }
 
 func data_ipv4_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -184,6 +181,13 @@ func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 	tb := make(map[uint16]*mnl.Nlattr, C.RTA_MAX + 1)
 	rm := (*Rtmsg)(nlh.Payload())
 
+	switch nlh.Type {
+	case C.RTM_NEWROUTE:
+		fmt.Printf("[NEW] ");
+	case C.RTM_DELROUTE:
+		fmt.Printf("[DEL] ");
+	}
+
 	fmt.Printf("family=%d ", rm.Family)
 	fmt.Printf("dst_len=%d ", rm.Dst_len)
 	fmt.Printf("src_len=%d ", rm.Src_len)
@@ -193,6 +197,7 @@ func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 	fmt.Printf("scope=%d ", rm.Scope)
 	fmt.Printf("proto=%d ", rm.Protocol)
 	fmt.Printf("flags=%d ", rm.Flags)
+
 	switch rm.Family {
 	case C.AF_INET:
 		nlh.Parse(SizeofRtmsg, data_ipv4_attr_cb, tb)
@@ -202,31 +207,12 @@ func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 		attributes_show_ipv6(tb)
 	}
 
+	fmt.Println()
 	return mnl.MNL_CB_OK, 0
 }
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stderr, "Usage: %s <inet|inet6>\n", os.Args[0])
-		os.Exit(C.EXIT_FAILURE)
-	}
-
 	buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE)
-	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
-		os.Exit(C.EXIT_FAILURE)
-	}
-	nlh.Type = C.RTM_GETROUTE
-	nlh.Flags = C.NLM_F_REQUEST | C.NLM_F_DUMP
-	seq := uint32(time.Now().Unix())
-	nlh.Seq = seq
-	rtm := (*Rtgenmsg)(nlh.PutExtraHeader(SizeofRtgenmsg))
-	if os.Args[1] == "inet" {
-		rtm.Family = C.AF_INET
-	} else if os.Args[1] == "inet6" {
-		rtm.Family = C.AF_INET6
-	}
 
 	nl, err := mnl.SocketOpen(C.NETLINK_ROUTE)
 	if err != nil {
@@ -235,14 +221,8 @@ func main() {
 	}
 	defer nl.Close()
 
-	if err = nl.Bind(0, mnl.MNL_SOCKET_AUTOPID); err != nil {
+	if err = nl.Bind(C.RTMGRP_IPV4_ROUTE | C.RTMGRP_IPV6_ROUTE, mnl.MNL_SOCKET_AUTOPID); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_bind: %s\n", err)
-		os.Exit(C.EXIT_FAILURE)
-	}
-	portid := nl.Portid()
-
-	if _, err = nl.SendNlmsg(nlh); err != nil {
-		fmt.Fprintf(os.Stderr, "mln_socket_sendto: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
 
@@ -253,7 +233,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "mnl_socket_recvfrom: %s\n", err)
 			os.Exit(C.EXIT_FAILURE)
 		}
-		ret, err = mnl.CbRun(buf[:nrcv], seq, portid, data_cb, nil)
+		ret, err = mnl.CbRun(buf[:nrcv], 0, 0, data_cb, nil)
 	}
 	if ret < mnl.MNL_CB_STOP {
 		fmt.Fprintf(os.Stderr, "mnl_cb_run: %s", err)

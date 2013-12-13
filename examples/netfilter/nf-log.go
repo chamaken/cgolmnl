@@ -13,13 +13,12 @@ package main
 import "C"
 
 import (
-	"encoding/binary"
 	"fmt"
 	"os"
 	"strconv"
 	"syscall"
-	"unsafe"
 	mnl "cgolmnl"
+	. "cgolmnl/inet"
 )
 
 func parse_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -61,14 +60,6 @@ func parse_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	return mnl.MNL_CB_OK, 0
 }
 
-func ntohl(i uint32) uint32 {
-	return binary.BigEndian.Uint32((*(*[4]byte)(unsafe.Pointer(&i)))[:])
-}
-
-func ntohs(i uint16) uint16 {
-	return binary.BigEndian.Uint16((*(*[2]byte)(unsafe.Pointer(&i)))[:])
-}
-
 func log_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 	var ph *NfulnlMsgPacketHdr
 	var prefix string
@@ -83,17 +74,22 @@ func log_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 		prefix = tb[C.NFULA_PREFIX].Str()
 	}
 	if tb[C.NFULA_MARK] != nil {
-		mark = ntohl(tb[C.NFULA_MARK].U32())
+		mark = Ntohl(tb[C.NFULA_MARK].U32())
 	}
 
 	fmt.Printf("log received (prefix=\"%s\" hw=0x%04x hook=%d mark=%d)\n",
-		prefix, ntohs(ph.Protocol), ph.Hook, mark)
+		prefix, Ntohs(ph.Protocol), ph.Hook, mark)
 
 	return mnl.MNL_CB_OK, 0
 }
 
 func nflog_build_cfg_pf_request(buf []byte, command uint8) *mnl.Nlmsghdr {
-	nlh := mnl.NlmsgPutHeaderBytes(buf)
+	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
+		os.Exit(C.EXIT_FAILURE)
+	}
+
 	nlh.Type = (C.NFNL_SUBSYS_ULOG << 8) | C.NFULNL_MSG_CONFIG
 	nlh.Flags = C.NLM_F_REQUEST
 
@@ -105,23 +101,22 @@ func nflog_build_cfg_pf_request(buf []byte, command uint8) *mnl.Nlmsghdr {
 	nlh.PutData(C.NFULA_CFG_CMD, cmd)
 
 	return nlh
-}
-
-func htons(i uint16) uint16 {
-	b := make([]byte, 2)
-	binary.BigEndian.PutUint16(b, i)
-	return *(*uint16)(unsafe.Pointer(&b[0]))
 }
 
 func nflog_build_cfg_request(buf []byte, command uint8, qnum int) *mnl.Nlmsghdr {
-	nlh := mnl.NlmsgPutHeaderBytes(buf)
+	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
+		os.Exit(C.EXIT_FAILURE)
+	}
+
 	nlh.Type = (C.NFNL_SUBSYS_ULOG << 8) | C.NFULNL_MSG_CONFIG
 	nlh.Flags = C.NLM_F_REQUEST
 
 	nfg := (*Nfgenmsg)(nlh.PutExtraHeader(SizeofNfgenmsg))
 	nfg.Nfgen_family = C.AF_INET
 	nfg.Version = C.NFNETLINK_V0
-	nfg.Res_id = htons(uint16(qnum))
+	nfg.Res_id = Htons(uint16(qnum))
 
 	cmd := &NfulnlMsgConfigCmd{Command: command}
 	nlh.PutData(C.NFULA_CFG_CMD, cmd)
@@ -129,23 +124,22 @@ func nflog_build_cfg_request(buf []byte, command uint8, qnum int) *mnl.Nlmsghdr 
 	return nlh
 }
 
-func htonl(i uint32) uint32 {
-	b := make([]byte, 4)
-	binary.BigEndian.PutUint32(b, i)
-	return *(*uint32)(unsafe.Pointer(&b[0]))
-}
-
 func nflog_build_cfg_params(buf []byte, copy_mode uint8, copy_range, qnum int) *mnl.Nlmsghdr {
-	nlh := mnl.NlmsgPutHeaderBytes(buf)
+	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
+		os.Exit(C.EXIT_FAILURE)
+	}
+
 	nlh.Type = (C.NFNL_SUBSYS_ULOG << 8) | C.NFULNL_MSG_CONFIG
 	nlh.Flags = C.NLM_F_REQUEST
 
 	nfg := (*Nfgenmsg)(nlh.PutExtraHeader(SizeofNfgenmsg))
 	nfg.Nfgen_family = C.AF_UNSPEC
 	nfg.Version = C.NFNETLINK_V0
-	nfg.Res_id = htons(uint16(qnum))
+	nfg.Res_id = Htons(uint16(qnum))
 
-	params := &NfulnlMsgConfigMode{	Range: htonl(uint32(copy_range)), Mode: copy_mode }
+	params := &NfulnlMsgConfigMode{	Range: Htonl(uint32(copy_range)), Mode: copy_mode }
 	nlh.PutData(C.NFULA_CFG_MODE, params)
 
 	return nlh
@@ -165,7 +159,7 @@ func main() {
 	}
 	defer nl.Close()
 
-	if err := nl.Bind(0, mnl.MNL_SOCKET_AUTOPID); err != nil {
+	if err = nl.Bind(0, mnl.MNL_SOCKET_AUTOPID); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_bind: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
@@ -192,6 +186,7 @@ func main() {
 	}
 
 	nlh = nflog_build_cfg_params(buf, C.NFULNL_COPY_PACKET, 0xFFFF, qnum)
+
 	if _, err := nl.SendNlmsg(nlh); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_sendto: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
@@ -208,7 +203,7 @@ func main() {
 	}
 
 	if ret < mnl.MNL_CB_STOP {
-		fmt.Fprintf(os.Stderr, "mnl_cb_run\n")
+		fmt.Fprintf(os.Stderr, "mnl_cb_run: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
 }

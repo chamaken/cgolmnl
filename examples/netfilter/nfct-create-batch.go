@@ -15,45 +15,14 @@ package main
 import "C"
 
 import (
-	"encoding/binary"
 	"fmt"
-	"net"
 	"os"
-	"strconv"
-	"strings"
 	"syscall"
 	"time"
 	"unsafe"
 	mnl "cgolmnl"
+	. "cgolmnl/inet"
 )
-
-func inet_addr(s string) uint32 {
-	ip := net.ParseIP(s)
-	d := strings.Split(ip.String(), ".")
-	d0, _ := strconv.Atoi(d[0])
-	d1, _ := strconv.Atoi(d[1])
-	d2, _ := strconv.Atoi(d[2])
-	d3, _ := strconv.Atoi(d[3])
-
-	r := uint32(d0 << 24)
-	r += uint32(d1 << 16)
-	r += uint32(d2 <<  8)
-	r += uint32(d3)
-
-	return r
-}
-
-func htons(i uint16) uint16 {
-	b := make([]byte, 2)
-	binary.BigEndian.PutUint16(b, i)
-	return *(*uint16)(unsafe.Pointer(&b[0]))
-}
-
-func htonl(i uint32) uint32 {
-	b := make([]byte, 4)
-	binary.BigEndian.PutUint32(b, i)
-	return *(*uint32)(unsafe.Pointer(&b[0]))
-}
 
 func put_msg(p unsafe.Pointer, i uint16, seq uint32) {
 	nlh := mnl.NlmsgPutHeader(p)
@@ -68,27 +37,27 @@ func put_msg(p unsafe.Pointer, i uint16, seq uint32) {
 
 	nest1 := nlh.NestStart(C.CTA_TUPLE_ORIG)
 	nest2 := nlh.NestStart(C.CTA_TUPLE_IP)
-	nlh.PutU32(C.CTA_IP_V4_SRC, inet_addr("1.1.1.1"))
-	nlh.PutU32(C.CTA_IP_V4_DST, inet_addr("2.2.2.2"))
+	nlh.PutU32(C.CTA_IP_V4_SRC, InetAddr("1.1.1.1"))
+	nlh.PutU32(C.CTA_IP_V4_DST, InetAddr("2.2.2.2"))
 	nlh.NestEnd(nest2)
 
 	nest2 = nlh.NestStart(C.CTA_TUPLE_PROTO)
 	nlh.PutU8(C.CTA_PROTO_NUM, C.IPPROTO_TCP)
-	nlh.PutU16(C.CTA_PROTO_SRC_PORT, htons(i))
-	nlh.PutU16(C.CTA_PROTO_DST_PORT, htons(1025))
+	nlh.PutU16(C.CTA_PROTO_SRC_PORT, Htons(i))
+	nlh.PutU16(C.CTA_PROTO_DST_PORT, Htons(1025))
 	nlh.NestEnd(nest2)
 	nlh.NestEnd(nest1)
 
 	nest1 = nlh.NestStart(C.CTA_TUPLE_REPLY)
 	nest2 = nlh.NestStart(C.CTA_TUPLE_IP)
-	nlh.PutU32(C.CTA_IP_V4_SRC, inet_addr("2.2.2.2"))
-	nlh.PutU32(C.CTA_IP_V4_DST, inet_addr("1.1.1.1"))
+	nlh.PutU32(C.CTA_IP_V4_SRC, InetAddr("2.2.2.2"))
+	nlh.PutU32(C.CTA_IP_V4_DST, InetAddr("1.1.1.1"))
 	nlh.NestEnd(nest2)
 
 	nest2 = nlh.NestStart(C.CTA_TUPLE_PROTO)
 	nlh.PutU8(C.CTA_PROTO_NUM, C.IPPROTO_TCP)
-	nlh.PutU16(C.CTA_PROTO_SRC_PORT, htons(1025))
-	nlh.PutU16(C.CTA_PROTO_DST_PORT, htons(i))
+	nlh.PutU16(C.CTA_PROTO_SRC_PORT, Htons(1025))
+	nlh.PutU16(C.CTA_PROTO_DST_PORT, Htons(i))
 	nlh.NestEnd(nest2)
 	nlh.NestEnd(nest1)
 
@@ -98,8 +67,8 @@ func put_msg(p unsafe.Pointer, i uint16, seq uint32) {
 	nlh.NestEnd(nest2)
 	nlh.NestEnd(nest1)
 
-	nlh.PutU32(C.CTA_STATUS, htonl(C.IPS_CONFIRMED))
-	nlh.PutU32(C.CTA_TIMEOUT, htonl(1000))
+	nlh.PutU32(C.CTA_STATUS, Htonl(C.IPS_CONFIRMED))
+	nlh.PutU32(C.CTA_TIMEOUT, Htonl(1000))
 }
 
 func cb_ctl(nlh *mnl.Nlmsghdr, msgtype uint16, data interface{}) (int, syscall.Errno) {
@@ -135,7 +104,7 @@ func send_batch(nl *mnl.SocketDescriptor, b *mnl.NlmsgBatchDescriptor, portid ui
 	var events [1]syscall.EpollEvent
 	rcv_buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE)
 
-	if err = nl.Sendto(b.HeadBytes()); err != nil {
+	if _, err := nl.Sendto(b.HeadBytes()); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_sendto: %s", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
@@ -174,7 +143,7 @@ func send_batch(nl *mnl.SocketDescriptor, b *mnl.NlmsgBatchDescriptor, portid ui
 			fmt.Fprintf(os.Stderr, "mnl_socket_recvfrom: %s\n", err)
 			os.Exit(C.EXIT_FAILURE)
 		}
-		ret = mnl.CbRun3(rcv_buf[:nrecv], 0, portid, nil, nil, cb_ctl)
+		_, err = mnl.CbRun3(rcv_buf[:nrecv], 0, portid, nil, nil, cb_ctl)
 	}
 }
 
