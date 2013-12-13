@@ -93,8 +93,22 @@ func SocketClose(nl *SocketDescriptor) error {
  * int mnl_socket_setsockopt(const struct mnl_socket *nl, int type,
  *			     void *buf, socklen_t len)
  */
-func SocketSetsockopt(nl *SocketDescriptor, optype int, buf []byte) error {
+func SocketSetsockopt(nl *SocketDescriptor, optype int, optval unsafe.Pointer, optlen Socklen_t) error {
+	_, err := C.mnl_socket_setsockopt((*[0]byte)(nl), C.int(optype), optval, C.socklen_t(optlen))
+	return err
+}
+func SocketSetsockoptBytes(nl *SocketDescriptor, optype int, buf []byte) error {
 	_, err := C.mnl_socket_setsockopt((*[0]byte)(nl), C.int(optype), unsafe.Pointer(&buf[0]), C.socklen_t(len(buf)))
+	return err
+}
+func SocketSetsockoptByte(nl *SocketDescriptor, opt int, value byte) error {
+	v := C.uint8_t(value)
+	_, err := C.mnl_socket_setsockopt((*[0]byte)(nl), C.int(opt), unsafe.Pointer(&v), 1)
+	return err
+}
+func SocketSetsockoptCint(nl *SocketDescriptor, opt int, value int) error {
+	v := C.int(value)
+	_, err := C.mnl_socket_setsockopt((*[0]byte)(nl), C.int(opt), unsafe.Pointer(&v), C.sizeof_int)
 	return err
 }
 

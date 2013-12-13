@@ -174,6 +174,9 @@ func (nl *SocketDescriptor) Sendto(buf []byte) (Ssize_t, error) { return SocketS
 func (nl *SocketDescriptor) SendNlmsg(nlh *Nlmsghdr) (Ssize_t, error) { return SocketSendNlmsg(nl, nlh) }
 func (nl *SocketDescriptor) Recvfrom(buf []byte) (Ssize_t, error) { return SocketRecvfrom(nl, buf) }
 func (nl *SocketDescriptor) Close() error { return SocketClose(nl) }
-func (nl *SocketDescriptor) Setsockopt(optype int, buf []byte) error { return SocketSetsockopt(nl, optype, buf) }
+func (nl *SocketDescriptor) Setsockopt(t int, v unsafe.Pointer, l Socklen_t) error { return SocketSetsockopt(nl, t, v, l) }
+func (nl *SocketDescriptor) SetsockoptBytes(optype int, buf []byte) error { return SocketSetsockoptBytes(nl, optype, buf) }
+func (nl *SocketDescriptor) SetsockoptByte(optype int, v byte) error { return SocketSetsockoptByte(nl, optype, v) }
+func (nl *SocketDescriptor) SetsockoptCint(optype int, v int) error { return SocketSetsockoptCint(nl, optype, v) }
 func (nl *SocketDescriptor) Sockopt(optype int, size Socklen_t) ([]byte, error) { return SocketGetsockopt(nl, optype, size) }
 
