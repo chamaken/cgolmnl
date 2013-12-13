@@ -2,14 +2,16 @@ package cgolmnl
 
 /*
 #cgo LDFLAGS: -lmnl
-#include <libmnl/libmnl.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <libmnl/libmnl.h>
 */
 import "C"
 
 import (
 	"unsafe"
 	"os"
+	"syscall"
 )
 
 /**
@@ -38,8 +40,9 @@ func NlmsgGetPayloadLen(nlh *Nlmsghdr) Size_t {
 func NlmsgPutHeader(buf unsafe.Pointer) *Nlmsghdr {
 	return (*Nlmsghdr)(unsafe.Pointer(C.mnl_nlmsg_put_header(buf)))
 }
-func NlmsgPutHeaderBytes(buf []byte) *Nlmsghdr {
-	return NlmsgPutHeader(unsafe.Pointer(&buf[0]))
+func NlmsgPutHeaderBytes(buf []byte) (*Nlmsghdr, error) {
+	if len(buf) < int(MNL_NLMSG_HDRLEN) { return nil, syscall.EINVAL }
+	return NlmsgPutHeader(unsafe.Pointer(&buf[0])), nil
 }
 
 /**
@@ -141,7 +144,9 @@ func NlmsgPortidOk(nlh *Nlmsghdr, portid uint32) bool {
  *		     size_t extra_header_size)
  */
 func NlmsgFprint(fd *os.File, data []byte, extra_header_size Size_t) {
-	C.mnl_nlmsg_fprintf(C.fdopen(C.int(fd.Fd()), C.CString("w")),
+	mode := C.CString("w")
+	defer C.free(unsafe.Pointer(mode))
+	C.mnl_nlmsg_fprintf(C.fdopen(C.int(fd.Fd()), mode),
 		unsafe.Pointer(&data[0]), C.size_t(len(data)), C.size_t(extra_header_size))
 }
 
