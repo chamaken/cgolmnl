@@ -7,6 +7,7 @@ import "C"
 import (
 	"unsafe"
 	"errors"
+	"os"
 )
 
 /*
@@ -124,6 +125,7 @@ func (nlh *Nlmsghdr) Next(size int) (*Nlmsghdr, int) { return NlmsgNext(nlh, siz
 func (nlh *Nlmsghdr) PayloadTail() unsafe.Pointer { return NlmsgGetPayloadTail(nlh) }
 func (nlh *Nlmsghdr) SeqOk(seq uint32) bool { return NlmsgSeqOk(nlh, seq) }
 func (nlh *Nlmsghdr) PortidOk(portid uint32) bool { return NlmsgPortidOk(nlh, portid) }
+func (nlh *Nlmsghdr) Fprint(fd *os.File, extra_header_size Size_t) { NlmsgFprintNlmsg(fd, nlh, extra_header_size) }
 func (b *NlmsgBatchDescriptor) Stop() { NlmsgBatchStop(b) }
 func (b *NlmsgBatchDescriptor) Next() bool { return NlmsgBatchNext(b) }
 func (b *NlmsgBatchDescriptor) Reset() { NlmsgBatchReset(b) }

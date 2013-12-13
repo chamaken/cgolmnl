@@ -143,11 +143,17 @@ func NlmsgPortidOk(nlh *Nlmsghdr, portid uint32) bool {
  * mnl_nlmsg_fprintf(FILE *fd, const void *data, size_t datalen,
  *		     size_t extra_header_size)
  */
-func NlmsgFprint(fd *os.File, data []byte, extra_header_size Size_t) {
+func NlmsgFprint(fd *os.File, data unsafe.Pointer, size Size_t, extra_header_size Size_t) {
 	mode := C.CString("w")
 	defer C.free(unsafe.Pointer(mode))
 	C.mnl_nlmsg_fprintf(C.fdopen(C.int(fd.Fd()), mode),
-		unsafe.Pointer(&data[0]), C.size_t(len(data)), C.size_t(extra_header_size))
+		data, C.size_t(size), C.size_t(extra_header_size))
+}
+func NlmsgFprintBytes(fd *os.File, data []byte, extra_header_size Size_t) {
+	NlmsgFprint(fd, unsafe.Pointer(&data[0]), Size_t(len(data)), extra_header_size)
+}
+func NlmsgFprintNlmsg(fd *os.File, nlh *Nlmsghdr, extra_header_size Size_t) {
+	NlmsgFprint(fd, unsafe.Pointer(nlh), Size_t(nlh.Len), extra_header_size)
 }
 
 /*
