@@ -124,7 +124,7 @@ func main() {
 	}
 
 	if ret < mnl.MNL_CB_STOP {
-		fmt.Fprintf(os.Stderr, "mnl_cb_run: %s", err)
+		fmt.Fprintf(os.Stderr, "mnl_cb_run: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
 }
