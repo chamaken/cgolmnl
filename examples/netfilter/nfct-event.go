@@ -18,42 +18,9 @@ import (
 	"net"
 	"os"
 	"syscall"
-	"time"
 	mnl "cgolmnl"
 	. "cgolmnl/inet"
 )
-
-func parse_counters_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
-	tb := data.(map[uint16]*mnl.Nlattr)
-	attr_type := attr.GetType()
-
-	if ret, _ := attr.TypeValid(C.CTA_COUNTERS_MAX); ret < 0 {
-		return mnl.MNL_CB_OK, 0
-	}
-
-	switch attr_type {
-	case C.CTA_COUNTERS_PACKETS: fallthrough
-	case C.CTA_COUNTERS_BYTES:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_U64); ret < 0 {
-			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
-			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
-		}
-	}
-	tb[attr_type] = attr
-	return mnl.MNL_CB_OK, 0
-}
-
-func print_counters(nest *mnl.Nlattr) {
-	tb := make(map[uint16]*mnl.Nlattr, C.CTA_COUNTERS_MAX + 1)
-
-	nest.ParseNested(parse_counters_cb, tb)
-	if tb[C.CTA_COUNTERS_PACKETS] != nil {
-		fmt.Printf("packets=%d ", Be64toh(tb[C.CTA_COUNTERS_PACKETS].U64()))
-	}
-	if tb[C.CTA_COUNTERS_BYTES] != nil {
-		fmt.Printf("bytes=%d ", Be64toh(tb[C.CTA_COUNTERS_BYTES].U64()))
-	}
-}
 
 func parse_ip_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	tb := data.(map[uint16]*mnl.Nlattr)
@@ -70,12 +37,6 @@ func parse_ip_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
-	case C.CTA_IP_V6_SRC: fallthrough
-	case C.CTA_IP_V6_DST:
-		if ret, err := attr.Validate2(mnl.MNL_TYPE_BINARY, net.IPv6len); ret < 0 {
-			fmt.Fprintf(os.Stderr, "mnl_attr_validate2: %s\n", err)
-			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
-		}
 	}
 	tb[attr_type] = attr
 	return mnl.MNL_CB_OK, 0
@@ -90,12 +51,6 @@ func print_ip(nest *mnl.Nlattr) {
 	}
 	if tb[C.CTA_IP_V4_DST] != nil {
 		fmt.Printf("dst=%s ", net.IP(tb[C.CTA_IP_V4_DST].PayloadBytes()))
-	}
-	if tb[C.CTA_IP_V6_SRC] != nil {
-		fmt.Printf("src=%s ", net.IP(tb[C.CTA_IP_V6_SRC].PayloadBytes()))
-	}
-	if tb[C.CTA_IP_V6_DST] != nil {
-		fmt.Printf("dst=%s ", net.IP(tb[C.CTA_IP_V6_DST].PayloadBytes()))
 	}
 }
 
@@ -165,6 +120,11 @@ func parse_tuple_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
+	case C.CTA_TUPLE_PROTO:
+		if ret, err := attr.Validate(mnl.MNL_TYPE_NESTED); ret < 0 {
+			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
+			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
+		}
 	}
 	tb[attr_type] = attr
 	return mnl.MNL_CB_OK, 0
@@ -191,10 +151,15 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	}
 
 	switch attr_type {
-	case C.CTA_TUPLE_ORIG: fallthrough
-	case C.CTA_COUNTERS_ORIG: fallthrough
-	case C.CTA_COUNTERS_REPLY:
+	case C.CTA_TUPLE_ORIG:
 		if ret, err := attr.Validate(mnl.MNL_TYPE_NESTED); ret < 0 {
+			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
+			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
+		}
+	case C.CTA_TIMEOUT:	fallthrough
+	case C.CTA_MARK:	fallthrough
+	case C.CTA_SECMARK:
+		if ret, err := attr.Validate(mnl.MNL_TYPE_U32); ret < 0 {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
@@ -207,29 +172,27 @@ func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 	tb := make(map[uint16]*mnl.Nlattr)
 	// nfg := (*Nfgenmsg)(nlh.Payload())
 
+	switch nlh.Type & 0xFF {
+	case C.IPCTNL_MSG_CT_NEW:
+		if nlh.Flags & (C.NLM_F_CREATE|C.NLM_F_EXCL) != 0 {
+			fmt.Printf("%9s ", "[NEW] ")
+		} else {
+			fmt.Printf("%9s ", "[UPDATE] ")
+		}
+	case C.IPCTNL_MSG_CT_DELETE:
+		fmt.Printf("%9s ", "[DESTROY] ")
+	}
+
 	nlh.Parse(SizeofNfgenmsg, data_attr_cb, tb)
 	if tb[C.CTA_TUPLE_ORIG] != nil {
 		print_tuple(tb[C.CTA_TUPLE_ORIG])
 	}
-
 	if tb[C.CTA_MARK] != nil {
 		fmt.Printf("mark=%d ", Ntohl(tb[C.CTA_MARK].U32()))
 	}
-
 	if tb[C.CTA_SECMARK] != nil {
 		fmt.Printf("secmark=%d ", Ntohl(tb[C.CTA_SECMARK].U32()))
 	}
-
-	if tb[C.CTA_COUNTERS_ORIG] != nil {
-		fmt.Printf("original ")
-		print_counters(tb[C.CTA_COUNTERS_ORIG])
-	}
-
-	if tb[C.CTA_COUNTERS_REPLY] != nil {
-		fmt.Printf("reply ")
-		print_counters(tb[C.CTA_COUNTERS_REPLY])
-	}
-
 	fmt.Println()
 	return mnl.MNL_CB_OK, 0
 }
@@ -242,37 +205,23 @@ func main() {
 	}
 	defer nl.Close()
 
-	if err := nl.Bind(0, mnl.MNL_SOCKET_AUTOPID); err != nil {
+	if err := nl.Bind(C.NF_NETLINK_CONNTRACK_NEW |
+		C.NF_NETLINK_CONNTRACK_UPDATE |
+		C.NF_NETLINK_CONNTRACK_DESTROY,
+		mnl.MNL_SOCKET_AUTOPID); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_bind: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
 
 	buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE)
-	nlh, _ := mnl.NlmsgPutHeaderBytes(buf)
-	nlh.Type = (C.NFNL_SUBSYS_CTNETLINK << 8) | C.IPCTNL_MSG_CT_GET
-	nlh.Flags = C.NLM_F_REQUEST | C.NLM_F_DUMP
-	seq := uint32(time.Now().Unix())
-	nlh.Seq = seq
-
-	nfh := (*Nfgenmsg)(nlh.PutExtraHeader(SizeofNfgenmsg))
-	nfh.Nfgen_family = C.AF_INET
-	nfh.Version = C.NFNETLINK_V0
-	nfh.Res_id = 0
-
-	if _, err := nl.SendNlmsg(nlh); err != nil {
-		fmt.Fprintf(os.Stderr, "mnl_socket_sendto: %s\n", err)
-		os.Exit(C.EXIT_FAILURE)
-	}
-	portid := nl.Portid()
-
 	ret := mnl.MNL_CB_OK
-	for ret > mnl.MNL_CB_STOP {
+	for ret >= mnl.MNL_CB_STOP {
 		nrcv, err := nl.Recvfrom(buf)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_socket_recvfrom: %s\n", err)
 			os.Exit(C.EXIT_FAILURE)
 		}
-		ret, err = mnl.CbRun(buf[:nrcv], seq, portid, data_cb, nil)
+		ret, err = mnl.CbRun(buf[:nrcv], 0, 0, data_cb, nil)
 	}
 
 	if ret < mnl.MNL_CB_STOP {
