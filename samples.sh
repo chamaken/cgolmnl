@@ -16,7 +16,11 @@ case "$cmd" in
 		    continue
 		fi
 		echo "building ${g}..."
-		go build $g ztypes_${GOOSARCH}.go
+		if [ -f ztypes_${GOOSARCH}.go ]; then
+		    go build $g ztypes_${GOOSARCH}.go
+		else
+		    go build $g
+		fi
 	    done
 	    cd $cwd
 	done
