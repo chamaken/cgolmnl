@@ -3,9 +3,7 @@ package main
 /*
 #include <stdlib.h>
 #include <arpa/inet.h>
-#include <linux/if.h>
-#include <linux/if_link.h>
-#include <linux/rtnetlink.h>
+#include <linux/netlink.h>
 
 #include <linux/netfilter/nfnetlink.h>
 #include <linux/netfilter/nfnetlink_queue.h>
@@ -19,7 +17,7 @@ import (
 	"strconv"
 	"syscall"
 	mnl "cgolmnl"
-	. "cgolmnl/inet"
+	"cgolmnl/inet"
 )
 
 func parse_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -65,9 +63,9 @@ func queue_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 	nlh.Parse(SizeofNfgenmsg, parse_attr_cb, tb)
 	if tb[C.NFQA_PACKET_HDR] != nil {
 		ph = (*NfqnlMsgPacketHdr)(tb[C.NFQA_PACKET_HDR].Payload())
-		id = Ntohl(ph.Packet_id)
+		id = inet.Ntohl(ph.Packet_id)
 
-		fmt.Printf("packet received (id=%d, hw=0x%04x hook=%d)\n", id, Ntohs(ph.Hw_protocol), ph.Hook)
+		fmt.Printf("packet received (id=%d, hw=0x%04x hook=%d)\n", id, inet.Ntohs(ph.Hw_protocol), ph.Hook)
 	}
 
 	return mnl.MNL_CB_OK + int(id), 0
@@ -87,7 +85,7 @@ func nfq_build_cfg_pf_request(buf []byte, command uint8) *mnl.Nlmsghdr {
 	nfg.Nfgen_family = C.AF_UNSPEC
 	nfg.Version = C.NFNETLINK_V0
 
-	cmd := &NfqnlMsgConfigCmd{Command: command, Pf: Htons(C.AF_INET)}
+	cmd := &NfqnlMsgConfigCmd{Command: command, Pf: inet.Htons(C.AF_INET)}
 	nlh.PutData(C.NFQA_CFG_CMD, cmd)
 
 	return nlh
@@ -106,9 +104,9 @@ func nfq_build_cfg_request(buf []byte, command uint8, queue_num int) *mnl.Nlmsgh
 	nfg := (*Nfgenmsg)(nlh.PutExtraHeader(SizeofNfgenmsg))
 	nfg.Nfgen_family = C.AF_UNSPEC
 	nfg.Version = C.NFNETLINK_V0
-	nfg.Res_id = Htons(uint16(queue_num))
+	nfg.Res_id = inet.Htons(uint16(queue_num))
 
-	cmd := &NfqnlMsgConfigCmd{ Command: command, Pf: Htons(C.AF_INET) }
+	cmd := &NfqnlMsgConfigCmd{ Command: command, Pf: inet.Htons(C.AF_INET) }
 	nlh.PutData(C.NFQA_CFG_CMD, cmd)
 
 	return nlh
@@ -126,9 +124,9 @@ func nfq_build_cfg_params(buf []byte, copy_mode uint8, copy_range, queue_num int
 	nfg := (*Nfgenmsg)(nlh.PutExtraHeader(SizeofNfgenmsg))
 	nfg.Nfgen_family = C.AF_UNSPEC
 	nfg.Version = C.NFNETLINK_V0
-	nfg.Res_id = Htons(uint16(queue_num))
+	nfg.Res_id = inet.Htons(uint16(queue_num))
 
-	params := &NfqnlMsgConfigParams{ Range: Htonl(uint32(copy_range)), Mode: copy_mode }
+	params := &NfqnlMsgConfigParams{ Range: inet.Htonl(uint32(copy_range)), Mode: copy_mode }
 	nlh.PutData(C.NFQA_CFG_PARAMS, params)
 
 	return nlh
@@ -141,9 +139,9 @@ func nfq_build_verdict(buf [] byte, id, queue_num, verd int) *mnl.Nlmsghdr {
 	nfg := (*Nfgenmsg)(nlh.PutExtraHeader(SizeofNfgenmsg))
 	nfg.Nfgen_family = C.AF_UNSPEC
 	nfg.Version = C.NFNETLINK_V0
-	nfg.Res_id = Htons(uint16(queue_num))
+	nfg.Res_id = inet.Htons(uint16(queue_num))
 
-	vh := &NfqnlMsgVerdictHdr{ Verdict: Htonl(uint32(verd)), Id: Htonl(uint32(id)) }
+	vh := &NfqnlMsgVerdictHdr{ Verdict: inet.Htonl(uint32(verd)), Id: inet.Htonl(uint32(id)) }
 	nlh.PutData(C.NFQA_VERDICT_HDR, vh)
 
 	return nlh

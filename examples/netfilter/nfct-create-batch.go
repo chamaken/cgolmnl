@@ -3,9 +3,7 @@ package main
 /*
 #include <stdlib.h>
 #include <arpa/inet.h>
-#include <linux/if.h>
-#include <linux/if_link.h>
-#include <linux/rtnetlink.h>
+#include <linux/netlink.h>
 
 #include <linux/netfilter/nfnetlink.h>
 #include <linux/netfilter/nfnetlink_conntrack.h>
@@ -21,7 +19,7 @@ import (
 	"time"
 	"unsafe"
 	mnl "cgolmnl"
-	. "cgolmnl/inet"
+	"cgolmnl/inet"
 )
 
 func put_msg(p unsafe.Pointer, i uint16, seq uint32) {
@@ -37,27 +35,27 @@ func put_msg(p unsafe.Pointer, i uint16, seq uint32) {
 
 	nest1 := nlh.NestStart(C.CTA_TUPLE_ORIG)
 	nest2 := nlh.NestStart(C.CTA_TUPLE_IP)
-	nlh.PutU32(C.CTA_IP_V4_SRC, InetAddr("1.1.1.1"))
-	nlh.PutU32(C.CTA_IP_V4_DST, InetAddr("2.2.2.2"))
+	nlh.PutU32(C.CTA_IP_V4_SRC, inet.InetAddr("1.1.1.1"))
+	nlh.PutU32(C.CTA_IP_V4_DST, inet.InetAddr("2.2.2.2"))
 	nlh.NestEnd(nest2)
 
 	nest2 = nlh.NestStart(C.CTA_TUPLE_PROTO)
 	nlh.PutU8(C.CTA_PROTO_NUM, C.IPPROTO_TCP)
-	nlh.PutU16(C.CTA_PROTO_SRC_PORT, Htons(i))
-	nlh.PutU16(C.CTA_PROTO_DST_PORT, Htons(1025))
+	nlh.PutU16(C.CTA_PROTO_SRC_PORT, inet.Htons(i))
+	nlh.PutU16(C.CTA_PROTO_DST_PORT, inet.Htons(1025))
 	nlh.NestEnd(nest2)
 	nlh.NestEnd(nest1)
 
 	nest1 = nlh.NestStart(C.CTA_TUPLE_REPLY)
 	nest2 = nlh.NestStart(C.CTA_TUPLE_IP)
-	nlh.PutU32(C.CTA_IP_V4_SRC, InetAddr("2.2.2.2"))
-	nlh.PutU32(C.CTA_IP_V4_DST, InetAddr("1.1.1.1"))
+	nlh.PutU32(C.CTA_IP_V4_SRC, inet.InetAddr("2.2.2.2"))
+	nlh.PutU32(C.CTA_IP_V4_DST, inet.InetAddr("1.1.1.1"))
 	nlh.NestEnd(nest2)
 
 	nest2 = nlh.NestStart(C.CTA_TUPLE_PROTO)
 	nlh.PutU8(C.CTA_PROTO_NUM, C.IPPROTO_TCP)
-	nlh.PutU16(C.CTA_PROTO_SRC_PORT, Htons(1025))
-	nlh.PutU16(C.CTA_PROTO_DST_PORT, Htons(i))
+	nlh.PutU16(C.CTA_PROTO_SRC_PORT, inet.Htons(1025))
+	nlh.PutU16(C.CTA_PROTO_DST_PORT, inet.Htons(i))
 	nlh.NestEnd(nest2)
 	nlh.NestEnd(nest1)
 
@@ -67,8 +65,8 @@ func put_msg(p unsafe.Pointer, i uint16, seq uint32) {
 	nlh.NestEnd(nest2)
 	nlh.NestEnd(nest1)
 
-	nlh.PutU32(C.CTA_STATUS, Htonl(C.IPS_CONFIRMED))
-	nlh.PutU32(C.CTA_TIMEOUT, Htonl(1000))
+	nlh.PutU32(C.CTA_STATUS, inet.Htonl(C.IPS_CONFIRMED))
+	nlh.PutU32(C.CTA_TIMEOUT, inet.Htonl(1000))
 }
 
 func cb_ctl(nlh *mnl.Nlmsghdr, msgtype uint16, data interface{}) (int, syscall.Errno) {

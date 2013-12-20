@@ -1,8 +1,6 @@
 package inet
 
 /*
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <stdlib.h>
@@ -56,7 +54,7 @@ func InetNtop(family int, src unsafe.Pointer) string {
 	case C.AF_INET6:
 		return net.IP((*(*[net.IPv6len]byte)(src))[:]).String()
 	default:
-		return ""
+		return "(unknown family)"
 	}
 }
 

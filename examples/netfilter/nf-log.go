@@ -2,10 +2,8 @@ package main
 
 /*
 #include <stdlib.h>
-#include <arpa/inet.h>
-#include <linux/if.h>
-#include <linux/if_link.h>
-#include <linux/rtnetlink.h>
+#include <sys/socket.h>
+#include <linux/netlink.h>
 
 #include <linux/netfilter/nfnetlink.h>
 #include <linux/netfilter/nfnetlink_log.h>
@@ -18,7 +16,7 @@ import (
 	"strconv"
 	"syscall"
 	mnl "cgolmnl"
-	. "cgolmnl/inet"
+	"cgolmnl/inet"
 )
 
 func parse_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -74,11 +72,11 @@ func log_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 		prefix = tb[C.NFULA_PREFIX].Str()
 	}
 	if tb[C.NFULA_MARK] != nil {
-		mark = Ntohl(tb[C.NFULA_MARK].U32())
+		mark = inet.Ntohl(tb[C.NFULA_MARK].U32())
 	}
 
 	fmt.Printf("log received (prefix=\"%s\" hw=0x%04x hook=%d mark=%d)\n",
-		prefix, Ntohs(ph.Protocol), ph.Hook, mark)
+		prefix, inet.Ntohs(ph.Protocol), ph.Hook, mark)
 
 	return mnl.MNL_CB_OK, 0
 }
@@ -116,7 +114,7 @@ func nflog_build_cfg_request(buf []byte, command uint8, qnum int) *mnl.Nlmsghdr 
 	nfg := (*Nfgenmsg)(nlh.PutExtraHeader(SizeofNfgenmsg))
 	nfg.Nfgen_family = C.AF_INET
 	nfg.Version = C.NFNETLINK_V0
-	nfg.Res_id = Htons(uint16(qnum))
+	nfg.Res_id = inet.Htons(uint16(qnum))
 
 	cmd := &NfulnlMsgConfigCmd{Command: command}
 	nlh.PutData(C.NFULA_CFG_CMD, cmd)
@@ -137,9 +135,9 @@ func nflog_build_cfg_params(buf []byte, copy_mode uint8, copy_range, qnum int) *
 	nfg := (*Nfgenmsg)(nlh.PutExtraHeader(SizeofNfgenmsg))
 	nfg.Nfgen_family = C.AF_UNSPEC
 	nfg.Version = C.NFNETLINK_V0
-	nfg.Res_id = Htons(uint16(qnum))
+	nfg.Res_id = inet.Htons(uint16(qnum))
 
-	params := &NfulnlMsgConfigMode{	Range: Htonl(uint32(copy_range)), Mode: copy_mode }
+	params := &NfulnlMsgConfigMode{	Range: inet.Htonl(uint32(copy_range)), Mode: copy_mode }
 	nlh.PutData(C.NFULA_CFG_MODE, params)
 
 	return nlh

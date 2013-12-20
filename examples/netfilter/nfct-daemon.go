@@ -4,9 +4,7 @@ package main
 #include <unistd.h>
 #include <stdlib.h>
 #include <arpa/inet.h>
-#include <linux/if.h>
-#include <linux/if_link.h>
-#include <linux/rtnetlink.h>
+#include <linux/netlink.h>
 
 #include <linux/netfilter/nfnetlink.h>
 #include <linux/netfilter/nfnetlink_conntrack.h>
@@ -21,7 +19,7 @@ import (
 	"syscall"
 	"unsafe"
 	mnl "cgolmnl"
-	. "cgolmnl/inet"
+	"cgolmnl/inet"
 )
 
 type Nstats struct {
@@ -56,10 +54,10 @@ func parse_counters(nest *mnl.Nlattr, ns *Nstats) {
 
 	nest.ParseNested(parse_counters_cb, tb)
 	if tb[C.CTA_COUNTERS_PACKETS] != nil {
-		ns.Pkts += Be64toh(tb[C.CTA_COUNTERS_PACKETS].U64())
+		ns.Pkts += inet.Be64toh(tb[C.CTA_COUNTERS_PACKETS].U64())
 	}
 	if tb[C.CTA_COUNTERS_BYTES] != nil {
-		ns.Bytes += Be64toh(tb[C.CTA_COUNTERS_BYTES].U64())
+		ns.Bytes += inet.Be64toh(tb[C.CTA_COUNTERS_BYTES].U64())
 	}
 }
 
@@ -268,8 +266,8 @@ func main() {
 	nfh.Res_id = 0
 
 	// Filter by mark: We only want to dump entries whose mark is zero
-	nlh.PutU32(C.CTA_MARK, Htonl(0))
-	nlh.PutU32(C.CTA_MARK_MASK, Htonl(0xffffffff))
+	nlh.PutU32(C.CTA_MARK, inet.Htonl(0))
+	nlh.PutU32(C.CTA_MARK_MASK, inet.Htonl(0xffffffff))
 
 	// prepare for epoll
 	epfd, err := syscall.EpollCreate1(0)

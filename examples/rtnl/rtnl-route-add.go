@@ -2,20 +2,19 @@ package main
 
 /*
 #include <stdlib.h>
-#include <arpa/inet.h>
-#include <linux/if.h>
-#include <linux/if_link.h>
+#include <sys/socket.h>
 #include <linux/rtnetlink.h>
 */
 import "C"
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"strconv"
 	"time"
 	mnl "cgolmnl"
-	. "cgolmnl/inet"
+	"cgolmnl/inet"
 )
 
 func main() {
@@ -26,17 +25,36 @@ func main() {
 		os.Exit(C.EXIT_FAILURE)
 	}
 
-	iface, err := IfNametoindex(os.Args[1])
+	iface, err := inet.IfNametoindex(os.Args[1])
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "if_nametoindex: %s", err)
+		fmt.Fprintf(os.Stderr, "if_nametoindex: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
 
-	var dst, gw IPAddr
-	dst.UnmarshalText(([]byte)(os.Args[2]))
-	prefix, _ := strconv.Atoi(os.Args[3])
+	family := C.AF_INET
+	var dst, gw net.IP
+
+	dst = net.ParseIP(os.Args[2])
+	if dst == nil {
+		fmt.Fprintf(os.Stderr, "ParseIP - invalid dst IP: %s\n", os.Args[2])
+		os.Exit(C.EXIT_FAILURE)
+	}
+	if dst.To4() == nil {
+		family = C.AF_INET6
+	}
+
+	prefix, err := strconv.Atoi(os.Args[3])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Atoi - invalid mask num: %s\n", os.Args[3])
+		os.Exit(C.EXIT_FAILURE)
+	}
+
 	if len(os.Args) == 5 {
-		gw.UnmarshalText(([]byte)(os.Args[4]))
+		gw = net.ParseIP(os.Args[4])
+		if gw == nil || (gw.To4() == nil && family == C.AF_INET) {
+			fmt.Fprintf(os.Stderr, "ParseIP - invalid gw IP: %s\n", os.Args[5])
+			os.Exit(C.EXIT_FAILURE)
+		}
 	}
 
 	buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE)
@@ -51,11 +69,7 @@ func main() {
 	nlh.Seq = seq
 
 	rtm := (*Rtmsg)(nlh.PutExtraHeader(SizeofRtmsg))
-	if len(dst) == 4 {
-		rtm.Family = C.AF_INET
-	} else if len(dst) == 6 {
-		rtm.Family = C.AF_INET6
-	}
+	rtm.Family = uint8(family)
 	rtm.Dst_len = uint8(prefix)
 	rtm.Src_len = 0
 	rtm.Tos = 0
@@ -69,12 +83,21 @@ func main() {
 	}
 	rtm.Flags = 0
 
-	mb, _ := dst.MarshalBinary()
-	nlh.PutBytes(C.RTA_DST, mb)
+	var binaddr []byte
+	if family == C.AF_INET {
+		binaddr = ([]byte)(dst.To4())
+	} else {
+		binaddr = ([]byte)(dst.To16())
+	}
+	nlh.PutBytes(C.RTA_DST, binaddr)
 	nlh.PutU32(C.RTA_OIF, uint32(iface))
 	if len(os.Args) == 5 {
-		mb, _ = gw.MarshalBinary()
-		nlh.PutBytes(C.RTA_GATEWAY, mb)
+		if family == C.AF_INET {
+			binaddr = ([]byte)(gw.To4())
+		} else {
+			binaddr = ([]byte)(gw.To16())
+		}
+		nlh.PutBytes(C.RTA_GATEWAY, binaddr)
 	}
 
 	nl, err := mnl.SocketOpen(C.NETLINK_ROUTE)
@@ -102,7 +125,7 @@ func main() {
 
 	ret, err := mnl.CbRun(buf[:nrcv], seq, portid, nil, nil)
 	if ret < mnl.MNL_CB_STOP {
-		fmt.Fprintf(os.Stderr, "mnl_cb_run: %s", err)
+		fmt.Fprintf(os.Stderr, "mnl_cb_run: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
 }

@@ -2,9 +2,7 @@ package main
 
 /*
 #include <stdlib.h>
-#include <arpa/inet.h>
-#include <linux/if.h>
-#include <linux/if_link.h>
+#include <sys/socket.h>
 #include <linux/rtnetlink.h>
 */
 import "C"
@@ -14,7 +12,7 @@ import (
 	"os"
 	"syscall"
 	mnl "cgolmnl"
-	. "cgolmnl/inet"
+	"cgolmnl/inet"
 )
 
 func data_attr_cb2(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -38,11 +36,11 @@ func attributes_show_ipv4(tb map[uint16]*mnl.Nlattr) {
 		fmt.Printf("table=%d ", tb[C.RTA_TABLE].U32())
 	}
 	if tb[C.RTA_DST] != nil {
-		addr := InetNtoa(tb[C.RTA_DST].Payload())
+		addr := inet.InetNtoa(tb[C.RTA_DST].Payload())
 		fmt.Printf("dst=%s ", addr)
 	}
 	if tb[C.RTA_SRC] != nil {
-		addr := InetNtoa(tb[C.RTA_DST].Payload())
+		addr := inet.InetNtoa(tb[C.RTA_DST].Payload())
 		fmt.Printf("src=%s ", addr)
 	}
 	if tb[C.RTA_OIF] != nil {
@@ -52,11 +50,11 @@ func attributes_show_ipv4(tb map[uint16]*mnl.Nlattr) {
 		fmt.Printf("flow=%d ", tb[C.RTA_FLOW].U32())
 	}
 	if tb[C.RTA_PREFSRC] != nil {
-		addr := InetNtoa(tb[C.RTA_PREFSRC].Payload())
+		addr := inet.InetNtoa(tb[C.RTA_PREFSRC].Payload())
 		fmt.Printf("prefsrc=%s ", addr)
 	}
 	if tb[C.RTA_GATEWAY] != nil {
-		addr := InetNtoa(tb[C.RTA_GATEWAY].Payload())
+		addr := inet.InetNtoa(tb[C.RTA_GATEWAY].Payload())
 		fmt.Printf("gw=%s ", addr)
 	}
 	if tb[C.RTA_PRIORITY] != nil {
@@ -79,10 +77,10 @@ func attributes_show_ipv6(tb map[uint16]*mnl.Nlattr) {
 		fmt.Printf("table=%d ", tb[C.RTA_TABLE].U32())
 	}
 	if tb[C.RTA_DST] != nil {
-		fmt.Printf("dst=%s ", Inet6Ntoa(tb[C.RTA_DST].Payload()))
+		fmt.Printf("dst=%s ", inet.Inet6Ntoa(tb[C.RTA_DST].Payload()))
 	}
 	if tb[C.RTA_SRC] != nil {
-		fmt.Printf("src=%s ", Inet6Ntoa(tb[C.RTA_SRC].Payload()))
+		fmt.Printf("src=%s ", inet.Inet6Ntoa(tb[C.RTA_SRC].Payload()))
 	}
 	if tb[C.RTA_OIF] != nil {
 		fmt.Printf("oif=%u ", tb[C.RTA_OIF].U32())
@@ -91,10 +89,10 @@ func attributes_show_ipv6(tb map[uint16]*mnl.Nlattr) {
 		fmt.Printf("flow=%u ", tb[C.RTA_FLOW].U32())
 	}
 	if tb[C.RTA_PREFSRC] != nil {
-		fmt.Printf("prefsrc=%s ", Inet6Ntoa(tb[C.RTA_PREFSRC].Payload()))
+		fmt.Printf("prefsrc=%s ", inet.Inet6Ntoa(tb[C.RTA_PREFSRC].Payload()))
 	}
 	if tb[C.RTA_GATEWAY] != nil {
-		fmt.Printf("gw=%s ", Inet6Ntoa(tb[C.RTA_GATEWAY].Payload()))
+		fmt.Printf("gw=%s ", inet.Inet6Ntoa(tb[C.RTA_GATEWAY].Payload()))
 	}
 	if tb[C.RTA_PRIORITY] != nil {
 		fmt.Printf("prio=%u ", tb[C.RTA_PRIORITY].U32())

@@ -1,12 +1,8 @@
 package main
 
 /*
-#include <unistd.h>
 #include <stdlib.h>
-#include <arpa/inet.h>
-#include <linux/if.h>
-#include <linux/if_link.h>
-#include <linux/rtnetlink.h>
+#include <linux/netlink.h>
 
 #include <linux/netfilter/nfnetlink.h>
 #include <linux/netfilter/nfnetlink_conntrack.h>
@@ -19,7 +15,7 @@ import (
 	"os"
 	"syscall"
 	mnl "cgolmnl"
-	. "cgolmnl/inet"
+	"cgolmnl/inet"
 )
 
 func parse_ip_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -90,13 +86,13 @@ func print_proto(nest *mnl.Nlattr) {
 		fmt.Printf("proto=%d ", tb[C.CTA_PROTO_NUM].U8())
 	}
 	if tb[C.CTA_PROTO_SRC_PORT] != nil {
-		fmt.Printf("sport=%d ", Ntohs(tb[C.CTA_PROTO_SRC_PORT].U16()))
+		fmt.Printf("sport=%d ", inet.Ntohs(tb[C.CTA_PROTO_SRC_PORT].U16()))
 	}
 	if tb[C.CTA_PROTO_DST_PORT] != nil {
-		fmt.Printf("dport=%d ", Ntohs(tb[C.CTA_PROTO_SRC_PORT].U16()))
+		fmt.Printf("dport=%d ", inet.Ntohs(tb[C.CTA_PROTO_SRC_PORT].U16()))
 	}
 	if tb[C.CTA_PROTO_ICMP_ID] != nil {
-		fmt.Printf("id=%d ", Ntohs(tb[C.CTA_PROTO_ICMP_ID].U16()))
+		fmt.Printf("id=%d ", inet.Ntohs(tb[C.CTA_PROTO_ICMP_ID].U16()))
 	}
 	if tb[C.CTA_PROTO_ICMP_TYPE] != nil {
 		fmt.Printf("type=%d ", tb[C.CTA_PROTO_ICMP_TYPE].U8())
@@ -188,10 +184,10 @@ func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 		print_tuple(tb[C.CTA_TUPLE_ORIG])
 	}
 	if tb[C.CTA_MARK] != nil {
-		fmt.Printf("mark=%d ", Ntohl(tb[C.CTA_MARK].U32()))
+		fmt.Printf("mark=%d ", inet.Ntohl(tb[C.CTA_MARK].U32()))
 	}
 	if tb[C.CTA_SECMARK] != nil {
-		fmt.Printf("secmark=%d ", Ntohl(tb[C.CTA_SECMARK].U32()))
+		fmt.Printf("secmark=%d ", inet.Ntohl(tb[C.CTA_SECMARK].U32()))
 	}
 	fmt.Println()
 	return mnl.MNL_CB_OK, 0

@@ -2,9 +2,8 @@ package main
 
 /*
 #include <stdlib.h>
-#include <arpa/inet.h>
+#include <sys/socket.h>
 #include <linux/if.h>
-#include <linux/if_link.h>
 #include <linux/rtnetlink.h>
 */
 import "C"

@@ -2,9 +2,7 @@ package main
 
 /*
 #include <stdlib.h>
-#include <arpa/inet.h>
-#include <linux/if.h>
-#include <linux/if_link.h>
+#include <sys/socket.h>
 #include <linux/rtnetlink.h>
 */
 import "C"
@@ -15,7 +13,7 @@ import (
 	"syscall"
 	"time"
 	mnl "cgolmnl"
-	. "cgolmnl/inet"
+	"cgolmnl/inet"
 )
 
 func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -46,11 +44,7 @@ func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 	nlh.Parse(SizeofIfaddrmsg, data_attr_cb, tb)
 	fmt.Printf("addr=")
 	if tb[C.IFA_ADDRESS] != nil {
-		if s, err := InetNtop(int(ifa.Family), tb[C.IFA_ADDRESS].Payload()); err != nil {
-			fmt.Fprintf(os.Stderr, "InetNtop: %s\n", err)
-		} else {
-			fmt.Printf("%s ", s)
-		}
+		fmt.Printf("%s ", inet.InetNtop(int(ifa.Family), tb[C.IFA_ADDRESS].Payload()))
 	}
 	fmt.Printf("scope=")
 	switch ifa.Scope {
@@ -95,7 +89,7 @@ func main() {
 		rt.Family = C.AF_INET6
 	}
 
-	if nl, err := mnl.SocketOpen(C.NETLINK_ROUTE)
+	nl, err := mnl.SocketOpen(C.NETLINK_ROUTE)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_open: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
