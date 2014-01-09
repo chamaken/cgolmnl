@@ -31,6 +31,9 @@ type MnlCtlCb func(*Nlmsghdr, uint16, interface{}) (int, syscall.Errno)
 func GoCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 	args := *(*[3]unsafe.Pointer)(argp)
 	cb := *(*MnlCb)(args[1])
+	if cb == nil {
+		return MNL_CB_OK
+	}
 	data := *(*interface{})(args[2])
 	ret, err := cb((*Nlmsghdr)(unsafe.Pointer(nlh)), data) // returns (int, syscall.Errno)
 	if err != 0 {
