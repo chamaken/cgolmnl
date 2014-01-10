@@ -22,8 +22,8 @@ const (
 	MNL_RING_TX MnlRingTypes = C.MNL_RING_TX
 )
 
-func RingMsghdr(hdr *NlMmapHdr) *Nlmsghdr {
-	return (*Nlmsghdr)(C.mnl_ring_msghdr(unsafe.Pointer(hdr)))
+func RingMsghdr(hdr *NlMmapHdr) []byte {
+	return SharedBytes(C.mnl_ring_msghdr(unsafe.Pointer(hdr)), int(hdr.Len))
 }
 
 /**
