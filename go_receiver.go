@@ -128,14 +128,14 @@ func (nlh *Nlmsghdr) PayloadTail() unsafe.Pointer { return NlmsgGetPayloadTail(n
 func (nlh *Nlmsghdr) SeqOk(seq uint32) bool { return NlmsgSeqOk(nlh, seq) }
 func (nlh *Nlmsghdr) PortidOk(portid uint32) bool { return NlmsgPortidOk(nlh, portid) }
 func (nlh *Nlmsghdr) Fprint(fd *os.File, extra_header_size Size_t) { NlmsgFprintNlmsg(fd, nlh, extra_header_size) }
-func (b *NlmsgBatchDescriptor) Stop() { NlmsgBatchStop(b) }
-func (b *NlmsgBatchDescriptor) Next() bool { return NlmsgBatchNext(b) }
-func (b *NlmsgBatchDescriptor) Reset() { NlmsgBatchReset(b) }
-func (b *NlmsgBatchDescriptor) Size() Size_t { return NlmsgBatchSize(b) }
-func (b *NlmsgBatchDescriptor) Head() unsafe.Pointer { return NlmsgBatchHead(b) }
-func (b *NlmsgBatchDescriptor) HeadBytes() []byte { return NlmsgBatchHeadBytes(b) }
-func (b *NlmsgBatchDescriptor) Current() unsafe.Pointer { return NlmsgBatchCurrent(b) }
-func (b *NlmsgBatchDescriptor) IsEmpty() bool { return NlmsgBatchIsEmpty(b) }
+func (b *MnlNlmsgBatch) Stop() { NlmsgBatchStop(b) }
+func (b *MnlNlmsgBatch) Next() bool { return NlmsgBatchNext(b) }
+func (b *MnlNlmsgBatch) Reset() { NlmsgBatchReset(b) }
+func (b *MnlNlmsgBatch) Size() Size_t { return NlmsgBatchSize(b) }
+func (b *MnlNlmsgBatch) Head() unsafe.Pointer { return NlmsgBatchHead(b) }
+func (b *MnlNlmsgBatch) HeadBytes() []byte { return NlmsgBatchHeadBytes(b) }
+func (b *MnlNlmsgBatch) Current() unsafe.Pointer { return NlmsgBatchCurrent(b) }
+func (b *MnlNlmsgBatch) IsEmpty() bool { return NlmsgBatchIsEmpty(b) }
 
 // helper function
 func NewNlmsghdr(size int) (*Nlmsghdr, error) {
@@ -169,16 +169,16 @@ func PutNewNlmsghdr(size int) (*Nlmsghdr, error) {
 /*
  * socket.go
  */
-func (nl *SocketDescriptor) Fd() int { return SocketGetFd(nl) }
-func (nl *SocketDescriptor) Portid() uint32 { return SocketGetPortid(nl) }
-func (nl *SocketDescriptor) Bind(groups uint, pid Pid_t) error { return SocketBind(nl, groups, pid) }
-func (nl *SocketDescriptor) Sendto(buf []byte) (Ssize_t, error) { return SocketSendto(nl, buf) }
-func (nl *SocketDescriptor) SendNlmsg(nlh *Nlmsghdr) (Ssize_t, error) { return SocketSendNlmsg(nl, nlh) }
-func (nl *SocketDescriptor) Recvfrom(buf []byte) (Ssize_t, error) { return SocketRecvfrom(nl, buf) }
-func (nl *SocketDescriptor) Close() error { return SocketClose(nl) }
-func (nl *SocketDescriptor) Setsockopt(t int, v unsafe.Pointer, l Socklen_t) error { return SocketSetsockopt(nl, t, v, l) }
-func (nl *SocketDescriptor) SetsockoptBytes(optype int, buf []byte) error { return SocketSetsockoptBytes(nl, optype, buf) }
-func (nl *SocketDescriptor) SetsockoptByte(optype int, v byte) error { return SocketSetsockoptByte(nl, optype, v) }
-func (nl *SocketDescriptor) SetsockoptCint(optype int, v int) error { return SocketSetsockoptCint(nl, optype, v) }
-func (nl *SocketDescriptor) Sockopt(optype int, size Socklen_t) ([]byte, error) { return SocketGetsockopt(nl, optype, size) }
+func (nl *MnlSocket) Fd() int { return SocketGetFd(nl) }
+func (nl *MnlSocket) Portid() uint32 { return SocketGetPortid(nl) }
+func (nl *MnlSocket) Bind(groups uint, pid Pid_t) error { return SocketBind(nl, groups, pid) }
+func (nl *MnlSocket) Sendto(buf []byte) (Ssize_t, error) { return SocketSendto(nl, buf) }
+func (nl *MnlSocket) SendNlmsg(nlh *Nlmsghdr) (Ssize_t, error) { return SocketSendNlmsg(nl, nlh) }
+func (nl *MnlSocket) Recvfrom(buf []byte) (Ssize_t, error) { return SocketRecvfrom(nl, buf) }
+func (nl *MnlSocket) Close() error { return SocketClose(nl) }
+func (nl *MnlSocket) Setsockopt(t int, v unsafe.Pointer, l Socklen_t) error { return SocketSetsockopt(nl, t, v, l) }
+func (nl *MnlSocket) SetsockoptBytes(optype int, buf []byte) error { return SocketSetsockoptBytes(nl, optype, buf) }
+func (nl *MnlSocket) SetsockoptByte(optype int, v byte) error { return SocketSetsockoptByte(nl, optype, v) }
+func (nl *MnlSocket) SetsockoptCint(optype int, v int) error { return SocketSetsockoptCint(nl, optype, v) }
+func (nl *MnlSocket) Sockopt(optype int, size Socklen_t) ([]byte, error) { return SocketGetsockopt(nl, optype, size) }
 

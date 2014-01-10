@@ -31,7 +31,7 @@ func RingMsghdr(hdr *NlMmapHdr) *Nlmsghdr {
  * int mnl_socket_set_ringopt(struct mnl_socket *nl, struct nl_mmap_req *req,
  *			      enum mnl_ring_types type)
  */
-func SocketSetRingopt(nl *SocketDescriptor, req *NlMmapReq, rtype MnlRingTypes) (int, error) {
+func SocketSetRingopt(nl *MnlSocket, req *NlMmapReq, rtype MnlRingTypes) (int, error) {
 	ret, err := C.mnl_socket_set_ringopt((*[0]byte)(nl), (*C.struct_nl_mmap_req)(unsafe.Pointer(req)),
 		(C.enum_mnl_ring_types)(rtype))
 	return int(ret), err
@@ -42,7 +42,7 @@ func SocketSetRingopt(nl *SocketDescriptor, req *NlMmapReq, rtype MnlRingTypes) 
  *
  * int mnl_socket_map_ring(struct mnl_socket *nl)
  */
-func SocketMapRing(nl *SocketDescriptor) (int, error) {
+func SocketMapRing(nl *MnlSocket) (int, error) {
 	ret, err := C.mnl_socket_map_ring((*[0]byte)(nl))
 	return int(ret), err
 }
@@ -53,7 +53,7 @@ func SocketMapRing(nl *SocketDescriptor) (int, error) {
  * struct nl_mmap_hdr *mnl_socket_get_frame(const struct mnl_socket *nl,
  *					    enum mnl_ring_types type)
  */
-func SocketGetFrame(nl *SocketDescriptor, rtype MnlRingTypes) (*NlMmapHdr) {
+func SocketGetFrame(nl *MnlSocket, rtype MnlRingTypes) (*NlMmapHdr) {
 	return (*NlMmapHdr)(unsafe.Pointer(C.mnl_socket_get_frame((*[0]byte)(nl), (C.enum_mnl_ring_types)(rtype))))
 }
 
@@ -62,13 +62,13 @@ func SocketGetFrame(nl *SocketDescriptor, rtype MnlRingTypes) (*NlMmapHdr) {
  *
  * int mnl_socket_advance_ring(const struct mnl_socket *nl, enum mnl_ring_types type)
  */
-func SocketAdvanceRing(nl *SocketDescriptor, rtype MnlRingTypes) int {
+func SocketAdvanceRing(nl *MnlSocket, rtype MnlRingTypes) int {
 	return int(C.mnl_socket_advance_ring((*[0]byte)(nl), (C.enum_mnl_ring_types)(rtype)))
 }
 
 
 // receivers
-func (nl *SocketDescriptor) SetRingopt(r *NlMmapReq, t MnlRingTypes) (int, error) { return SocketSetRingopt(nl, r, t) }
-func (nl *SocketDescriptor) MapRing() (int, error) { return SocketMapRing(nl) }
-func (nl *SocketDescriptor) Frame(t MnlRingTypes) *NlMmapHdr { return SocketGetFrame(nl, t) }
-func (nl *SocketDescriptor) AdvanceRing(t MnlRingTypes) int { return SocketAdvanceRing(nl, t) }
+func (nl *MnlSocket) SetRingopt(r *NlMmapReq, t MnlRingTypes) (int, error) { return SocketSetRingopt(nl, r, t) }
+func (nl *MnlSocket) MapRing() (int, error) { return SocketMapRing(nl) }
+func (nl *MnlSocket) Frame(t MnlRingTypes) *NlMmapHdr { return SocketGetFrame(nl, t) }
+func (nl *MnlSocket) AdvanceRing(t MnlRingTypes) int { return SocketAdvanceRing(nl, t) }

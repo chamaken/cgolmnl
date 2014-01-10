@@ -95,7 +95,7 @@ func cb_err(nlh *mnl.Nlmsghdr, data interface{}) int {
 	return mnl.MNL_CB_OK
 }
 
-func send_batch(nl *mnl.SocketDescriptor, b *mnl.NlmsgBatchDescriptor, portid uint32) {
+func send_batch(nl *mnl.MnlSocket, b *mnl.MnlNlmsgBatch, portid uint32) {
 	var err error
 	var epfd int
 	var event syscall.EpollEvent
@@ -120,6 +120,7 @@ func send_batch(nl *mnl.SocketDescriptor, b *mnl.NlmsgBatchDescriptor, portid ui
 		os.Exit(C.EXIT_FAILURE)
 	}
 
+	ctl_types := []uint16{C.NLMSG_ERROR}
 	ret := mnl.MNL_CB_OK
 	for ret > 0 {
 		var n int
@@ -141,14 +142,14 @@ func send_batch(nl *mnl.SocketDescriptor, b *mnl.NlmsgBatchDescriptor, portid ui
 			fmt.Fprintf(os.Stderr, "mnl_socket_recvfrom: %s\n", err)
 			os.Exit(C.EXIT_FAILURE)
 		}
-		_, err = mnl.CbRun2(rcv_buf[:nrecv], 0, portid, nil, nil, cb_ctl)
+		_, err = mnl.CbRun2(rcv_buf[:nrecv], 0, portid, nil, nil, cb_ctl, ctl_types)
 	}
 }
 
 func main() {
 	var err error
-	var nl *mnl.SocketDescriptor
-	var b *mnl.NlmsgBatchDescriptor
+	var nl *mnl.MnlSocket
+	var b *mnl.MnlNlmsgBatch
 
 	snd_buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE * 2)
 	if nl, err = mnl.SocketOpen(C.NETLINK_NETFILTER); err != nil {
