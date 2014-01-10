@@ -1,6 +1,8 @@
 package cgolmnl
 
 /*
+#cgo CFLAGS: -I./include
+#cgo LDFLAGS: -lmnl
 #include <libmnl/libmnl.h>
 */
 import "C"

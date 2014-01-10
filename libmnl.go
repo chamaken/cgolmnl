@@ -3,6 +3,7 @@ package cgolmnl
 /*
 // assume C.int to uint32 to follow nlmsghdr.nlm_len
 
+#cgo CFLAGS: -I./include
 #cgo LDFLAGS: -lmnl
 #include <linux/netlink.h>
 #include <libmnl/libmnl.h>

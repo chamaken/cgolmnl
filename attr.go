@@ -9,6 +9,7 @@ import (
 )
 
 /*
+#cgo CFLAGS: -I./include
 #cgo LDFLAGS: -lmnl
 #include <stdlib.h>
 #include <libmnl/libmnl.h>

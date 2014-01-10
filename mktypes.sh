@@ -12,7 +12,9 @@ GOARCH=$GOARCH find -type f -name types_$GOOS.go | while read infile; do
     outbase=ztypes_$GOOSARCH.go
     # pushd $dir
     cd $dir
-    go tool cgo -godefs $inbase | gofmt > $outbase
+    # cgo CLAGS: does not work?
+    go tool cgo -godefs -- -I./include $inbase | gofmt > $outbase
+    # go tool cgo -godefs $inbase | gofmt > $outbase
     # popd
     cd $cwd
 done

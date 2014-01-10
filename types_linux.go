@@ -2,7 +2,10 @@
 
 package cgolmnl
 
+// cgo CFLAGS: does not work?
+
 /*
+#cgo CFLAGS: -I./include
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdint.h>

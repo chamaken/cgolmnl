@@ -4,9 +4,9 @@ import "unsafe"
 // import "fmt"
 
 /*
+#cgo CFLAGS: -I./include
 #cgo LDFLAGS: -lmnl
 #include <libmnl/libmnl.h>
-#include "cb.h"
 */
 import "C"
 
