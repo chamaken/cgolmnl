@@ -125,6 +125,9 @@ type MnlAttrCb func(*Nlattr, interface{}) (int, syscall.Errno)
 func GoAttrCb(nla *C.struct_nlattr, argp unsafe.Pointer) C.int {
 	args := *(*[2]unsafe.Pointer)(argp)
 	cb := *(*MnlAttrCb)(args[0])
+	if cb == nil {
+		return MNL_CB_OK
+	}
 	data := *(*interface{})(args[1])
 	ret, err := cb((*Nlattr)(unsafe.Pointer(nla)), data) // returns (int, syscall.Errno)
 	if err != 0 {
