@@ -9,6 +9,12 @@ sample
 see examples
 
 
+installation
+------------
+
+To enable mmap, specify ``nlmmap'' tag. go build -tags nlmmap
+
+
 requires
 --------
 
@@ -50,13 +56,20 @@ nlattr. both of C functions are wrapped in cb.c
 4. Go callback above demultiplex data param into Go function and real data param
 5. call real Go callback
 
-cb_run2() is too complicated for me to implement. then I added new one -
-cb_run3() which introduce new callback prototype.
+To wrap cb_run2() I added new one -
 
     typedef int (*mnl_ctl_cb_t)(const struct nlmsghdr *nlh, uint16_t type, void *data);
 
 As you know though, this is called in case of control type message (NLMSG_...)
+and function signature has changed.
 
+    func CbRun2(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{},
+                cb_ctl MnlCtlCb, ctltypes []uint16) (int, error) {
+
+The last parameters is list of controll message type, e.g NLMSG_NOOP, NLMSG_ERROR...
+cb_ctl will be called in case of being specified in the list. See callbacl_test.go
+CbRun2 context for example.
+    
 
 ### errno ###
 
@@ -65,7 +78,7 @@ I currently use an incredibly childish C function in set_errno.c
     void SetErrno(int n) { errno = n; }
 
 I can not find the way of tossing up Go callback error, in other words set C's
-errno from Go. I am not good at English let me show why I need to do in code
+errno from Go. I am not good at English let me show why I need to do in the code
 snippets below
 
 * C library header (lib.h)
@@ -127,7 +140,8 @@ snippets below
 call chain will be:
 Go main() -> Go Doit() -> C wrap() -> C c_func() -> Go CallFromC() -> Go cb()
 
-I need to know the way of tossing last Go cb() error up to Go Doit()
+I need to know the way of tossing last Go cb() error up to Go Doit() or
+C c_func().
 
 
 
@@ -201,8 +215,7 @@ comparison
 | mnl_nlmsg_batch_is_empty		| NlmsgBatchIsEmpty		|				|
 | ------------------------------------- | ----------------------------- | ----------------------------- |
 | mnl_cb_run				| CbRun				| 				|
-| mnl_cb_run2				| (could not)			|				|
-| (add)					| CbRun3			| ctl dispatcher is mnl_ctl_cb_t|
+| mnl_cb_run2				| CbRun2			| changed signature		|
 | ------------------------------------- | ----------------------------- | ----------------------------- |
 | mnl_socket_get_fd			| SocketGgetFd			|				|
 | mnl_socket_get_portid			| SocketGetPortid		|				|
