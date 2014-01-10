@@ -3,6 +3,7 @@ package cgolmnl
 /*
 #cgo LDFLAGS: -lmnl
 #include <libmnl/libmnl.h>
+#include <linux/netlink.h>
 #include "cb.h"
 #include "set_errno.h"
 */
@@ -48,7 +49,8 @@ func GoCtlCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 	args := *(*[3]unsafe.Pointer)(argp)
 	cb := *(*MnlCtlCb)(args[0])
 	if cb == nil {
-		return MNL_CB_OK
+		C.SetErrno(C.int(syscall.EOPNOTSUPP))
+		return MNL_CB_ERROR
 	}
 	data := *(*interface{})(args[2])
 	h := (*Nlmsghdr)(unsafe.Pointer(nlh))
@@ -74,14 +76,15 @@ func GoCtlCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
  *	       mnl_cb_t *cb_ctl_array, unsigned int cb_ctl_array_len)
  */
 func CbRun2(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{},
-	cb_ctl MnlCtlCb) (int, error) {
-	if cb_ctl == nil {
+	cb_ctl MnlCtlCb, ctltypes []uint16) (int, error) {
+	if len(ctltypes) >= C.NLMSG_MIN_TYPE {
 		return MNL_CB_ERROR, syscall.EINVAL
-		// or panic("control handling function required. use CbRun() if not needed")
 	}
+
 	args := [3]unsafe.Pointer{unsafe.Pointer(&cb_ctl), unsafe.Pointer(&cb_data), unsafe.Pointer(&data)}
 	ret, err := C.cb_run2_wrapper(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),
-		C.uint32_t(seq), C.uint32_t(portid), unsafe.Pointer(&args))
+				      C.uint32_t(seq), C.uint32_t(portid), unsafe.Pointer(&args),
+				      (*C.uint16_t)(&ctltypes[0]), C.size_t(len(ctltypes)))
 	return int(ret), err
 }
 
@@ -95,6 +98,6 @@ func CbRun2(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{},
 func CbRun(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{}) (int, error) {
 	args := [3]unsafe.Pointer{unsafe.Pointer(nil), unsafe.Pointer(&cb_data), unsafe.Pointer(&data)}
 	ret, err := C.cb_run_wrapper(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),
-		C.uint32_t(seq), C.uint32_t(portid), unsafe.Pointer(&args))
+				     C.uint32_t(seq), C.uint32_t(portid), unsafe.Pointer(&args))
 	return int(ret), err
 }

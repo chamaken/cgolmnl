@@ -165,8 +165,16 @@ var _ = Describe("callback", func() {
 		})
 	})
 	Context("CbRun2", func() {
+		// NLMSG_NOOP		0x1
+		// NLMSG_ERROR		0x2
+		// NLMSG_DONE		0x3
+		// NLMSG_OVERRUN	0x4
+		// NLMSG_MIN_TYPE	0x10
+
 		ctl_cb := func(nlh *Nlmsghdr, msgtype uint16, data interface{}) (int, syscall.Errno) {
 			switch (msgtype) {
+			case NLMSG_NOOP:
+				return MNL_CB_ERROR, 0
 			case NLMSG_OVERRUN:
 				return MNL_CB_ERROR, syscall.ENOBUFS
 			case NLMSG_DONE:
@@ -192,29 +200,45 @@ var _ = Describe("callback", func() {
 				return MNL_CB_OK, 0
 			}
 		}
-		It("should return MNL_CB_OK", func() {
-			ret, err := CbRun2(([]byte)(*nlmsghdr_noop), 1, 1, nil, nil, ctl_cb)
+		var ctltypes []uint16
+		BeforeEach(func() {
+			ctltypes = []uint16{NLMSG_OVERRUN, NLMSG_NOOP, NLMSG_ERROR, NLMSG_DONE}
+		})
+		It("should return MNL_CB_ERROR", func() {
+			ret, err := CbRun2(([]byte)(*nlmsghdr_noop), 1, 1, nil, nil,
+				ctl_cb, ctltypes)
+			Expect(err).To(BeNil())
+			Expect(ret).To(Equal(MNL_CB_ERROR))
+		})
+		It("should return (default) MNL_CB_OK", func() {
+			ctltypes := []uint16{NLMSG_OVERRUN, NLMSG_ERROR, NLMSG_DONE}
+			ret, err := CbRun2(([]byte)(*nlmsghdr_noop), 1, 1, nil, nil,
+				ctl_cb, ctltypes)
 			Expect(err).To(BeNil())
 			Expect(ret).To(Equal(MNL_CB_OK))
 		})
-		FIt("should return MNL_CB_STOP", func() {
-			ret, err := CbRun2(([]byte)(*nlmsghdr_done), 1, 1, nil, nil, ctl_cb)
+		It("should return MNL_CB_STOP", func() {
+			ret, err := CbRun2(([]byte)(*nlmsghdr_done), 1, 1, nil, nil,
+				ctl_cb, ctltypes)
 			Expect(err).To(BeNil())
 			Expect(ret).To(Equal(MNL_CB_STOP))
 		})
-		FIt("should return ENOBUFS", func() {
-			ret, err := CbRun2(([]byte)(*nlmsghdr_overrun), 1, 1, nil, nil, ctl_cb)
+		It("should return ENOBUFS", func() {
+			ret, err := CbRun2(([]byte)(*nlmsghdr_overrun), 1, 1, nil, nil,
+				ctl_cb, ctltypes)
 			Expect(err).To(Equal(syscall.ENOBUFS))
 			Expect(ret).To(Equal(MNL_CB_ERROR))
 		})
-		FIt("should return EPERM", func() {
-			ret, err := CbRun2(([]byte)(*nlmsghdr_error), 1, 1, nil, nil, ctl_cb)
+		It("should return EPERM", func() {
+			ret, err := CbRun2(([]byte)(*nlmsghdr_error), 1, 1, nil, nil,
+				ctl_cb, ctltypes)
 			Expect(err).To(Equal(syscall.EPERM))
 			Expect(ret).To(Equal(MNL_CB_ERROR))
 		})
-		FIt("should return EINVAL", func() {
-			ret, err := CbRun2(([]byte)(*nlmsghdr_noop), 1, 1, nil, nil, nil)
-			Expect(err).To(Equal(syscall.EINVAL))
+		It("should return EOPNOTSUPP", func() {
+			ret, err := CbRun2(([]byte)(*nlmsghdr_noop), 1, 1, nil, nil,
+				nil, ctltypes)
+			Expect(err).To(Equal(syscall.EOPNOTSUPP))
 			Expect(ret).To(Equal(MNL_CB_ERROR))
 		})
 	})

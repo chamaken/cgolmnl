@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <errno.h>
 #include <libmnl/libmnl.h>
 #include "_cgo_export.h"
@@ -34,8 +35,24 @@ static mnl_cb_t go_ctlcb_array[NLMSG_MIN_TYPE] = { [0 ... NLMSG_MIN_TYPE - 1] = 
 
 int
 cb_run2_wrapper(const void *buf, size_t numbytes, uint32_t seq,
-		uint32_t portid, void *data)
+		uint32_t portid, void *data, uint16_t *ctl_types, size_t ctl_types_len)
 {
+	int i;
+	mnl_cb_t cb_ctl_array[NLMSG_MIN_TYPE] = { NULL };
+
+	if (ctl_types_len >= NLMSG_MIN_TYPE) {
+		errno = EINVAL;
+		return MNL_CB_ERROR;
+	}
+
+	for (i = 0; i < ctl_types_len; i++) {
+		if (ctl_types[i] >= NLMSG_MIN_TYPE) {
+			errno = EINVAL;
+			return MNL_CB_ERROR;
+		}
+		cb_ctl_array[ctl_types[i]] = (mnl_cb_t)GoCtlCb;
+	}
+
 	return mnl_cb_run2(buf, numbytes, (unsigned int)seq, (unsigned int)portid,
-			   (mnl_cb_t)GoCb, data, go_ctlcb_array, NLMSG_MIN_TYPE - 1);
+			   (mnl_cb_t)GoCb, data, cb_ctl_array, NLMSG_MIN_TYPE - 1);
 }
