@@ -141,7 +141,7 @@ func send_batch(nl *mnl.SocketDescriptor, b *mnl.NlmsgBatchDescriptor, portid ui
 			fmt.Fprintf(os.Stderr, "mnl_socket_recvfrom: %s\n", err)
 			os.Exit(C.EXIT_FAILURE)
 		}
-		_, err = mnl.CbRun3(rcv_buf[:nrecv], 0, portid, nil, nil, cb_ctl)
+		_, err = mnl.CbRun2(rcv_buf[:nrecv], 0, portid, nil, nil, cb_ctl)
 	}
 }
 
