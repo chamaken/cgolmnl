@@ -56,6 +56,7 @@ func InetNtop(family int, src unsafe.Pointer) string {
 	default:
 		return "(unknown family)"
 	}
+	return "(unknown family)"
 }
 
 func InetPton(family int, src string) ([]byte, error) {
