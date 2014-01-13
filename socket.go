@@ -18,7 +18,7 @@ type MnlSocket C.struct_mnl_socket // [0]byte
  * int mnl_socket_get_fd(const struct mnl_socket *nl)
  */
 func SocketGetFd(nl *MnlSocket) int {
-	return int(C.mnl_socket_get_fd((*[0]byte)(nl)))
+	return int(C.mnl_socket_get_fd((*C.struct_mnl_socket)(nl)))
 }
 
 /**
@@ -27,7 +27,7 @@ func SocketGetFd(nl *MnlSocket) int {
  * uint32_t mnl_socket_get_portid(const struct mnl_socket *nl)
  */
 func SocketGetPortid(nl *MnlSocket) uint32 {
-	return uint32(C.mnl_socket_get_portid((*[0]byte)(nl)))
+	return uint32(C.mnl_socket_get_portid((*C.struct_mnl_socket)(nl)))
 }
 
 /**
@@ -47,7 +47,7 @@ func SocketOpen(bus int) (*MnlSocket, error) {
  * int mnl_socket_bind(struct mnl_socket *nl, unsigned int groups, pid_t pid)
  */
 func SocketBind(nl *MnlSocket, groups uint, pid Pid_t) error {
-	_, err := C.mnl_socket_bind((*[0]byte)(nl), C.uint(groups), C.pid_t(pid))
+	_, err := C.mnl_socket_bind((*C.struct_mnl_socket)(nl), C.uint(groups), C.pid_t(pid))
 	return err
 }
 
@@ -58,12 +58,12 @@ func SocketBind(nl *MnlSocket, groups uint, pid Pid_t) error {
  * mnl_socket_sendto(const struct mnl_socket *nl, const void *buf, size_t len)
  */
 func SocketSendto(nl *MnlSocket, buf []byte) (Ssize_t, error) {
-	ret, err := C.mnl_socket_sendto((*[0]byte)(nl), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
+	ret, err := C.mnl_socket_sendto((*C.struct_mnl_socket)(nl), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
 	return Ssize_t(ret), err
 }
 
 func SocketSendNlmsg(nl *MnlSocket, nlh *Nlmsghdr) (Ssize_t, error) {
-	ret, err := C.mnl_socket_sendto((*[0]byte)(nl), unsafe.Pointer(nlh), C.size_t(nlh.Len))
+	ret, err := C.mnl_socket_sendto((*C.struct_mnl_socket)(nl), unsafe.Pointer(nlh), C.size_t(nlh.Len))
 	return Ssize_t(ret), err
 }
 /**
@@ -73,7 +73,7 @@ func SocketSendNlmsg(nl *MnlSocket, nlh *Nlmsghdr) (Ssize_t, error) {
  * mnl_socket_recvfrom(const struct mnl_socket *nl, void *buf, size_t bufsiz)
  */
 func SocketRecvfrom(nl *MnlSocket, buf []byte) (Ssize_t, error) {
-	ret, err := C.mnl_socket_recvfrom((*[0]byte)(nl), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
+	ret, err := C.mnl_socket_recvfrom((*C.struct_mnl_socket)(nl), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
 	return Ssize_t(ret), err
 }
 
@@ -83,7 +83,7 @@ func SocketRecvfrom(nl *MnlSocket, buf []byte) (Ssize_t, error) {
  * int mnl_socket_close(struct mnl_socket *nl)
  */
 func SocketClose(nl *MnlSocket) error {
-	_, err := C.mnl_socket_close((*[0]byte)(nl))
+	_, err := C.mnl_socket_close((*C.struct_mnl_socket)(nl))
 	return err
 }
 
@@ -94,21 +94,21 @@ func SocketClose(nl *MnlSocket) error {
  *			     void *buf, socklen_t len)
  */
 func SocketSetsockopt(nl *MnlSocket, optype int, optval unsafe.Pointer, optlen Socklen_t) error {
-	_, err := C.mnl_socket_setsockopt((*[0]byte)(nl), C.int(optype), optval, C.socklen_t(optlen))
+	_, err := C.mnl_socket_setsockopt((*C.struct_mnl_socket)(nl), C.int(optype), optval, C.socklen_t(optlen))
 	return err
 }
 func SocketSetsockoptBytes(nl *MnlSocket, optype int, buf []byte) error {
-	_, err := C.mnl_socket_setsockopt((*[0]byte)(nl), C.int(optype), unsafe.Pointer(&buf[0]), C.socklen_t(len(buf)))
+	_, err := C.mnl_socket_setsockopt((*C.struct_mnl_socket)(nl), C.int(optype), unsafe.Pointer(&buf[0]), C.socklen_t(len(buf)))
 	return err
 }
 func SocketSetsockoptByte(nl *MnlSocket, opt int, value byte) error {
 	v := C.uint8_t(value)
-	_, err := C.mnl_socket_setsockopt((*[0]byte)(nl), C.int(opt), unsafe.Pointer(&v), 1)
+	_, err := C.mnl_socket_setsockopt((*C.struct_mnl_socket)(nl), C.int(opt), unsafe.Pointer(&v), 1)
 	return err
 }
 func SocketSetsockoptCint(nl *MnlSocket, opt int, value int) error {
 	v := C.int(value)
-	_, err := C.mnl_socket_setsockopt((*[0]byte)(nl), C.int(opt), unsafe.Pointer(&v), C.sizeof_int)
+	_, err := C.mnl_socket_setsockopt((*C.struct_mnl_socket)(nl), C.int(opt), unsafe.Pointer(&v), C.sizeof_int)
 	return err
 }
 
@@ -121,7 +121,7 @@ func SocketSetsockoptCint(nl *MnlSocket, opt int, value int) error {
 func SocketGetsockopt(nl *MnlSocket, optype int, size Socklen_t) ([]byte, error) {
 	c_size := C.socklen_t(size)
 	buf := make([]byte, int(size))
-	_, err := C.mnl_socket_getsockopt((*[0]byte)(nl), C.int(optype), unsafe.Pointer(&buf[0]), &c_size)
+	_, err := C.mnl_socket_getsockopt((*C.struct_mnl_socket)(nl), C.int(optype), unsafe.Pointer(&buf[0]), &c_size)
 	if err != nil {
 		return nil, err
 	}

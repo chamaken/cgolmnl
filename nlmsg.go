@@ -180,7 +180,7 @@ func NlmsgBatchStart(buf []byte, limit Size_t) (*MnlNlmsgBatch, error) {
  * void mnl_nlmsg_batch_stop(struct mnl_nlmsg_batch *b)
  */
 func NlmsgBatchStop(b *MnlNlmsgBatch) {
-	C.mnl_nlmsg_batch_stop((*[0]byte)(b))
+	C.mnl_nlmsg_batch_stop((*C.struct_mnl_nlmsg_batch)(b))
 }
 
 /**
@@ -189,7 +189,7 @@ func NlmsgBatchStop(b *MnlNlmsgBatch) {
  * bool mnl_nlmsg_batch_next(struct mnl_nlmsg_batch *b)
  */
 func NlmsgBatchNext(b *MnlNlmsgBatch) bool {
-	return bool(C.mnl_nlmsg_batch_next((*[0]byte)(b)))
+	return bool(C.mnl_nlmsg_batch_next((*C.struct_mnl_nlmsg_batch)(b)))
 }
 
 /**
@@ -198,7 +198,7 @@ func NlmsgBatchNext(b *MnlNlmsgBatch) bool {
  * void mnl_nlmsg_batch_reset(struct mnl_nlmsg_batch *b)
  */
 func NlmsgBatchReset(b *MnlNlmsgBatch) {
-	C.mnl_nlmsg_batch_reset((*[0]byte)(b))
+	C.mnl_nlmsg_batch_reset((*C.struct_mnl_nlmsg_batch)(b))
 }
 
 /**
@@ -207,7 +207,7 @@ func NlmsgBatchReset(b *MnlNlmsgBatch) {
  * size_t mnl_nlmsg_batch_size(struct mnl_nlmsg_batch *b)
  */
 func NlmsgBatchSize(b *MnlNlmsgBatch) Size_t {
-	return Size_t(C.mnl_nlmsg_batch_size((*[0]byte)(b)))
+	return Size_t(C.mnl_nlmsg_batch_size((*C.struct_mnl_nlmsg_batch)(b)))
 }
 
 /**
@@ -216,7 +216,7 @@ func NlmsgBatchSize(b *MnlNlmsgBatch) Size_t {
  * void *mnl_nlmsg_batch_head(struct mnl_nlmsg_batch *b)
  */
 func NlmsgBatchHead(b *MnlNlmsgBatch) unsafe.Pointer {
-	return C.mnl_nlmsg_batch_head((*[0]byte)(b))
+	return C.mnl_nlmsg_batch_head((*C.struct_mnl_nlmsg_batch)(b))
 }
 func NlmsgBatchHeadBytes(b *MnlNlmsgBatch) []byte {
 	return SharedBytes(NlmsgBatchHead(b), int(NlmsgBatchSize(b)))
@@ -228,7 +228,7 @@ func NlmsgBatchHeadBytes(b *MnlNlmsgBatch) []byte {
  * void *mnl_nlmsg_batch_current(struct mnl_nlmsg_batch *b)
  */
 func NlmsgBatchCurrent(b *MnlNlmsgBatch) unsafe.Pointer {
-	return C.mnl_nlmsg_batch_current((*[0]byte)(b))
+	return C.mnl_nlmsg_batch_current((*C.struct_mnl_nlmsg_batch)(b))
 }
 
 /**
@@ -237,7 +237,7 @@ func NlmsgBatchCurrent(b *MnlNlmsgBatch) unsafe.Pointer {
  * bool mnl_nlmsg_batch_is_empty(struct mnl_nlmsg_batch *b)
  */
 func NlmsgBatchIsEmpty(b *MnlNlmsgBatch) bool {
-	return bool(C.mnl_nlmsg_batch_is_empty((*[0]byte)(b)))
+	return bool(C.mnl_nlmsg_batch_is_empty((*C.struct_mnl_nlmsg_batch)(b)))
 }
 
 /**
@@ -245,6 +245,6 @@ func NlmsgBatchIsEmpty(b *MnlNlmsgBatch) bool {
  *
  * void mnl_nlmsg_batch_reset_buffer(struct mnl_nlmsg_batch *b, void *buf, size_t limit)
 func NlmsgBatchResetBuffer(b MnlNlmsgBatch, buf []byte) {
-	C.mnl_nlmsg_batch_reset_buffer((*[0]byte)(b), (unsafe.Pointer)(&buf[0]), C.size_t(len(buf)))
+	C.mnl_nlmsg_batch_reset_buffer((*C.struct_mnl_nlmsg_batch)(b), (unsafe.Pointer)(&buf[0]), C.size_t(len(buf)))
 }
  */

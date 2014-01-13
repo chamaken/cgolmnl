@@ -32,7 +32,7 @@ func RingMsghdr(hdr *NlMmapHdr) []byte {
  *			      enum mnl_ring_types type)
  */
 func SocketSetRingopt(nl *MnlSocket, req *NlMmapReq, rtype MnlRingTypes) (int, error) {
-	ret, err := C.mnl_socket_set_ringopt((*[0]byte)(nl), (*C.struct_nl_mmap_req)(unsafe.Pointer(req)),
+	ret, err := C.mnl_socket_set_ringopt((*C.struct_mnl_socket)(nl), (*C.struct_nl_mmap_req)(unsafe.Pointer(req)),
 		(C.enum_mnl_ring_types)(rtype))
 	return int(ret), err
 }
@@ -43,7 +43,7 @@ func SocketSetRingopt(nl *MnlSocket, req *NlMmapReq, rtype MnlRingTypes) (int, e
  * int mnl_socket_map_ring(struct mnl_socket *nl)
  */
 func SocketMapRing(nl *MnlSocket) (int, error) {
-	ret, err := C.mnl_socket_map_ring((*[0]byte)(nl))
+	ret, err := C.mnl_socket_map_ring((*C.struct_mnl_socket)(nl))
 	return int(ret), err
 }
 
@@ -54,7 +54,7 @@ func SocketMapRing(nl *MnlSocket) (int, error) {
  *					    enum mnl_ring_types type)
  */
 func SocketGetFrame(nl *MnlSocket, rtype MnlRingTypes) (*NlMmapHdr) {
-	return (*NlMmapHdr)(unsafe.Pointer(C.mnl_socket_get_frame((*[0]byte)(nl), (C.enum_mnl_ring_types)(rtype))))
+	return (*NlMmapHdr)(unsafe.Pointer(C.mnl_socket_get_frame((*C.struct_mnl_socket)(nl), (C.enum_mnl_ring_types)(rtype))))
 }
 
 /**
@@ -63,7 +63,7 @@ func SocketGetFrame(nl *MnlSocket, rtype MnlRingTypes) (*NlMmapHdr) {
  * int mnl_socket_advance_ring(const struct mnl_socket *nl, enum mnl_ring_types type)
  */
 func SocketAdvanceRing(nl *MnlSocket, rtype MnlRingTypes) int {
-	return int(C.mnl_socket_advance_ring((*[0]byte)(nl), (C.enum_mnl_ring_types)(rtype)))
+	return int(C.mnl_socket_advance_ring((*C.struct_mnl_socket)(nl), (C.enum_mnl_ring_types)(rtype)))
 }
 
 
