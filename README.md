@@ -1,7 +1,8 @@
 cgolmnl
-========
+=======
 
 Go wrapper of libmnl using cgo, under heavy development
+
 
 sample
 ------
@@ -12,13 +13,14 @@ see examples
 installation
 ------------
 
-To enable mmap, specify ``nlmmap'' tag. go build -tags nlmmap
+Need running ``mktypes.sh'' before build.
+To enable mmap, specify ``nlmmap'' tag, e.g. go build -tags nlmmap
 
 
 requires
 --------
 
-libmnl
+  * libmnl
 
   * test reqs (optional): **ginkgo (http://onsi.github.io/ginkgo/)
 
@@ -33,8 +35,8 @@ struct
 ------
 
 nlmsghdr and nlattr has real - Nlmsghdr and Nlattr. mnl_nlmsg_batch and
-mnl_socket are opaque, [0]byte as cgo said. there are receivers, see
-go_receiver.go
+mnl_socket are opaque as NlmsgBatch and Socket (cgo say [0]byte). there are
+receivers, see go_receiver.go
 
 
 
