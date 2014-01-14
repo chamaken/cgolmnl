@@ -96,7 +96,7 @@ func nflog_build_cfg_pf_request(buf []byte, command uint8) *mnl.Nlmsghdr {
 	nfg.Version = C.NFNETLINK_V0
 
 	cmd := &NfulnlMsgConfigCmd{Command: command}
-	nlh.PutData(C.NFULA_CFG_CMD, cmd)
+	nlh.PutPtr(C.NFULA_CFG_CMD, cmd)
 
 	return nlh
 }
@@ -117,7 +117,7 @@ func nflog_build_cfg_request(buf []byte, command uint8, qnum int) *mnl.Nlmsghdr 
 	nfg.Res_id = inet.Htons(uint16(qnum))
 
 	cmd := &NfulnlMsgConfigCmd{Command: command}
-	nlh.PutData(C.NFULA_CFG_CMD, cmd)
+	nlh.PutPtr(C.NFULA_CFG_CMD, cmd)
 
 	return nlh
 }
@@ -138,7 +138,7 @@ func nflog_build_cfg_params(buf []byte, copy_mode uint8, copy_range, qnum int) *
 	nfg.Res_id = inet.Htons(uint16(qnum))
 
 	params := &NfulnlMsgConfigMode{	Range: inet.Htonl(uint32(copy_range)), Mode: copy_mode }
-	nlh.PutData(C.NFULA_CFG_MODE, params)
+	nlh.PutPtr(C.NFULA_CFG_MODE, params)
 
 	return nlh
 }

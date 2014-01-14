@@ -86,7 +86,7 @@ func nfq_build_cfg_pf_request(buf []byte, command uint8) *mnl.Nlmsghdr {
 	nfg.Version = C.NFNETLINK_V0
 
 	cmd := &NfqnlMsgConfigCmd{Command: command, Pf: inet.Htons(C.AF_INET)}
-	nlh.PutData(C.NFQA_CFG_CMD, cmd)
+	nlh.PutPtr(C.NFQA_CFG_CMD, cmd)
 
 	return nlh
 }
@@ -107,7 +107,7 @@ func nfq_build_cfg_request(buf []byte, command uint8, queue_num int) *mnl.Nlmsgh
 	nfg.Res_id = inet.Htons(uint16(queue_num))
 
 	cmd := &NfqnlMsgConfigCmd{ Command: command, Pf: inet.Htons(C.AF_INET) }
-	nlh.PutData(C.NFQA_CFG_CMD, cmd)
+	nlh.PutPtr(C.NFQA_CFG_CMD, cmd)
 
 	return nlh
 }
@@ -127,7 +127,7 @@ func nfq_build_cfg_params(buf []byte, copy_mode uint8, copy_range, queue_num int
 	nfg.Res_id = inet.Htons(uint16(queue_num))
 
 	params := &NfqnlMsgConfigParams{ Range: inet.Htonl(uint32(copy_range)), Mode: copy_mode }
-	nlh.PutData(C.NFQA_CFG_PARAMS, params)
+	nlh.PutPtr(C.NFQA_CFG_PARAMS, params)
 
 	return nlh
 }
@@ -142,7 +142,7 @@ func nfq_build_verdict(buf [] byte, id, queue_num, verd int) *mnl.Nlmsghdr {
 	nfg.Res_id = inet.Htons(uint16(queue_num))
 
 	vh := &NfqnlMsgVerdictHdr{ Verdict: inet.Htonl(uint32(verd)), Id: inet.Htonl(uint32(id)) }
-	nlh.PutData(C.NFQA_VERDICT_HDR, vh)
+	nlh.PutPtr(C.NFQA_VERDICT_HDR, vh)
 
 	return nlh
 }

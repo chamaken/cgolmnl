@@ -491,11 +491,11 @@ var _ = Describe("Attr", func() {
 		})
 	})
 
-	Context("AttrPutData", func() {
+	Context("AttrPutPtr", func() {
 		var _tbuf NlattrBuf
 		BeforeEach(func() {
 			nlh.PutHeader()
-			nlh.PutData(3, rand_nlh)
+			nlh.PutPtr(3, rand_nlh)
 			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
 		})
 		It("nlh len should be 16 + 4 + 16", func() {

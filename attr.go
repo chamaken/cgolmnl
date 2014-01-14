@@ -232,7 +232,7 @@ func AttrGetStr(attr *Nlattr) string {
 func AttrPut(nlh *Nlmsghdr, attr_type uint16, size Size_t, data unsafe.Pointer) {
 	C.mnl_attr_put((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.uint16_t(attr_type), C.size_t(size), data)
 }
-func AttrPutData(nlh *Nlmsghdr, attr_type uint16, data interface{}) {
+func AttrPutPtr(nlh *Nlmsghdr, attr_type uint16, data interface{}) {
 	v := reflect.ValueOf(data)
 	if v.Kind() != reflect.Ptr {
 		panic("pointer required for data")

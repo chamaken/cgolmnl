@@ -169,7 +169,7 @@ comparison
 | mnl_attr_get_u64			| AttrGetU64			|				|
 | mnl_attr_get_str			| AttrGetStr			|				|
 | mnl_attr_put				| AttrPut			|				|
-| (add)					| AttrPutData			|				|
+| (add)					| AttrPutPtr			|				|
 | (add)					| AttrPutBytes			|				|
 | mnl_attr_put_u8			| AttrPutU8			|				|
 | mnl_attr_put_u16			| AttrPutU16			|				|
