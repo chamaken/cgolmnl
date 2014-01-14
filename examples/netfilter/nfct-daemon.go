@@ -176,7 +176,7 @@ func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 	return mnl.MNL_CB_OK, 0
 }
 
-func handle(nl *mnl.MnlSocket) int {
+func handle(nl *mnl.Socket) int {
 	buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE)
 
 	nrcv, err := nl.Recvfrom(buf)

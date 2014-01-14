@@ -95,7 +95,7 @@ func cb_err(nlh *mnl.Nlmsghdr, data interface{}) int {
 	return mnl.MNL_CB_OK
 }
 
-func send_batch(nl *mnl.MnlSocket, b *mnl.MnlNlmsgBatch, portid uint32) {
+func send_batch(nl *mnl.Socket, b *mnl.NlmsgBatch, portid uint32) {
 	var err error
 	var epfd int
 	var event syscall.EpollEvent
@@ -148,8 +148,8 @@ func send_batch(nl *mnl.MnlSocket, b *mnl.MnlNlmsgBatch, portid uint32) {
 
 func main() {
 	var err error
-	var nl *mnl.MnlSocket
-	var b *mnl.MnlNlmsgBatch
+	var nl *mnl.Socket
+	var b *mnl.NlmsgBatch
 
 	snd_buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE * 2)
 	if nl, err = mnl.SocketOpen(C.NETLINK_NETFILTER); err != nil {

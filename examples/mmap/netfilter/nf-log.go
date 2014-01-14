@@ -143,7 +143,7 @@ func nflog_build_cfg_params(buf []byte, copy_mode uint8, copy_range, qnum int) *
 	return nlh
 }
 
-func mnl_socket_poll(nl *mnl.MnlSocket) int {
+func mnl_socket_poll(nl *mnl.Socket) int {
 	epfd, err := syscall.EpollCreate1(0)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "EpollCreate1: %s", err)

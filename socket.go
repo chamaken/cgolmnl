@@ -10,14 +10,14 @@ import "unsafe"
 */
 import "C"
 
-type MnlSocket C.struct_mnl_socket // [0]byte
+type Socket C.struct_mnl_socket // [0]byte
 
 /**
  * mnl_socket_get_fd - obtain file descriptor from netlink socket
  *
  * int mnl_socket_get_fd(const struct mnl_socket *nl)
  */
-func SocketGetFd(nl *MnlSocket) int {
+func SocketGetFd(nl *Socket) int {
 	return int(C.mnl_socket_get_fd((*C.struct_mnl_socket)(nl)))
 }
 
@@ -26,7 +26,7 @@ func SocketGetFd(nl *MnlSocket) int {
  *
  * uint32_t mnl_socket_get_portid(const struct mnl_socket *nl)
  */
-func SocketGetPortid(nl *MnlSocket) uint32 {
+func SocketGetPortid(nl *Socket) uint32 {
 	return uint32(C.mnl_socket_get_portid((*C.struct_mnl_socket)(nl)))
 }
 
@@ -35,10 +35,10 @@ func SocketGetPortid(nl *MnlSocket) uint32 {
  * 
  * struct mnl_socket *mnl_socket_open(int bus)
  */
-func SocketOpen(bus int) (*MnlSocket, error) {
+func SocketOpen(bus int) (*Socket, error) {
 	// return C.mnl_socket_open(C.int(bus))
 	ret, err := C.mnl_socket_open(C.int(bus))
-	return (*MnlSocket)(ret), err
+	return (*Socket)(ret), err
 }
 
 /**
@@ -46,7 +46,7 @@ func SocketOpen(bus int) (*MnlSocket, error) {
  *
  * int mnl_socket_bind(struct mnl_socket *nl, unsigned int groups, pid_t pid)
  */
-func SocketBind(nl *MnlSocket, groups uint, pid Pid_t) error {
+func SocketBind(nl *Socket, groups uint, pid Pid_t) error {
 	_, err := C.mnl_socket_bind((*C.struct_mnl_socket)(nl), C.uint(groups), C.pid_t(pid))
 	return err
 }
@@ -57,12 +57,12 @@ func SocketBind(nl *MnlSocket, groups uint, pid Pid_t) error {
  * ssize_t
  * mnl_socket_sendto(const struct mnl_socket *nl, const void *buf, size_t len)
  */
-func SocketSendto(nl *MnlSocket, buf []byte) (Ssize_t, error) {
+func SocketSendto(nl *Socket, buf []byte) (Ssize_t, error) {
 	ret, err := C.mnl_socket_sendto((*C.struct_mnl_socket)(nl), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
 	return Ssize_t(ret), err
 }
 
-func SocketSendNlmsg(nl *MnlSocket, nlh *Nlmsghdr) (Ssize_t, error) {
+func SocketSendNlmsg(nl *Socket, nlh *Nlmsghdr) (Ssize_t, error) {
 	ret, err := C.mnl_socket_sendto((*C.struct_mnl_socket)(nl), unsafe.Pointer(nlh), C.size_t(nlh.Len))
 	return Ssize_t(ret), err
 }
@@ -72,7 +72,7 @@ func SocketSendNlmsg(nl *MnlSocket, nlh *Nlmsghdr) (Ssize_t, error) {
  * ssize_t
  * mnl_socket_recvfrom(const struct mnl_socket *nl, void *buf, size_t bufsiz)
  */
-func SocketRecvfrom(nl *MnlSocket, buf []byte) (Ssize_t, error) {
+func SocketRecvfrom(nl *Socket, buf []byte) (Ssize_t, error) {
 	ret, err := C.mnl_socket_recvfrom((*C.struct_mnl_socket)(nl), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
 	return Ssize_t(ret), err
 }
@@ -82,7 +82,7 @@ func SocketRecvfrom(nl *MnlSocket, buf []byte) (Ssize_t, error) {
  *
  * int mnl_socket_close(struct mnl_socket *nl)
  */
-func SocketClose(nl *MnlSocket) error {
+func SocketClose(nl *Socket) error {
 	_, err := C.mnl_socket_close((*C.struct_mnl_socket)(nl))
 	return err
 }
@@ -93,20 +93,20 @@ func SocketClose(nl *MnlSocket) error {
  * int mnl_socket_setsockopt(const struct mnl_socket *nl, int type,
  *			     void *buf, socklen_t len)
  */
-func SocketSetsockopt(nl *MnlSocket, optype int, optval unsafe.Pointer, optlen Socklen_t) error {
+func SocketSetsockopt(nl *Socket, optype int, optval unsafe.Pointer, optlen Socklen_t) error {
 	_, err := C.mnl_socket_setsockopt((*C.struct_mnl_socket)(nl), C.int(optype), optval, C.socklen_t(optlen))
 	return err
 }
-func SocketSetsockoptBytes(nl *MnlSocket, optype int, buf []byte) error {
+func SocketSetsockoptBytes(nl *Socket, optype int, buf []byte) error {
 	_, err := C.mnl_socket_setsockopt((*C.struct_mnl_socket)(nl), C.int(optype), unsafe.Pointer(&buf[0]), C.socklen_t(len(buf)))
 	return err
 }
-func SocketSetsockoptByte(nl *MnlSocket, opt int, value byte) error {
+func SocketSetsockoptByte(nl *Socket, opt int, value byte) error {
 	v := C.uint8_t(value)
 	_, err := C.mnl_socket_setsockopt((*C.struct_mnl_socket)(nl), C.int(opt), unsafe.Pointer(&v), 1)
 	return err
 }
-func SocketSetsockoptCint(nl *MnlSocket, opt int, value int) error {
+func SocketSetsockoptCint(nl *Socket, opt int, value int) error {
 	v := C.int(value)
 	_, err := C.mnl_socket_setsockopt((*C.struct_mnl_socket)(nl), C.int(opt), unsafe.Pointer(&v), C.sizeof_int)
 	return err
@@ -118,7 +118,7 @@ func SocketSetsockoptCint(nl *MnlSocket, opt int, value int) error {
  * int mnl_socket_getsockopt(const struct mnl_socket *nl, int type,
  * 			     void *buf, socklen_t *len)
  */
-func SocketGetsockopt(nl *MnlSocket, optype int, size Socklen_t) ([]byte, error) {
+func SocketGetsockopt(nl *Socket, optype int, size Socklen_t) ([]byte, error) {
 	c_size := C.socklen_t(size)
 	buf := make([]byte, int(size))
 	_, err := C.mnl_socket_getsockopt((*C.struct_mnl_socket)(nl), C.int(optype), unsafe.Pointer(&buf[0]), &c_size)

@@ -252,7 +252,7 @@ var _ = Describe("Attr", func() {
 
 	Context("NlmsgBatches", func() {
 		// init
-		var b *MnlNlmsgBatch
+		var b *NlmsgBatch
 
 		BeforeEach(func() {
 			buf := make([]byte, 301)
