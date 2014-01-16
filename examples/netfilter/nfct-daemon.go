@@ -17,6 +17,7 @@ import (
 	"os"
 	"strconv"
 	"syscall"
+	"time"
 	"unsafe"
 	mnl "cgolmnl"
 	"cgolmnl/inet"
@@ -278,7 +279,7 @@ func main() {
 	defer syscall.Close(epfd)
 
 	var event syscall.EpollEvent
-	events := make([]syscall.EpollEvent, 1)
+	events := make([]syscall.EpollEvent, 64) // XXX: magic number
 	event.Events = syscall.EPOLLIN
 	event.Fd = int32(nl.Fd())
 	if err := syscall.EpollCtl(epfd, syscall.EPOLL_CTL_ADD, int(event.Fd), &event); err != nil {
@@ -286,24 +287,19 @@ func main() {
 		os.Exit(C.EXIT_FAILURE)
 	}
 
-
-	nevents := 0
-	for true {
-		// Every N seconds ...
-		if nevents == 0 {
-			_, err := nl.SendNlmsg(nlh)
-			if err != nil {
+	// Every N seconds ...
+	ticker := time.NewTicker(time.Second * time.Duration(secs))
+	go func() {
+		for _ = range ticker.C {
+			if _, err := nl.SendNlmsg(nlh);  err != nil {
 				fmt.Fprintf(os.Stderr, "mnl_socket_sendto: %s\n", err)
 				os.Exit(C.EXIT_FAILURE)
 			}
-
-			// print the content of the list
-			for k, v := range nstats_map {
-				fmt.Printf("src=%s ", k)
-				fmt.Printf("counters %d %d\n", v.Pkts, v.Bytes)
-			}
 		}
-		nevents, err := syscall.EpollWait(epfd, events, secs * 1000)
+	}()
+
+	for true {
+		nevents, err := syscall.EpollWait(epfd, events, -1)
 		if err != nil {
 			if err == syscall.EINTR {
 				continue
@@ -314,11 +310,18 @@ func main() {
 
 		// Handled event and periodic atomic-dump-and-reset messages
 		for i := 0; i < nevents; i++ {
-			if events[i].Fd == event.Fd {
-				if ret := handle(nl); ret < 0 {
-					fmt.Fprintf(os.Stderr, "handle failed: %d\n", ret)
-					os.Exit(C.EXIT_FAILURE)
-				}
+			if events[i].Fd != event.Fd {
+				continue
+			}
+			if ret := handle(nl); ret < 0 {
+				fmt.Fprintf(os.Stderr, "handle failed: %d\n", ret)
+				os.Exit(C.EXIT_FAILURE)
+			}
+
+			// print the content of the list
+			for k, v := range nstats_map {
+				fmt.Printf("src=%s ", k)
+				fmt.Printf("counters %d %d\n", v.Pkts, v.Bytes)
 			}
 		}
 	}		
