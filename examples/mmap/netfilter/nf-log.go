@@ -198,18 +198,17 @@ func main() {
 	}
 	defer nl.Close()
 
-	req := &mnl.NlMmapReq{Block_size: 4096 * 16, Block_nr: 16, Frame_size: 2048, Frame_nr: 16 * 16 * 2}
-	if ret, err := nl.SetRingopt(req, mnl.MNL_RING_RX); ret == -1 {
+	if err := nl.SetRingopt(mnl.MNL_RING_RX, 4096 * 16, 16, 2048, 16 * 16 * 2); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_set_ringopt: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
-	} else {
-		fmt.Fprintf(os.Stderr, "mnl_socket_set_ringopt: %d\n", ret)
 	}
 
-	if ret, err := nl.MapRing(); ret == - 1 {
+	if err := nl.MapRing(); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_map_ring: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
+	rxring, _ := nl.Ring(mnl.MNL_RING_RX)
+	// txring := nl.Ring(mnl.MNL_RING_TX)
 
 	if err = nl.Bind(0, mnl.MNL_SOCKET_AUTOPID); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_bind: %s\n", err)
@@ -248,14 +247,14 @@ func main() {
 	var bsize int
 	ret := mnl.MNL_CB_OK
 	for ret >= mnl.MNL_CB_STOP {
-		hdr := nl.Frame(mnl.MNL_RING_RX)
-		if hdr.Status == C.NL_MMAP_STATUS_VALID {
-			if hdr.Len == 0 {
+		frame := rxring.Frame()
+		if frame.Status == C.NL_MMAP_STATUS_VALID {
+			if frame.Len == 0 {
 				goto release
 			}
-			bsize = int(hdr.Len)
-			ptr = mnl.RingMsghdr(hdr)
-		} else if hdr.Status == C.NL_MMAP_STATUS_COPY {
+			bsize = int(frame.Len)
+			ptr = mnl.FramePayload(frame)
+		} else if frame.Status == C.NL_MMAP_STATUS_COPY {
 			nrecv, err := nl.Recvfrom(buf)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "mnl_socket_recvfrom: %s\n", err)
@@ -272,8 +271,8 @@ func main() {
 		}
 		ret, err = mnl.CbRun(ptr[:bsize], 0, portid, log_cb, nil)
 	release:
-		hdr.Status = C.NL_MMAP_STATUS_UNUSED
-		nl.AdvanceRing(mnl.MNL_RING_RX)
+		frame.Status = C.NL_MMAP_STATUS_UNUSED
+		rxring.Advance()
 	}
 
 	if ret < mnl.MNL_CB_STOP {
