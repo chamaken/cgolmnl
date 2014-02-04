@@ -229,6 +229,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "mnl_socket_open: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
+	defer nl.Close()
 
 	// Subscribe to destroy events to avoid leaking counters. The same
 	// socket is used to periodically atomically dump and reset counters.
@@ -270,6 +271,24 @@ func main() {
 	nlh.PutU32(C.CTA_MARK, inet.Htonl(0))
 	nlh.PutU32(C.CTA_MARK_MASK, inet.Htonl(0xffffffff))
 
+	// Every N seconds ...
+	ticker := time.NewTicker(time.Second * time.Duration(secs))
+	go func() {
+		for _ = range ticker.C {
+			// periodic atomic-dump-and-reset messages
+			if _, err := nl.SendNlmsg(nlh);  err != nil {
+				fmt.Fprintf(os.Stderr, "mnl_socket_sendto: %s\n", err)
+				os.Exit(C.EXIT_FAILURE)
+			}
+
+			// print the content of the list
+			for k, v := range nstats_map {
+				fmt.Printf("src=%s ", k)
+				fmt.Printf("counters %d %d\n", v.Pkts, v.Bytes)
+			}
+		}
+	}()
+
 	// prepare for epoll
 	epfd, err := syscall.EpollCreate1(0)
 	if err != nil {
@@ -286,18 +305,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "EpollCtl: %s", err)
 		os.Exit(C.EXIT_FAILURE)
 	}
-
-	// Every N seconds ...
-	ticker := time.NewTicker(time.Second * time.Duration(secs))
-	go func() {
-		for _ = range ticker.C {
-			if _, err := nl.SendNlmsg(nlh);  err != nil {
-				fmt.Fprintf(os.Stderr, "mnl_socket_sendto: %s\n", err)
-				os.Exit(C.EXIT_FAILURE)
-			}
-		}
-	}()
-
 	for true {
 		nevents, err := syscall.EpollWait(epfd, events, -1)
 		if err != nil {
@@ -308,7 +315,7 @@ func main() {
 			os.Exit(C.EXIT_FAILURE)
 		}
 
-		// Handled event and periodic atomic-dump-and-reset messages
+		// Handled event
 		for i := 0; i < nevents; i++ {
 			if events[i].Fd != event.Fd {
 				continue
@@ -316,12 +323,6 @@ func main() {
 			if ret := handle(nl); ret < 0 {
 				fmt.Fprintf(os.Stderr, "handle failed: %d\n", ret)
 				os.Exit(C.EXIT_FAILURE)
-			}
-
-			// print the content of the list
-			for k, v := range nstats_map {
-				fmt.Printf("src=%s ", k)
-				fmt.Printf("counters %d %d\n", v.Pkts, v.Bytes)
 			}
 		}
 	}		
