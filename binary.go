@@ -15,18 +15,21 @@ func (nlh *Nlmsghdr) MarshalBinary() ([]byte, error) {
 	return dst, nil
 }
 
+// confide receiver len
 func (nlh *Nlmsghdr) UnmarshalBinary(data []byte) error {
 	if len(data) < int(MNL_NLMSG_HDRLEN) {
-		return syscall.EINVAL // errors.New("too short length")
+		return syscall.EINVAL // errors.New("too short data length")
 	}
-	h := (*Nlmsghdr)(unsafe.Pointer(&data[0]))
-	if int(h.Len) > len(data) {
-		return syscall.EINVAL // errors.New("invalid length field")
+	if int(nlh.Len) < len(data) {
+		return syscall.EINVAL // errors.New("too short receiver size")
 	}
 
-	dst := make([]byte, len(data))
+	var dst []byte
+	h := (*reflect.SliceHeader)(unsafe.Pointer(&dst))
+	h.Cap = int(nlh.Len)
+	h.Len = int(nlh.Len)
+	h.Data = uintptr(unsafe.Pointer(nlh))
 	copy(dst, data)
-	nlh = (*Nlmsghdr)(unsafe.Pointer(&data[0]))
 
 	return nil
 }
@@ -37,18 +40,21 @@ func (attr *Nlattr) MarshalBinary() ([]byte, error) {
 	return dst, nil
 }
 
+// confide receiver len
 func (attr *Nlattr) UnmarshalBinary(data []byte) error {
 	if len(data) < SizeofNlattr {
 		return syscall.EINVAL
 	}
-	h := (*Nlattr)(unsafe.Pointer(&data[0]))
-	if int(h.Len) > len(data) {
+	if int(attr.Len) < len(data) {
 		return syscall.EINVAL
 	}
 
-	dst := make([]byte, len(data))
+	var dst []byte
+	h := (*reflect.SliceHeader)(unsafe.Pointer(&dst))
+	h.Cap = int(attr.Len)
+	h.Len = int(attr.Len)
+	h.Data = uintptr(unsafe.Pointer(attr))
 	copy(dst, data)
-	attr = (*Nlattr)(unsafe.Pointer(&data[0]))
 
 	return nil
 }
