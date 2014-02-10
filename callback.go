@@ -62,20 +62,18 @@ func GoCtlCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 	return C.int(ret)
 }
 
-/**
- * mnl_cb_run2 - callback runqueue for netlink messages
- *
- * It seems callback Go function must be exported by //export
- * This means we can not dynamically create mnl_cb_t[]
- * To alleviate I introduct new C type mnl_ctl_cb_t
- *
- *   int (*mnl_ctl_cb_t)(const struct nlmsghdr *nlh, uint16_t type, void *data)
- *
- * int
- * mnl_cb_run2(const void *buf, size_t numbytes, unsigned int seq,
- *	       unsigned int portid, mnl_cb_t cb_data, void *data,
- *	       mnl_cb_t *cb_ctl_array, unsigned int cb_ctl_array_len)
- */
+// mnl_cb_run2 - callback runqueue for netlink messages
+//
+// It seems callback Go function must be exported by //export
+// This means we can not dynamically create mnl_cb_t[]
+// To alleviate I introduct new C type mnl_ctl_cb_t
+//
+//   int (*mnl_ctl_cb_t)(const struct nlmsghdr *nlh, uint16_t type, void *data)
+//
+// int
+// mnl_cb_run2(const void *buf, size_t numbytes, unsigned int seq,
+//	       unsigned int portid, mnl_cb_t cb_data, void *data,
+//	       mnl_cb_t *cb_ctl_array, unsigned int cb_ctl_array_len)
 func CbRun2(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{},
 	cb_ctl MnlCtlCb, ctltypes []uint16) (int, error) {
 	if len(ctltypes) >= C.NLMSG_MIN_TYPE {
@@ -89,13 +87,11 @@ func CbRun2(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{},
 	return int(ret), err
 }
 
-/**
- * mnl_cb_run - callback runqueue for netlink messages (simplified version)
- *
- * int
- * mnl_cb_run(const void *buf, size_t numbytes, uint32_t seq,
- *	      uint32_t portid, mnl_cb_t cb_data, void *data)
- */
+// mnl_cb_run - callback runqueue for netlink messages (simplified version)
+//
+// int
+// mnl_cb_run(const void *buf, size_t numbytes, uint32_t seq,
+//	      uint32_t portid, mnl_cb_t cb_data, void *data)
 func CbRun(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{}) (int, error) {
 	args := [3]unsafe.Pointer{unsafe.Pointer(nil), unsafe.Pointer(&cb_data), unsafe.Pointer(&data)}
 	ret, err := C.cb_run_wrapper(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),

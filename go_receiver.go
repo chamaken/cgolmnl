@@ -12,9 +12,7 @@ import (
 	"os"
 )
 
-/*
- * attr.go
- */
+// attr.go
 func (attr *Nlattr) GetType() uint16 { return AttrGetType(attr) }
 func (attr *Nlattr) GetLen() uint16 { return AttrGetLen(attr) }
 func (attr *Nlattr) PayloadLen() uint16 { return AttrGetPayloadLen(attr) }
@@ -113,9 +111,7 @@ func NlattrPointer(b []byte) *Nlattr {
 	return (*Nlattr)(unsafe.Pointer(&b[0]))
 }
 
-/*
- * nlmsg.go
- */
+// nlmsg.go
 func (nlh *Nlmsghdr) PayloadLen() Size_t { return NlmsgGetPayloadLen(nlh) }
 func (nlh *Nlmsghdr) PutExtraHeader(size Size_t) unsafe.Pointer { return NlmsgPutExtraHeader(nlh, size) }
 func (nlh *Nlmsghdr) Payload() unsafe.Pointer { return NlmsgGetPayload(nlh) }
@@ -166,9 +162,7 @@ func PutNewNlmsghdr(size int) (*Nlmsghdr, error) {
 	return nlh, nil
 }
 
-/*
- * socket.go
- */
+// socket.go
 func (nl *Socket) Fd() int { return SocketGetFd(nl) }
 func (nl *Socket) Portid() uint32 { return SocketGetPortid(nl) }
 func (nl *Socket) Bind(groups uint, pid Pid_t) error { return SocketBind(nl, groups, pid) }
