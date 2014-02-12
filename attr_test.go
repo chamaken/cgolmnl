@@ -41,12 +41,12 @@ func TestAttrGetType(t *testing.T) {
 	ab := NewNlattrBuf(16)
 	ab.SetType(2)
 	nla := NlattrPointer(*ab)
-	if AttrGetType(nla) != 2 {
-		t.Errorf("type - want: %d, but: %d", 2, AttrGetType(nla))
+	if nla.GetType() != 2 {
+		t.Errorf("type - want: %d, but: %d", 2, nla.GetType())
 	}
 	nla.Type = 2 | NLA_F_NESTED
-	if AttrGetType(nla) != 2 {
-		t.Errorf("type - want: %d, but: %d", 2, AttrGetType(nla))
+	if nla.GetType() != 2 {
+		t.Errorf("type - want: %d, but: %d", 2, nla.GetType())
 	}
 }
 
@@ -58,11 +58,11 @@ func TestAttrParse(t *testing.T) {
 
 	nlh, _ := NewNlmsghdr(4096)
 	val := 0x12
-	AttrPutU8(nlh, uint16(MNL_TYPE_U8), 0x10)
-	AttrPutU8(nlh, uint16(MNL_TYPE_U8), 0x11)
-	AttrPutU8(nlh, uint16(MNL_TYPE_U8), 0x12)
-	AttrPutU8(nlh, uint16(MNL_TYPE_U8), 0x13)
-	ret, err := AttrParse(nlh, 0, cb, val)
+	nlh.PutU8(uint16(MNL_TYPE_U8), 0x10)
+	nlh.PutU8(uint16(MNL_TYPE_U8), 0x11)
+	nlh.PutU8(uint16(MNL_TYPE_U8), 0x12)
+	nlh.PutU8(uint16(MNL_TYPE_U8), 0x13)
+	ret, err := nlh.Parse(0, cb, val)
 	if ret != MNL_CB_OK {
 		t.Errorf("type - want: %d, but: %d", MNL_CB_OK, ret)
 	}
@@ -974,10 +974,10 @@ var _ = Describe("Attr", func() {
 	Context("Attributes", func() {
 		It("has valid 4 attrs", func() {
 			nlh.PutHeader()
-			AttrPutU8(nlh, uint16(0), 0x10)
-			AttrPutU8(nlh, uint16(1), 0x11)
-			AttrPutU8(nlh, uint16(2), 0x12)
-			AttrPutU8(nlh, uint16(3), 0x13)
+			nlh.PutU8(uint16(0), 0x10)
+			nlh.PutU8(uint16(1), 0x11)
+			nlh.PutU8(uint16(2), 0x12)
+			nlh.PutU8(uint16(3), 0x13)
 			i := 0
 			for attr := range(nlh.Attributes(0)) {
 				Expect(attr.Type).To(Equal(uint16(i)))

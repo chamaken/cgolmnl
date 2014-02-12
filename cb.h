@@ -1,5 +1,5 @@
-#ifndef __CGOMNL_CB_H__
-#define __CGOMNL_CB_H__
+#ifndef __CGOLMNL_CB_H__
+#define __CGOLMNL_CB_H__
 extern int attr_parse_wrapper(const struct nlmsghdr *nlh, size_t offset, void *data);
 extern int attr_parse_nested_wrapper(const struct nlattr *attr, void *data);
 extern int attr_parse_payload_wrapper(const void *payload, size_t payload_len, void *data);

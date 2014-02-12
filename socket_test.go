@@ -19,7 +19,7 @@ var _ = Describe("Socket", func() {
 	)
 
 	BeforeEach(func() {
-		nl, _ = SocketOpen(NETLINK_NETFILTER)
+		nl, _ = NewSocket(NETLINK_NETFILTER)
 	})
 
 	AfterEach(func() {
@@ -37,7 +37,7 @@ var _ = Describe("Socket", func() {
 			fd := nl.Fd()
 			Expect(nl.Close()).To(BeNil())
 			Expect(IsValidFd(fd)).To(BeFalse())
-			nl, _ = SocketOpen(NETLINK_NETFILTER) // for AfterEach
+			nl, _ = NewSocket(NETLINK_NETFILTER) // for AfterEach
 		})
 	})
 	Context("Bind and Port", func() {

@@ -13,42 +13,42 @@ import (
 )
 
 // attr.go
-func (attr *Nlattr) GetType() uint16 { return AttrGetType(attr) }
-func (attr *Nlattr) GetLen() uint16 { return AttrGetLen(attr) }
-func (attr *Nlattr) PayloadLen() uint16 { return AttrGetPayloadLen(attr) }
-func (attr *Nlattr) Payload() unsafe.Pointer { return AttrGetPayload(attr) }
-func (attr *Nlattr) PayloadBytes() []byte { return AttrGetPayloadBytes(attr) } // added
-func (attr *Nlattr) Ok(size int) bool { return AttrOk(attr, size) }
-func (attr *Nlattr) Next() *Nlattr { return AttrNext(attr) }
-func (attr *Nlattr) TypeValid(max uint16) (int, error) { return AttrTypeValid(attr, max) }
-func (attr *Nlattr) Validate(data_type AttrDataType) (int, error) { return AttrValidate(attr, data_type) }
-func (attr *Nlattr) Validate2(data_type AttrDataType, exp_len Size_t) (int, error) { return AttrValidate2(attr, data_type, exp_len) } 
-func (nlh *Nlmsghdr) Parse(offset Size_t, cb MnlAttrCb, data interface{}) (int, error) { return AttrParse(nlh, offset, cb, data) }
-func (attr *Nlattr) ParseNested(cb MnlAttrCb, data interface{}) (int, error) { return AttrParseNested(attr, cb, data) }
-func (attr *Nlattr) U8() uint8 { return AttrGetU8(attr) }
-func (attr *Nlattr) U16() uint16 { return AttrGetU16(attr) }
-func (attr *Nlattr) U32() uint32 { return AttrGetU32(attr) }
-func (attr *Nlattr) U64() uint64 { return AttrGetU64(attr) }
-func (attr *Nlattr) Str() string { return AttrGetStr(attr) }
-func (nlh *Nlmsghdr) Put(attr_type uint16, size Size_t, p unsafe.Pointer) { AttrPut(nlh, attr_type, size, p) }
-func (nlh *Nlmsghdr) PutPtr(attr_type uint16, data interface{}) { AttrPutPtr(nlh, attr_type, data) }
-func (nlh *Nlmsghdr) PutBytes(attr_type uint16, data []byte) { AttrPutBytes(nlh, attr_type, data) }
-func (nlh *Nlmsghdr) PutU8(attr_type uint16, data uint8) { AttrPutU8(nlh, attr_type, data) }
-func (nlh *Nlmsghdr) PutU16(attr_type uint16, data uint16) { AttrPutU16(nlh, attr_type, data) }
-func (nlh *Nlmsghdr) PutU32(attr_type uint16, data uint32) { AttrPutU32(nlh, attr_type, data) }
-func (nlh *Nlmsghdr) PutU64(attr_type uint16, data uint64) { AttrPutU64(nlh, attr_type, data) }
-func (nlh *Nlmsghdr) PutStr(attr_type uint16, data string) { AttrPutStr(nlh, attr_type, data) }
-func (nlh *Nlmsghdr) PutStrz(attr_type uint16, data string) { AttrPutStrz(nlh, attr_type, data) }
-func (nlh *Nlmsghdr) NestStart(attr_type uint16) *Nlattr { return AttrNestStart(nlh, attr_type) }
-func (nlh *Nlmsghdr) PutCheck(buflen Size_t, attr_type uint16, data []byte) bool { return AttrPutCheck(nlh, buflen, attr_type, data) }
-func (nlh *Nlmsghdr) PutU8Check(buflen Size_t, attr_type uint16, data uint8) bool { return AttrPutU8Check(nlh, buflen, attr_type, data) }
-func (nlh *Nlmsghdr) PutU16Check(buflen Size_t, attr_type uint16, data uint16) bool { return AttrPutU16Check(nlh, buflen, attr_type, data) }
-func (nlh *Nlmsghdr) PutU32Check(buflen Size_t, attr_type uint16, data uint32) bool { return AttrPutU32Check(nlh, buflen, attr_type, data) }
-func (nlh *Nlmsghdr) PutU64Check(buflen Size_t, attr_type uint16, data uint64) bool { return AttrPutU64Check(nlh, buflen, attr_type, data) }
-func (nlh *Nlmsghdr) PutStrCheck(buflen Size_t, attr_type uint16, data string) bool { return AttrPutStrCheck(nlh, buflen, attr_type, data) }
-func (nlh *Nlmsghdr) PutStrzCheck(buflen Size_t, attr_type uint16, data string) bool { return AttrPutStrzCheck(nlh, buflen, attr_type, data) }
-func (nlh *Nlmsghdr) NestEnd(start *Nlattr) { AttrNestEnd(nlh, start) }
-func (nlh *Nlmsghdr) NestCancel(start *Nlattr) { AttrNestCancel(nlh, start) }
+func (attr *Nlattr) GetType() uint16 { return attrGetType(attr) }
+func (attr *Nlattr) GetLen() uint16 { return attrGetLen(attr) }
+func (attr *Nlattr) PayloadLen() uint16 { return attrGetPayloadLen(attr) }
+func (attr *Nlattr) Payload() unsafe.Pointer { return attrGetPayload(attr) }
+func (attr *Nlattr) PayloadBytes() []byte { return attrGetPayloadBytes(attr) } // added
+func (attr *Nlattr) Ok(size int) bool { return attrOk(attr, size) }
+func (attr *Nlattr) Next() *Nlattr { return attrNext(attr) }
+func (attr *Nlattr) TypeValid(max uint16) (int, error) { return attrTypeValid(attr, max) }
+func (attr *Nlattr) Validate(data_type AttrDataType) (int, error) { return attrValidate(attr, data_type) }
+func (attr *Nlattr) Validate2(data_type AttrDataType, exp_len Size_t) (int, error) { return attrValidate2(attr, data_type, exp_len) } 
+func (nlh *Nlmsghdr) Parse(offset Size_t, cb MnlAttrCb, data interface{}) (int, error) { return attrParse(nlh, offset, cb, data) }
+func (attr *Nlattr) ParseNested(cb MnlAttrCb, data interface{}) (int, error) { return attrParseNested(attr, cb, data) }
+func (attr *Nlattr) U8() uint8 { return attrGetU8(attr) }
+func (attr *Nlattr) U16() uint16 { return attrGetU16(attr) }
+func (attr *Nlattr) U32() uint32 { return attrGetU32(attr) }
+func (attr *Nlattr) U64() uint64 { return attrGetU64(attr) }
+func (attr *Nlattr) Str() string { return attrGetStr(attr) }
+func (nlh *Nlmsghdr) Put(attr_type uint16, size Size_t, p unsafe.Pointer) { attrPut(nlh, attr_type, size, p) }
+func (nlh *Nlmsghdr) PutPtr(attr_type uint16, data interface{}) { attrPutPtr(nlh, attr_type, data) }
+func (nlh *Nlmsghdr) PutBytes(attr_type uint16, data []byte) { attrPutBytes(nlh, attr_type, data) }
+func (nlh *Nlmsghdr) PutU8(attr_type uint16, data uint8) { attrPutU8(nlh, attr_type, data) }
+func (nlh *Nlmsghdr) PutU16(attr_type uint16, data uint16) { attrPutU16(nlh, attr_type, data) }
+func (nlh *Nlmsghdr) PutU32(attr_type uint16, data uint32) { attrPutU32(nlh, attr_type, data) }
+func (nlh *Nlmsghdr) PutU64(attr_type uint16, data uint64) { attrPutU64(nlh, attr_type, data) }
+func (nlh *Nlmsghdr) PutStr(attr_type uint16, data string) { attrPutStr(nlh, attr_type, data) }
+func (nlh *Nlmsghdr) PutStrz(attr_type uint16, data string) { attrPutStrz(nlh, attr_type, data) }
+func (nlh *Nlmsghdr) NestStart(attr_type uint16) *Nlattr { return attrNestStart(nlh, attr_type) }
+func (nlh *Nlmsghdr) PutCheck(buflen Size_t, attr_type uint16, data []byte) bool { return attrPutCheck(nlh, buflen, attr_type, data) }
+func (nlh *Nlmsghdr) PutU8Check(buflen Size_t, attr_type uint16, data uint8) bool { return attrPutU8Check(nlh, buflen, attr_type, data) }
+func (nlh *Nlmsghdr) PutU16Check(buflen Size_t, attr_type uint16, data uint16) bool { return attrPutU16Check(nlh, buflen, attr_type, data) }
+func (nlh *Nlmsghdr) PutU32Check(buflen Size_t, attr_type uint16, data uint32) bool { return attrPutU32Check(nlh, buflen, attr_type, data) }
+func (nlh *Nlmsghdr) PutU64Check(buflen Size_t, attr_type uint16, data uint64) bool { return attrPutU64Check(nlh, buflen, attr_type, data) }
+func (nlh *Nlmsghdr) PutStrCheck(buflen Size_t, attr_type uint16, data string) bool { return attrPutStrCheck(nlh, buflen, attr_type, data) }
+func (nlh *Nlmsghdr) PutStrzCheck(buflen Size_t, attr_type uint16, data string) bool { return attrPutStrzCheck(nlh, buflen, attr_type, data) }
+func (nlh *Nlmsghdr) NestEnd(start *Nlattr) { attrNestEnd(nlh, start) }
+func (nlh *Nlmsghdr) NestCancel(start *Nlattr) { attrNestCancel(nlh, start) }
 
 // mnl_attr_for_each macro in libmnl.h
 func (nlh *Nlmsghdr) Attributes(offset Size_t) <-chan *Nlattr {
@@ -112,26 +112,27 @@ func NlattrPointer(b []byte) *Nlattr {
 }
 
 // nlmsg.go
-func (nlh *Nlmsghdr) PayloadLen() Size_t { return NlmsgGetPayloadLen(nlh) }
-func (nlh *Nlmsghdr) PutExtraHeader(size Size_t) unsafe.Pointer { return NlmsgPutExtraHeader(nlh, size) }
-func (nlh *Nlmsghdr) Payload() unsafe.Pointer { return NlmsgGetPayload(nlh) }
-func (nlh *Nlmsghdr) PayloadBytes() []byte { return NlmsgGetPayloadBytes(nlh) }
-func (nlh *Nlmsghdr) PayloadOffset(offset Size_t) unsafe.Pointer { return NlmsgGetPayloadOffset(nlh, offset) }
-func (nlh *Nlmsghdr) PayloadOffsetBytes(offset Size_t) []byte { return NlmsgGetPayloadOffsetBytes(nlh, offset) }
-func (nlh *Nlmsghdr) Ok(size int) bool { return NlmsgOk(nlh, size) }
-func (nlh *Nlmsghdr) Next(size int) (*Nlmsghdr, int) { return NlmsgNext(nlh, size) }
-func (nlh *Nlmsghdr) PayloadTail() unsafe.Pointer { return NlmsgGetPayloadTail(nlh) }
-func (nlh *Nlmsghdr) SeqOk(seq uint32) bool { return NlmsgSeqOk(nlh, seq) }
-func (nlh *Nlmsghdr) PortidOk(portid uint32) bool { return NlmsgPortidOk(nlh, portid) }
-func (nlh *Nlmsghdr) Fprint(fd *os.File, extra_header_size Size_t) { NlmsgFprintNlmsg(fd, nlh, extra_header_size) }
-func (b *NlmsgBatch) Stop() { NlmsgBatchStop(b) }
-func (b *NlmsgBatch) Next() bool { return NlmsgBatchNext(b) }
-func (b *NlmsgBatch) Reset() { NlmsgBatchReset(b) }
-func (b *NlmsgBatch) Size() Size_t { return NlmsgBatchSize(b) }
-func (b *NlmsgBatch) Head() unsafe.Pointer { return NlmsgBatchHead(b) }
-func (b *NlmsgBatch) HeadBytes() []byte { return NlmsgBatchHeadBytes(b) }
-func (b *NlmsgBatch) Current() unsafe.Pointer { return NlmsgBatchCurrent(b) }
-func (b *NlmsgBatch) IsEmpty() bool { return NlmsgBatchIsEmpty(b) }
+func (nlh *Nlmsghdr) PayloadLen() Size_t { return nlmsgGetPayloadLen(nlh) }
+func (nlh *Nlmsghdr) PutExtraHeader(size Size_t) unsafe.Pointer { return nlmsgPutExtraHeader(nlh, size) }
+func (nlh *Nlmsghdr) Payload() unsafe.Pointer { return nlmsgGetPayload(nlh) }
+func (nlh *Nlmsghdr) PayloadBytes() []byte { return nlmsgGetPayloadBytes(nlh) }
+func (nlh *Nlmsghdr) PayloadOffset(offset Size_t) unsafe.Pointer { return nlmsgGetPayloadOffset(nlh, offset) }
+func (nlh *Nlmsghdr) PayloadOffsetBytes(offset Size_t) []byte { return nlmsgGetPayloadOffsetBytes(nlh, offset) }
+func (nlh *Nlmsghdr) Ok(size int) bool { return nlmsgOk(nlh, size) }
+func (nlh *Nlmsghdr) Next(size int) (*Nlmsghdr, int) { return nlmsgNext(nlh, size) }
+func (nlh *Nlmsghdr) PayloadTail() unsafe.Pointer { return nlmsgGetPayloadTail(nlh) }
+func (nlh *Nlmsghdr) SeqOk(seq uint32) bool { return nlmsgSeqOk(nlh, seq) }
+func (nlh *Nlmsghdr) PortidOk(portid uint32) bool { return nlmsgPortidOk(nlh, portid) }
+func (nlh *Nlmsghdr) Fprint(fd *os.File, extra_header_size Size_t) { nlmsgFprintNlmsg(fd, nlh, extra_header_size) }
+func NewNlmsgBatch(buf []byte, limit Size_t) (*NlmsgBatch, error) { return nlmsgBatchStart(buf, limit) }
+func (b *NlmsgBatch) Stop() { nlmsgBatchStop(b) }
+func (b *NlmsgBatch) Next() bool { return nlmsgBatchNext(b) }
+func (b *NlmsgBatch) Reset() { nlmsgBatchReset(b) }
+func (b *NlmsgBatch) Size() Size_t { return nlmsgBatchSize(b) }
+func (b *NlmsgBatch) Head() unsafe.Pointer { return nlmsgBatchHead(b) }
+func (b *NlmsgBatch) HeadBytes() []byte { return nlmsgBatchHeadBytes(b) }
+func (b *NlmsgBatch) Current() unsafe.Pointer { return nlmsgBatchCurrent(b) }
+func (b *NlmsgBatch) IsEmpty() bool { return nlmsgBatchIsEmpty(b) }
 
 // helper function
 func NewNlmsghdr(size int) (*Nlmsghdr, error) {
@@ -163,16 +164,17 @@ func PutNewNlmsghdr(size int) (*Nlmsghdr, error) {
 }
 
 // socket.go
-func (nl *Socket) Fd() int { return SocketGetFd(nl) }
-func (nl *Socket) Portid() uint32 { return SocketGetPortid(nl) }
-func (nl *Socket) Bind(groups uint, pid Pid_t) error { return SocketBind(nl, groups, pid) }
-func (nl *Socket) Sendto(buf []byte) (Ssize_t, error) { return SocketSendto(nl, buf) }
-func (nl *Socket) SendNlmsg(nlh *Nlmsghdr) (Ssize_t, error) { return SocketSendNlmsg(nl, nlh) }
-func (nl *Socket) Recvfrom(buf []byte) (Ssize_t, error) { return SocketRecvfrom(nl, buf) }
-func (nl *Socket) Close() error { return SocketClose(nl) }
-func (nl *Socket) Setsockopt(t int, v unsafe.Pointer, l Socklen_t) error { return SocketSetsockopt(nl, t, v, l) }
-func (nl *Socket) SetsockoptBytes(optype int, buf []byte) error { return SocketSetsockoptBytes(nl, optype, buf) }
-func (nl *Socket) SetsockoptByte(optype int, v byte) error { return SocketSetsockoptByte(nl, optype, v) }
-func (nl *Socket) SetsockoptCint(optype int, v int) error { return SocketSetsockoptCint(nl, optype, v) }
-func (nl *Socket) Sockopt(optype int, size Socklen_t) ([]byte, error) { return SocketGetsockopt(nl, optype, size) }
+func NewSocket(bus int) (*Socket, error) { return socketOpen(bus) }
+func (nl *Socket) Fd() int { return socketGetFd(nl) }
+func (nl *Socket) Portid() uint32 { return socketGetPortid(nl) }
+func (nl *Socket) Bind(groups uint, pid Pid_t) error { return socketBind(nl, groups, pid) }
+func (nl *Socket) Sendto(buf []byte) (Ssize_t, error) { return socketSendto(nl, buf) }
+func (nl *Socket) SendNlmsg(nlh *Nlmsghdr) (Ssize_t, error) { return socketSendNlmsg(nl, nlh) }
+func (nl *Socket) Recvfrom(buf []byte) (Ssize_t, error) { return socketRecvfrom(nl, buf) }
+func (nl *Socket) Close() error { return socketClose(nl) }
+func (nl *Socket) Setsockopt(t int, v unsafe.Pointer, l Socklen_t) error { return socketSetsockopt(nl, t, v, l) }
+func (nl *Socket) SetsockoptBytes(optype int, buf []byte) error { return socketSetsockoptBytes(nl, optype, buf) }
+func (nl *Socket) SetsockoptByte(optype int, v byte) error { return socketSetsockoptByte(nl, optype, v) }
+func (nl *Socket) SetsockoptCint(optype int, v int) error { return socketSetsockoptCint(nl, optype, v) }
+func (nl *Socket) Sockopt(optype int, size Socklen_t) ([]byte, error) { return socketGetsockopt(nl, optype, size) }
 

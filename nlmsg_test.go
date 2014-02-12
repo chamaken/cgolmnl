@@ -256,7 +256,7 @@ var _ = Describe("Attr", func() {
 
 		BeforeEach(func() {
 			buf := make([]byte, 301)
-			b, _ = NlmsgBatchStart(buf, 163)
+			b, _ = NewNlmsgBatch(buf, 163)
 		})
 
 		It("should indicate initial, empty states", func() {
