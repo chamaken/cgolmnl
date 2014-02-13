@@ -220,84 +220,71 @@ var _ = Describe("Attr", func() {
 			var i uint16
 			for i = 0; i < uint16(MNL_TYPE_MAX); i++ {
 				abuf.SetType(i)
-				ret, err := nla.TypeValid(uint16(MNL_TYPE_MAX))
-				Expect(ret).To(Equal(MNL_CB_OK))
+				err := nla.TypeValid(uint16(MNL_TYPE_MAX))
 				Expect(err).To(BeNil())
 			}
 		})
 		It("should error gt param", func() {
 			abuf.SetType(uint16(MNL_TYPE_MAX + 1))
-			ret, err := nla.TypeValid(uint16(MNL_TYPE_MAX))
-			Expect(ret).To(Equal(MNL_CB_ERROR))
+			err := nla.TypeValid(uint16(MNL_TYPE_MAX))
 			Expect(err.(syscall.Errno)).To(Equal(syscall.EOPNOTSUPP))
 		})
 	})
 
 	Context("AttrValidate", func() {
 		It("should be invalid because of type", func() {
-			ret, err := nla.Validate(MNL_TYPE_MAX)
-			Expect(ret).To(Equal(-1))
+			err := nla.Validate(MNL_TYPE_MAX)
 			Expect(err.(syscall.Errno)).To(Equal(syscall.EINVAL))
 
-			ret, err = nla.Validate2(MNL_TYPE_MAX, 1)
-			Expect(ret).To(Equal(-1))
+			err = nla.Validate2(MNL_TYPE_MAX, 1)
 			Expect(err.(syscall.Errno)).To(Equal(syscall.EINVAL))
 		})
 		It("should be valid", func() {
 			for t := range valid_len {
 				abuf.SetLen(uint16(MNL_ATTR_HDRLEN) + valid_len[t][0])
 
-				ret, err := nla.Validate( t)
-				Expect(ret).To(Equal(0))
+				err := nla.Validate( t)
 				Expect(err).To(BeNil())
 
-				ret, err = nla.Validate2(t, Size_t(valid_len[t][1]))
-				Expect(ret).To(Equal(0))
+				err = nla.Validate2(t, Size_t(valid_len[t][1]))
 				Expect(err).To(BeNil())
 			}
 		})
 		It("should be invalid by mnl_attr_data_type_len, ERANGE", func() {
 			for t := range invalid_len {
 				abuf.SetLen(uint16(MNL_ATTR_HDRLEN) + invalid_len[t][0])
-				ret, err := nla.Validate(t)
-				Expect(ret).To(Equal(-1))
+				err := nla.Validate(t)
 				Expect(err.(syscall.Errno)).To(Equal(syscall.ERANGE))
 			}
 		})
 		It("should be invalid MNL_TYPE_FLAG", func() {
 			abuf.SetLen(uint16(MNL_ATTR_HDRLEN + 1))
-			ret, err := nla.Validate(MNL_TYPE_FLAG)
-			Expect(ret).To(Equal(-1))
+			err := nla.Validate(MNL_TYPE_FLAG)
 			Expect(err.(syscall.Errno)).To(Equal(syscall.ERANGE))
 		})
 		It("should be invalid MNL_TYPE_NUL_STRING", func() {
 			abuf.SetLen(256)
 			(*abuf)[abuf.Len() - 1] = 1
-			ret, err := nla.Validate(MNL_TYPE_NUL_STRING)
-			Expect(ret).To(Equal(-1))
+			err := nla.Validate(MNL_TYPE_NUL_STRING)
 			Expect(err.(syscall.Errno)).To(Equal(syscall.EINVAL))
 
 			abuf.SetLen(uint16(MNL_ATTR_HDRLEN))
-			ret, err = nla.Validate(MNL_TYPE_NUL_STRING)
-			Expect(ret).To(Equal(-1))
+			err = nla.Validate(MNL_TYPE_NUL_STRING)
 			Expect(err.(syscall.Errno)).To(Equal(syscall.ERANGE))
 		})
 		It("should be invalid MNL_TYPE_STRING", func() {
 			abuf.SetLen(uint16(MNL_ATTR_HDRLEN))
-			ret, err := nla.Validate(MNL_TYPE_STRING)
-			Expect(ret).To(Equal(-1))
+			err := nla.Validate(MNL_TYPE_STRING)
 			Expect(err.(syscall.Errno)).To(Equal(syscall.ERANGE))
 		})
 		It("should be valid MNL_TYPE_NESTED with 0 payload", func() {
 			abuf.SetLen(uint16(MNL_ATTR_HDRLEN))
-			ret, err := nla.Validate(MNL_TYPE_NESTED)
-			Expect(ret).To(Equal(0))
+			err := nla.Validate(MNL_TYPE_NESTED)
 			Expect(err).To(BeNil())
 		})
 		It("should be invalid MNL_TYPE_NESTED", func() {
 			abuf.SetLen(uint16(MNL_ATTR_HDRLEN * 2 - 1))
-			ret, err := nla.Validate(MNL_TYPE_NESTED)
-			Expect(ret).To(Equal(-1))
+			err := nla.Validate(MNL_TYPE_NESTED)
 			Expect(err.(syscall.Errno)).To(Equal(syscall.ERANGE))
 		})
 	})
