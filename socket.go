@@ -10,24 +10,19 @@ import "unsafe"
 */
 import "C"
 
+// Netlink socket helpers
 type Socket C.struct_mnl_socket // [0]byte
 
-// mnl_socket_get_fd - obtain file descriptor from netlink socket
-//
 // int mnl_socket_get_fd(const struct mnl_socket *nl)
 func socketGetFd(nl *Socket) int {
 	return int(C.mnl_socket_get_fd((*C.struct_mnl_socket)(nl)))
 }
 
-// mnl_socket_get_portid - obtain Netlink PortID from netlink socket
-//
 // uint32_t mnl_socket_get_portid(const struct mnl_socket *nl)
 func socketGetPortid(nl *Socket) uint32 {
 	return uint32(C.mnl_socket_get_portid((*C.struct_mnl_socket)(nl)))
 }
 
-// mnl_socket_open - open a netlink socket
-// 
 // struct mnl_socket *mnl_socket_open(int bus)
 func socketOpen(bus int) (*Socket, error) {
 	// return C.mnl_socket_open(C.int(bus))
@@ -35,16 +30,12 @@ func socketOpen(bus int) (*Socket, error) {
 	return (*Socket)(ret), err
 }
 
-// mnl_socket_bind - bind netlink socket
-//
 // int mnl_socket_bind(struct mnl_socket *nl, unsigned int groups, pid_t pid)
 func socketBind(nl *Socket, groups uint, pid Pid_t) error {
 	_, err := C.mnl_socket_bind((*C.struct_mnl_socket)(nl), C.uint(groups), C.pid_t(pid))
 	return err
 }
 
-// mnl_socket_sendto - send a netlink message of a certain size
-//
 // ssize_t
 // mnl_socket_sendto(const struct mnl_socket *nl, const void *buf, size_t len)
 func socketSendto(nl *Socket, buf []byte) (Ssize_t, error) {
@@ -56,8 +47,6 @@ func socketSendNlmsg(nl *Socket, nlh *Nlmsghdr) (Ssize_t, error) {
 	return Ssize_t(ret), err
 }
 
-// mnl_socket_recvfrom - receive a netlink message
-//
 // ssize_t
 // mnl_socket_recvfrom(const struct mnl_socket *nl, void *buf, size_t bufsiz)
 func socketRecvfrom(nl *Socket, buf []byte) (Ssize_t, error) {
@@ -65,16 +54,12 @@ func socketRecvfrom(nl *Socket, buf []byte) (Ssize_t, error) {
 	return Ssize_t(ret), err
 }
 
-// mnl_socket_close - close a given netlink socket
-//
 // int mnl_socket_close(struct mnl_socket *nl)
 func socketClose(nl *Socket) error {
 	_, err := C.mnl_socket_close((*C.struct_mnl_socket)(nl))
 	return err
 }
 
-// mnl_socket_setsockopt - set Netlink socket option
-//
 // int mnl_socket_setsockopt(const struct mnl_socket *nl, int type,
 //			     void *buf, socklen_t len)
 func socketSetsockopt(nl *Socket, optype int, optval unsafe.Pointer, optlen Socklen_t) error {
@@ -96,8 +81,6 @@ func socketSetsockoptCint(nl *Socket, opt int, value int) error {
 	return err
 }
 
-// mnl_socket_getsockopt - get a Netlink socket option
-//
 // int mnl_socket_getsockopt(const struct mnl_socket *nl, int type,
 // 			     void *buf, socklen_t *len)
 func socketGetsockopt(nl *Socket, optype int, size Socklen_t) ([]byte, error) {

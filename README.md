@@ -221,7 +221,7 @@ comparison
 | ------------------------------------- | ----------------------------- | ----------------------------- |
 | mnl_socket_get_fd			| SocketGgetFd			|				|
 | mnl_socket_get_portid			| SocketGetPortid		|				|
-| mnl_socket_open			| SocketOpen			| 				|
+| mnl_socket_open			| NewSocket			| 				|
 | mnl_socket_bind			| SocketBind			|				|
 | mnl_socket_sendto			| SocketSendto			|				|
 | (add)					| SocketSendNlmsg		|				|

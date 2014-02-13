@@ -17,39 +17,40 @@ import (
 
 // mnl_nlmsg_size - calculate the size of Netlink message (without alignment)
 //
-// size_t mnl_nlmsg_size(size_t len)
+// This function returns the size of a netlink message (header plus payload)
+// without alignment.
 func NlmsgSize(size Size_t) Size_t {
 	return Size_t(C.mnl_nlmsg_size(C.size_t(size)))
 }
 
-// mnl_nlmsg_get_payload_len - get the length of the Netlink payload
-//
 // size_t mnl_nlmsg_get_payload_len(const struct nlmsghdr *nlh)
 func nlmsgGetPayloadLen(nlh *Nlmsghdr) Size_t {
 	return Size_t(C.mnl_nlmsg_get_payload_len((*C.struct_nlmsghdr)(unsafe.Pointer(nlh))))
 }
 
-// mnl_nlmsg_put_header - reserve and prepare room for Netlink header
+// reserve and prepare room for Netlink header
 //
-// struct nlmsghdr *mnl_nlmsg_put_header(void *buf)
+// This function sets to zero the room that is required to put the Netlink
+// header in the memory buffer passed as parameter. This function also
+// initializes the nlmsg_len field to the size of the Netlink header. This
+// function returns a pointer to the Netlink header structure.
 func NlmsgPutHeader(buf unsafe.Pointer) *Nlmsghdr {
 	return (*Nlmsghdr)(unsafe.Pointer(C.mnl_nlmsg_put_header(buf)))
 }
+// reserve and prepare room for Netlink header
+//
+// This function wraps NlmsgPutHeader().
 func NlmsgPutHeaderBytes(buf []byte) (*Nlmsghdr, error) {
 	if len(buf) < int(MNL_NLMSG_HDRLEN) { return nil, syscall.EINVAL }
 	return NlmsgPutHeader(unsafe.Pointer(&buf[0])), nil
 }
 
-// mnl_nlmsg_put_extra_header - reserve and prepare room for an extra header
-//
 // void *
 // mnl_nlmsg_put_extra_header(struct nlmsghdr *nlh, size_t size)
 func nlmsgPutExtraHeader(nlh *Nlmsghdr, size Size_t) unsafe.Pointer {
 	return C.mnl_nlmsg_put_extra_header((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.size_t(size))
 }
 
-// mnl_nlmsg_get_payload - get a pointer to the payload of the netlink message
-//
 // void *mnl_nlmsg_get_payload(const struct nlmsghdr *nlh)
 func nlmsgGetPayload(nlh *Nlmsghdr) unsafe.Pointer {
 	return C.mnl_nlmsg_get_payload((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)))
@@ -58,8 +59,6 @@ func nlmsgGetPayloadBytes(nlh *Nlmsghdr) []byte {
 	return SharedBytes(nlmsgGetPayload(nlh), int(nlmsgGetPayloadLen(nlh)))
 }
 
-// mnl_nlmsg_get_payload_offset - get a pointer to the payload of the message
-//
 // void *
 // mnl_nlmsg_get_payload_offset(const struct nlmsghdr *nlh, size_t offset)
 func nlmsgGetPayloadOffset(nlh *Nlmsghdr, offset Size_t) unsafe.Pointer {
@@ -69,8 +68,6 @@ func nlmsgGetPayloadOffsetBytes(nlh *Nlmsghdr, offset Size_t) []byte {
 	return SharedBytes(nlmsgGetPayloadOffset(nlh, offset), int(nlmsgGetPayloadLen(nlh) - Size_t(MnlAlign(uint32(offset)))))
 }
 
-// mnl_nlmsg_ok - check a there is room for netlink message
-//
 // bool mnl_nlmsg_ok(const struct nlmsghdr *nlh, int len)
 func nlmsgOk(nlh *Nlmsghdr, size int) bool {
 	// test fails
@@ -81,8 +78,6 @@ func nlmsgOk(nlh *Nlmsghdr, size int) bool {
 	return bool(C.mnl_nlmsg_ok((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.int(size)))
 }
 
-// mnl_nlmsg_next - get the next netlink message in a multipart message
-//
 // struct nlmsghdr *
 // mnl_nlmsg_next(const struct nlmsghdr *nlh, int *len)
 func nlmsgNext(nlh *Nlmsghdr, size int) (*Nlmsghdr, int) {
@@ -91,23 +86,17 @@ func nlmsgNext(nlh *Nlmsghdr, size int) (*Nlmsghdr, int) {
 	return h, int(c_size)
 }
 
-// mnl_nlmsg_get_payload_tail - get the ending of the netlink message
-//
 // void *mnl_nlmsg_get_payload_tail(const struct nlmsghdr *nlh)
 func nlmsgGetPayloadTail(nlh *Nlmsghdr) unsafe.Pointer {
 	return C.mnl_nlmsg_get_payload_tail((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)))
 }
 
-// mnl_nlmsg_seq_ok - perform sequence tracking
-//
 // bool
 // mnl_nlmsg_seq_ok(const struct nlmsghdr *nlh, uint32_t seq)
 func nlmsgSeqOk(nlh *Nlmsghdr, seq uint32) bool {
 	return bool(C.mnl_nlmsg_seq_ok((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.uint(seq)))
 }
 
-// mnl_nlmsg_portid_ok - perform portID origin check
-//
 // bool
 // mnl_nlmsg_portid_ok(const struct nlmsghdr *nlh, uint32_t portid)
 func nlmsgPortidOk(nlh *Nlmsghdr, portid uint32) bool {
@@ -115,8 +104,6 @@ func nlmsgPortidOk(nlh *Nlmsghdr, portid uint32) bool {
 }
 
 
-// mnl_nlmsg_fprintf - print netlink message to file
-//
 // void
 // mnl_nlmsg_fprintf(FILE *fd, const void *data, size_t datalen,
 //		     size_t extra_header_size)
@@ -134,48 +121,61 @@ func nlmsgFprintNlmsg(fd *os.File, nlh *Nlmsghdr, extra_header_size Size_t) {
 }
 
 // Netlink message batch helpers
-
-// struct mnl_nlmsg_batch
+//
+// This library provides helpers to batch several messages into one single
+// datagram. These helpers do not perform strict memory boundary checkings.
+//
+// The following figure represents a Netlink message batch:
+//
+//   |<-------------- MNL_SOCKET_BUFFER_SIZE ------------->|
+//   |<-------------------- batch ------------------>|     |
+//   |-----------|-----------|-----------|-----------|-----------|
+//   |<- nlmsg ->|<- nlmsg ->|<- nlmsg ->|<- nlmsg ->|<- nlmsg ->|
+//   |-----------|-----------|-----------|-----------|-----------|
+//                                             ^           ^
+//                                             |           |
+//                                        message N   message N+1
+//
+// To start the batch, you have to call mnl_nlmsg_batch_start() and you can
+// use mnl_nlmsg_batch_stop() to release it.
+//
+// You have to invoke mnl_nlmsg_batch_next() to get room for a new message
+// in the batch. If this function returns NULL, it means that the last
+// message that was added (message N+1 in the figure above) does not fit the
+// batch. Thus, you have to send the batch (which includes until message N)
+// and, then, you have to call mnl_nlmsg_batch_reset() to re-initialize
+// the batch (this moves message N+1 to the head of the buffer). For that
+// reason, the buffer that you have to use to store the batch must be double
+// of MNL_SOCKET_BUFFER_SIZE to ensure that the last message (message N+1)
+// that did not fit into the batch is written inside valid memory boundaries.
 type NlmsgBatch C.struct_mnl_nlmsg_batch // [0]byte
 
-// mnl_nlmsg_batch_start - initialize a batch
-//
 // struct mnl_nlmsg_batch *mnl_nlmsg_batch_start(void *buf, size_t limit)
 func nlmsgBatchStart(buf []byte, limit Size_t) (*NlmsgBatch, error) {
 	ret, err := C.mnl_nlmsg_batch_start(unsafe.Pointer(&buf[0]), C.size_t(limit))
 	return  (*NlmsgBatch)(ret), err
 }
 
-// mnl_nlmsg_batch_stop - release a batch
-//
 // void mnl_nlmsg_batch_stop(struct mnl_nlmsg_batch *b)
 func nlmsgBatchStop(b *NlmsgBatch) {
 	C.mnl_nlmsg_batch_stop((*C.struct_mnl_nlmsg_batch)(b))
 }
 
-// mnl_nlmsg_batch_next - get room for the next message in the batch
-//
 // bool mnl_nlmsg_batch_next(struct mnl_nlmsg_batch *b)
 func nlmsgBatchNext(b *NlmsgBatch) bool {
 	return bool(C.mnl_nlmsg_batch_next((*C.struct_mnl_nlmsg_batch)(b)))
 }
 
-// mnl_nlmsg_batch_reset - reset the batch
-//
 // void mnl_nlmsg_batch_reset(struct mnl_nlmsg_batch *b)
 func nlmsgBatchReset(b *NlmsgBatch) {
 	C.mnl_nlmsg_batch_reset((*C.struct_mnl_nlmsg_batch)(b))
 }
 
-// mnl_nlmsg_batch_size - get current size of the batch
-//
 // size_t mnl_nlmsg_batch_size(struct mnl_nlmsg_batch *b)
 func nlmsgBatchSize(b *NlmsgBatch) Size_t {
 	return Size_t(C.mnl_nlmsg_batch_size((*C.struct_mnl_nlmsg_batch)(b)))
 }
 
-// mnl_nlmsg_batch_head - get head of this batch
-//
 // void *mnl_nlmsg_batch_head(struct mnl_nlmsg_batch *b)
 func nlmsgBatchHead(b *NlmsgBatch) unsafe.Pointer {
 	return C.mnl_nlmsg_batch_head((*C.struct_mnl_nlmsg_batch)(b))
@@ -184,15 +184,11 @@ func nlmsgBatchHeadBytes(b *NlmsgBatch) []byte {
 	return SharedBytes(nlmsgBatchHead(b), int(nlmsgBatchSize(b)))
 }
 
-// mnl_nlmsg_batch_current - returns current position in the batch
-//
 // void *mnl_nlmsg_batch_current(struct mnl_nlmsg_batch *b)
 func nlmsgBatchCurrent(b *NlmsgBatch) unsafe.Pointer {
 	return C.mnl_nlmsg_batch_current((*C.struct_mnl_nlmsg_batch)(b))
 }
 
-// mnl_nlmsg_batch_is_empty - check if there is any message in the batch
-//
 // bool mnl_nlmsg_batch_is_empty(struct mnl_nlmsg_batch *b)
 func nlmsgBatchIsEmpty(b *NlmsgBatch) bool {
 	return bool(C.mnl_nlmsg_batch_is_empty((*C.struct_mnl_nlmsg_batch)(b)))

@@ -18,6 +18,12 @@ import (
 )
 
 type MnlCb func(*Nlmsghdr, interface{}) (int, syscall.Errno)
+
+// callback type for CbRun2
+//
+// Different from original, control message callback is not array of
+// MnlCb type. This callback receives Netlink message type as second
+// parameter. Your callback will dispatch by it.
 type MnlCtlCb func(*Nlmsghdr, uint16, interface{}) (int, syscall.Errno)
 
 // argp (param data in original function) has three elements
@@ -26,9 +32,10 @@ type MnlCtlCb func(*Nlmsghdr, uint16, interface{}) (int, syscall.Errno)
 //   2: (real) data
 //
 // packing at CbRun2, CbRun
-// unpacking below GoCb, GoCtlCb
+// unpacking at GoCb, GoCtlCb
 
 
+// callback wrapper called from original cb_run(), cb_run2().
 //export GoCb
 func GoCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 	args := *(*[3]unsafe.Pointer)(argp)
@@ -44,7 +51,8 @@ func GoCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 	}
 	return C.int(ret)
 }
-	
+
+// control message callback wrapper called from original cb_run2()
 //export GoCtlCb
 func GoCtlCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 	args := *(*[3]unsafe.Pointer)(argp)
@@ -62,18 +70,22 @@ func GoCtlCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 	return C.int(ret)
 }
 
-// mnl_cb_run2 - callback runqueue for netlink messages
+// callback runqueue for netlink messages
 //
-// It seems callback Go function must be exported by //export
-// This means we can not dynamically create mnl_cb_t[]
-// To alleviate I introduct new C type mnl_ctl_cb_t
+// You can set the cb_ctl to nil if you want to use the default control
+// callback handlers. Or set it with ctltypes which contains control message
+// types to handle.
 //
-//   int (*mnl_ctl_cb_t)(const struct nlmsghdr *nlh, uint16_t type, void *data)
+// Your callback may return three possible values:
+// 	- MNL_CB_ERROR (<=-1): an error has occurred. Stop callback runqueue.
+// 	- MNL_CB_STOP (=0): stop callback runqueue.
+// 	- MNL_CB_OK (>=1): no problem has occurred.
 //
-// int
-// mnl_cb_run2(const void *buf, size_t numbytes, unsigned int seq,
-//	       unsigned int portid, mnl_cb_t cb_data, void *data,
-//	       mnl_cb_t *cb_ctl_array, unsigned int cb_ctl_array_len)
+// This function propagates the callback return value. On error, it returns
+// -1 and errno is explicitly set. If the portID is not the expected, errno
+// is set to ESRCH. If the sequence number is not the expected, errno is set
+// to EPROTO. If the dump was interrupted, errno is set to EINTR and you should
+// request a new fresh dump again.
 func CbRun2(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{},
 	cb_ctl MnlCtlCb, ctltypes []uint16) (int, error) {
 	if len(ctltypes) >= C.NLMSG_MIN_TYPE {
@@ -87,11 +99,17 @@ func CbRun2(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{},
 	return int(ret), err
 }
 
-// mnl_cb_run - callback runqueue for netlink messages (simplified version)
+// callback runqueue for netlink messages (simplified version)
 //
-// int
-// mnl_cb_run(const void *buf, size_t numbytes, uint32_t seq,
-//	      uint32_t portid, mnl_cb_t cb_data, void *data)
+// This function is like CbRun2() but it does not allow you to set
+// the control callback handlers.
+//
+// Your callback may return three possible values:
+// 	- MNL_CB_ERROR (<=-1): an error has occurred. Stop callback runqueue.
+// 	- MNL_CB_STOP (=0): stop callback runqueue.
+// 	- MNL_CB_OK (>=1): no problems has occurred.
+//
+// This function propagates the callback return value.
 func CbRun(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{}) (int, error) {
 	args := [3]unsafe.Pointer{unsafe.Pointer(nil), unsafe.Pointer(&cb_data), unsafe.Pointer(&data)}
 	ret, err := C.cb_run_wrapper(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),

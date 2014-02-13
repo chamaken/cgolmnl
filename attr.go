@@ -71,13 +71,7 @@ func attrValidate2(attr *Nlattr, data_type AttrDataType, exp_len Size_t) error {
 	return err
 }
 
-// https://groups.google.com/forum/#!topic/golang-nuts/PRcvOJqItow
-//
-// Unfortunately you can't pass a Go func to C code and have the C code
-// call it.  The best you can do is pass a Go func to C code and have the C
-// code turn around and pass the Go func back to a Go function that then
-// calls the func. 
-
+// attribute callback wrapper called from original
 type MnlAttrCb func(*Nlattr, interface{}) (int, syscall.Errno)
 
 //export GoAttrCb
@@ -114,7 +108,7 @@ func attrParseNested(nested *Nlattr, cb MnlAttrCb, data interface{}) (int, error
 	ret, err := C.attr_parse_nested_wrapper((*C.struct_nlattr)(unsafe.Pointer(nested)), unsafe.Pointer(&args))
 	return int(ret), err
 }
-		
+
 // parse attributes in payload of Netlink message
 //
 // This function takes a pointer to the area that contains the attributes,

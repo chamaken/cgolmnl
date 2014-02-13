@@ -3,6 +3,16 @@
 #include <libmnl/libmnl.h>
 #include "_cgo_export.h"
 
+/*
+ * These are C function wrapper to call from Go. see
+ *   https://groups.google.com/forum/#!topic/golang-nuts/PRcvOJqItow
+ *
+ * Unfortunately you can't pass a Go func to C code and have the C code
+ * call it.  The best you can do is pass a Go func to C code and have the C
+ * code turn around and pass the Go func back to a Go function that then
+ * calls the func.
+ */
+
 int attr_parse_wrapper(const struct nlmsghdr *nlh, size_t offset, void *data)
 {
 	return mnl_attr_parse(nlh, (unsigned int)offset, (mnl_attr_cb_t)GoAttrCb, data);
