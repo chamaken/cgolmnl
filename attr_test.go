@@ -701,7 +701,7 @@ var _ = Describe("Attr", func() {
 		var _tbuf NlattrBuf
 		BeforeEach(func() {
 			nlh.PutHeader()
-			if nlh.PutCheck(Size_t(len(*hbuf)), 1, b) == false {
+			if nlh.PutCheck(Size_t(len(*hbuf)), 1, 3, unsafe.Pointer(&b[0])) == false {
 				panic("invalid test assumption")
 			}
 			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
@@ -724,7 +724,7 @@ var _ = Describe("Attr", func() {
 			_nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
-			Expect(nlh.PutCheck(Size_t(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN), 1, b)).To(Equal(false))
+			Expect(nlh.PutCheck(Size_t(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN), 1, 3, unsafe.Pointer(&b[0]))).To(Equal(false))
 			Expect(*(*[]byte)(_hbuf)).To(BeEquivalentTo(pb))
 		})
 	})

@@ -142,11 +142,19 @@ func attrParseNested(nested *Nlattr, cb MnlAttrCb, data interface{}) (int, error
 	return int(ret), err
 }
 		
-// mnl_attr_parse_payload - parse attributes in payload of Netlink message
+// parse attributes in payload of Netlink message
 //
-// int
-// mnl_attr_parse_payload(const void *payload, size_t payload_len,
-//			  mnl_attr_cb_t cb, void *data)
+// This function takes a pointer to the area that contains the attributes,
+// commonly known as the payload of the Netlink message. Thus, you have to
+// pass a pointer to the Netlink message payload, instead of the entire
+// message.
+//
+// This function allows you to iterate over the sequence of attributes that are
+// located at some payload offset. You can then put the attributes in one array
+// as usual, or you can use any other data structure (such as lists or trees).
+//
+// This function propagates the return value of the callback, which can be
+// MNL_CB_ERROR, MNL_CB_OK or MNL_CB_STOP.
 func AttrParsePayload(payload []byte, cb MnlAttrCb, data interface{}) (int, error) {
 	args := [2]unsafe.Pointer{unsafe.Pointer(&cb), unsafe.Pointer(&data)}
 	ret, err := C.attr_parse_payload_wrapper(unsafe.Pointer(&payload[0]), C.size_t(len(payload)), unsafe.Pointer(&args))
@@ -272,7 +280,19 @@ func attrNestStart(nlh *Nlmsghdr, attr_type uint16) *Nlattr {
 // bool
 // mnl_attr_put_check(struct nlmsghdr *nlh, size_t buflen,
 //		      uint16_t type, size_t len, const void *data)
-func attrPutCheck(nlh *Nlmsghdr, buflen Size_t, attr_type uint16, data []byte) bool {
+func attrPutCheck(nlh *Nlmsghdr, buflen Size_t, attr_type uint16, size Size_t, data unsafe.Pointer) bool {
+	return bool(C.mnl_attr_put_check((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
+		C.size_t(buflen), C.uint16_t(attr_type), C.size_t(size), data))
+}
+func attrPutCheckPtr(nlh *Nlmsghdr, buflen Size_t, attr_type uint16, data interface{}) bool {
+	v := reflect.ValueOf(data)
+	if v.Kind() != reflect.Ptr {
+		panic("pointer required for data")
+	}
+	t := reflect.Indirect(v).Type()
+	return attrPutCheck(nlh, buflen, attr_type, Size_t(t.Size()), unsafe.Pointer(v.Pointer()))
+}
+func attrPutCheckBytes(nlh *Nlmsghdr, buflen Size_t, attr_type uint16, data []byte) bool {
 	return bool(C.mnl_attr_put_check((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
 		C.size_t(buflen), C.uint16_t(attr_type), C.size_t(len(data)), unsafe.Pointer(&data[0])))
 }
@@ -341,6 +361,13 @@ func attrPutStrzCheck(nlh *Nlmsghdr, buflen Size_t, attr_type uint16, data strin
 		C.size_t(buflen), C.uint16_t(attr_type), cs))
 }
 
+// struct nlattr *
+// mnl_attr_nest_start_check(struct nlmsghdr *nlh, size_t buflen, uint16_t type)
+func attrNestStartCheck(nlh *Nlmsghdr, buflen Size_t, attr_type uint16) *Nlattr {
+	return (*Nlattr)(unsafe.Pointer(C.mnl_attr_nest_start_check((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
+		C.size_t(buflen), C.uint16_t(attr_type))))
+	}
+// 
 // mnl_attr_nest_end - end an attribute nest
 //
 // void
