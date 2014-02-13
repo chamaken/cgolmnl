@@ -22,8 +22,9 @@ type (
 	Socklen_t	C.socklen_t
 )
 
+// Netlink message
+type nlmsghdr		  C.struct_nlmsghdr
 const SizeofNlmsghdr	= C.sizeof_struct_nlmsghdr
-type Nlmsghdr		  C.struct_nlmsghdr
 
 const SizeofNlmsgerr	= C.sizeof_struct_nlmsgerr
 type Nlmsgerr		  C.struct_nlmsgerr
@@ -38,4 +39,4 @@ const SizeofNlMmapHdr	= C.sizeof_struct_nl_mmap_hdr
 type NlMmapHdr		  C.struct_nl_mmap_hdr
 
 const SizeofNlattr	= C.sizeof_struct_nlattr
-type Nlattr		  C.struct_nlattr
+type nlattr		  C.struct_nlattr
