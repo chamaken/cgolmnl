@@ -22,14 +22,14 @@ func parse_ip_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	tb := data.(map[uint16]*mnl.Nlattr)
 	attr_type := attr.GetType()
 
-	if ret, _ := attr.TypeValid(C.CTA_IP_MAX); ret < 0 {
+	if err := attr.TypeValid(C.CTA_IP_MAX); err != nil {
 		return mnl.MNL_CB_OK, 0
 	}
 
 	switch attr_type {
 	case C.CTA_IP_V4_SRC: fallthrough
 	case C.CTA_IP_V4_DST:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_U32); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
@@ -54,7 +54,7 @@ func parse_proto_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	tb := data.(map[uint16]*mnl.Nlattr)
 	attr_type := attr.GetType()
 
-	if ret, _ := attr.TypeValid(C.CTA_PROTO_MAX); ret < 0 {
+	if err := attr.TypeValid(C.CTA_PROTO_MAX); err != nil {
 		return mnl.MNL_CB_OK, 0
 	}
 
@@ -62,14 +62,14 @@ func parse_proto_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	case C.CTA_PROTO_NUM:		fallthrough
 	case C.CTA_PROTO_ICMP_TYPE:	fallthrough
 	case C.CTA_PROTO_ICMP_CODE:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_U8); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_U8); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
 	case C.CTA_PROTO_SRC_PORT:	fallthrough
 	case C.CTA_PROTO_DST_PORT:	fallthrough
 	case C.CTA_PROTO_ICMP_ID:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_U16); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_U16); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
@@ -106,18 +106,18 @@ func parse_tuple_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	tb := data.(map[uint16]*mnl.Nlattr)
 	attr_type := attr.GetType()
 
-	if ret, _ := attr.TypeValid(C.CTA_TUPLE_MAX); ret < 0 {
+	if err := attr.TypeValid(C.CTA_TUPLE_MAX); err != nil {
 		return mnl.MNL_CB_OK, 0
 	}
 
 	switch attr_type {
 	case C.CTA_TUPLE_IP:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_NESTED); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_NESTED); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
 	case C.CTA_TUPLE_PROTO:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_NESTED); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_NESTED); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
@@ -142,20 +142,20 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	tb := data.(map[uint16]*mnl.Nlattr)
 	attr_type := attr.GetType()
 
-	if ret, _ := attr.TypeValid(C.CTA_MAX); ret < 0 {
+	if err := attr.TypeValid(C.CTA_MAX); err != nil {
 		return mnl.MNL_CB_OK, 0
 	}
 
 	switch attr_type {
 	case C.CTA_TUPLE_ORIG:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_NESTED); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_NESTED); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
 	case C.CTA_TIMEOUT:	fallthrough
 	case C.CTA_MARK:	fallthrough
 	case C.CTA_SECMARK:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_U32); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
@@ -194,7 +194,7 @@ func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 }
 
 func main() {
-	nl, err := mnl.SocketOpen(C.NETLINK_NETFILTER)
+	nl, err := mnl.NewSocket(C.NETLINK_NETFILTER)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_open: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)

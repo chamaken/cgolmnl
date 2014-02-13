@@ -18,18 +18,18 @@ func parse_mc_grps_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	tb := data.(map[uint16]*mnl.Nlattr)
 	attr_type := attr.GetType()
 
-	if ret, _ := attr.TypeValid(C.CTRL_ATTR_MCAST_GRP_MAX); ret < 0 {
+	if err := attr.TypeValid(C.CTRL_ATTR_MCAST_GRP_MAX); err != nil {
 		return mnl.MNL_CB_OK, 0
 	}
 
 	switch attr_type {
 	case C.CTRL_ATTR_MCAST_GRP_ID:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_U32); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
 	case C.CTRL_ATTR_MCAST_GRP_NAME:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_STRING); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_STRING); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
@@ -57,13 +57,13 @@ func parse_family_ops_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno
 	tb := data.(map[uint16]*mnl.Nlattr)
 	attr_type := attr.GetType()
 
-	if ret, _ := attr.TypeValid(C.CTRL_ATTR_OP_MAX); ret < 0 {
+	if err := attr.TypeValid(C.CTRL_ATTR_OP_MAX); err != nil {
 		return mnl.MNL_CB_OK, 0
 	}
 
 	switch attr_type {
 	case C.CTRL_ATTR_OP_ID:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_U32); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
@@ -95,31 +95,31 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	tb := data.(map[uint16]*mnl.Nlattr)
 	attr_type := attr.GetType()
 
-	if ret, _ := attr.TypeValid(C.CTRL_ATTR_MAX); ret < 0 {
+	if err := attr.TypeValid(C.CTRL_ATTR_MAX); err != nil {
 		return mnl.MNL_CB_OK, 0
 	}
 
 	switch attr_type {
 	case C.CTRL_ATTR_FAMILY_NAME:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_STRING); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_STRING); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
 	case C.CTRL_ATTR_FAMILY_ID:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_U16); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_U16); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
 	case C.CTRL_ATTR_VERSION:	fallthrough
 	case C.CTRL_ATTR_HDRSIZE:	fallthrough
 	case C.CTRL_ATTR_MAXATTR:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_U32); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
 	case C.CTRL_ATTR_OPS:		fallthrough
 	case C.CTRL_ATTR_MCAST_GROUPS:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_NESTED); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_NESTED); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
@@ -182,7 +182,7 @@ func main() {
 		nlh.Flags |= C.NLM_F_DUMP
 	}
 
-	nl, err := mnl.SocketOpen(C.NETLINK_GENERIC)
+	nl, err := mnl.NewSocket(C.NETLINK_GENERIC)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_open: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)

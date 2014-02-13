@@ -19,23 +19,23 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	tb := data.(map[uint16]*mnl.Nlattr)
 	attr_type := attr.GetType()
 
-	if ret, _ := attr.TypeValid(C.IFLA_MAX); ret < 0 {
+	if err := attr.TypeValid(C.IFLA_MAX); err != nil {
 		return mnl.MNL_CB_OK, 0
 	}
 
 	switch (attr_type) {
 	case C.IFLA_ADDRESS:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_BINARY); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_BINARY); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
 	case C.IFLA_MTU:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_U32); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
 	case C.IFLA_IFNAME:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_STRING); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_STRING); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_valudate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
@@ -70,7 +70,7 @@ func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 func main() {
 	buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE)
 
-	nl, err := mnl.SocketOpen(C.NETLINK_ROUTE)
+	nl, err := mnl.NewSocket(C.NETLINK_ROUTE)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_open: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)

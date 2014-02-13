@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	nl, err := mnl.SocketOpen(C.NETLINK_KOBJECT_UEVENT)
+	nl, err := mnl.NewSocket(C.NETLINK_KOBJECT_UEVENT)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_open: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)

@@ -52,7 +52,7 @@ func main() {
 
 	nlh.PutStr(C.IFLA_IFNAME, os.Args[1])
 
-	nl, err := mnl.SocketOpen(C.NETLINK_ROUTE)
+	nl, err := mnl.NewSocket(C.NETLINK_ROUTE)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_open: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)

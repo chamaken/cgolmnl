@@ -20,13 +20,13 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	tb := data.(map[uint16]*mnl.Nlattr)
 	attr_type := attr.GetType()
 
-	if ret, _ := attr.TypeValid(C.IFA_MAX); ret < 0 {
+	if err := attr.TypeValid(C.IFA_MAX); err != nil {
 		return mnl.MNL_CB_OK, 0
 	}
 
 	switch attr_type {
 	case C.IFA_ADDRESS:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_BINARY); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_BINARY); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
@@ -89,7 +89,7 @@ func main() {
 		rt.Family = C.AF_INET6
 	}
 
-	nl, err := mnl.SocketOpen(C.NETLINK_ROUTE)
+	nl, err := mnl.NewSocket(C.NETLINK_ROUTE)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_open: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)

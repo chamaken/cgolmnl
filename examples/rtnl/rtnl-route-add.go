@@ -100,7 +100,7 @@ func main() {
 		nlh.PutBytes(C.RTA_GATEWAY, binaddr)
 	}
 
-	nl, err := mnl.SocketOpen(C.NETLINK_ROUTE)
+	nl, err := mnl.NewSocket(C.NETLINK_ROUTE)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_open: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)

@@ -24,7 +24,7 @@ func parse_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	tb := data.(map[uint16]*mnl.Nlattr)
 	attr_type := attr.GetType()
 
-	if ret, _ := attr.TypeValid(C.NFQA_MAX); ret < 0 {
+	if err := attr.TypeValid(C.NFQA_MAX); err != nil {
 		return mnl.MNL_CB_OK, 0
 	}
 
@@ -34,17 +34,17 @@ func parse_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	case C.NFQA_IFINDEX_OUTDEV: fallthrough
 	case C.NFQA_IFINDEX_PHYSINDEV: fallthrough
 	case C.NFQA_IFINDEX_PHYSOUTDEV:
-		if ret, err := attr.Validate(mnl.MNL_TYPE_U32); ret < 0 {
+		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
 	case C.NFQA_TIMESTAMP:
-		if ret, err := attr.Validate2(mnl.MNL_TYPE_UNSPEC, SizeofNfqnlMsgPacketTimestamp); ret < 0 {
+		if err := attr.Validate2(mnl.MNL_TYPE_UNSPEC, SizeofNfqnlMsgPacketTimestamp); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate2: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
 	case C.NFQA_HWADDR:
-		if ret, err := attr.Validate2(mnl.MNL_TYPE_UNSPEC, SizeofNfqnlMsgPacketHw); ret < 0 {
+		if err := attr.Validate2(mnl.MNL_TYPE_UNSPEC, SizeofNfqnlMsgPacketHw); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate2: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
@@ -154,7 +154,7 @@ func main() {
 	}
 	queue_num, _ := strconv.Atoi(os.Args[1])
 
-	nl, err := mnl.SocketOpen(C.NETLINK_NETFILTER)
+	nl, err := mnl.NewSocket(C.NETLINK_NETFILTER)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_open: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)

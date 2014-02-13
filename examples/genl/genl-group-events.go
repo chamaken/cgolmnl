@@ -28,7 +28,7 @@ func main() {
 	}
 	group, _ = strconv.Atoi(os.Args[1])
 
-	nl, err := mnl.SocketOpen(C.NETLINK_GENERIC)
+	nl, err := mnl.NewSocket(C.NETLINK_GENERIC)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_open: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
