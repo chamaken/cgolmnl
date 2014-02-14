@@ -13,8 +13,8 @@ see examples
 installation
 ------------
 
-Need running ``mktypes.sh'' before build.
-To enable mmap, specify ``nlmmap'' tag, e.g. go build -tags nlmmap
+Need running `mktypes.sh` before build.
+To enable mmap, specify "nlmmap" tag, e.g. `go build -tags nlmmap`
 
 
 requires
@@ -40,40 +40,8 @@ receivers, see go_receiver.go
 
 
 
-issues
-------
-
-### callback ###
-
-in my horrible understanding, Go function which called from C has to be
-exported. To follow this, functions which uses callback was implemented in a
-hacky way. callback is classified into two major - for nlmsghdr, cb_run and
-nlattr. both of C functions are wrapped in cb.c
-
-1. call Go function wrapping C function in cb.c. it creates pseudo data param from
-   (non exported, real) Go callback function and real data param.
-2. wrapping C function calls real libmnl function
-3. real libmnl function call Go callback, GoAttrCb (attr.go) in case of nlattr,
-   GoCb (callback.go) nlmsghdr.
-4. Go callback above demultiplex data param into Go function and real data param
-5. call real Go callback
-
-To wrap cb_run2() I added new one -
-
-    typedef int (*mnl_ctl_cb_t)(const struct nlmsghdr *nlh, uint16_t type, void *data);
-
-As you know though, this is called in case of control type message (NLMSG_...)
-and function signature has changed.
-
-    func CbRun2(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{},
-                cb_ctl MnlCtlCb, ctltypes []uint16) (int, error) {
-
-The last parameters is list of controll message type, e.g NLMSG_NOOP, NLMSG_ERROR...
-cb_ctl will be called in case of being specified in the list. See callbacl_test.go
-CbRun2 context for example.
-    
-
-### errno ###
+errno
+-----
 
 I currently use an incredibly childish C function in set_errno.c
 
@@ -85,24 +53,32 @@ snippets below
 
 * C library header (lib.h)
 
+```
     typedef int cbf_t(void *data);
     extern int c_func(cbf_t cbfunc, void *data);
+```
 
-* C wrapper header
+* wrapper header
 
+```
     #include "lib.h"
     #include "_cgo_export.h"
     extern int wrap(void *data);
+```
 
 * C wrapper source
 
+```
     #include "cblib.h"
     int wrap(void *data)
     {
         return c_func((cbf_t)CallFromC, data);
     }
+```
 
 * Go
+
+```
     /*
     #include "cbwrap.h"
     */
@@ -138,6 +114,7 @@ snippets below
     func main() {
         Doit(cb, 7)
     }
+```
 
 call chain will be:
 Go main() -> Go Doit() -> C wrap() -> C c_func() -> Go CallFromC() -> Go cb()
