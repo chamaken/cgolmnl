@@ -1,8 +1,8 @@
 package cgolmnl_test
 
 import (
-	. "cgolmnl"
-	. "cgolmnl/testlib"
+	. "github.com/chamaken/cgolmnl"
+	. "github.com/chamaken/cgolmnl/testlib"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
