@@ -1,37 +1,35 @@
 package testlib
 
 import (
+	"C"
 	"encoding/binary"
 	"unsafe"
-	"C"
 )
 
-
-const SizeofCint	= C.sizeof_int
+const SizeofCint = C.sizeof_int
 
 // C int
 func GetCint(bs []byte, start int) int {
-	return int(*(*C.int)(unsafe.Pointer(&bs[start:start + SizeofCint][0])))
+	return int(*(*C.int)(unsafe.Pointer(&bs[start : start+SizeofCint][0])))
 }
 func SetCint(bs []byte, start int, val int) {
-	*(*C.int)(unsafe.Pointer(&bs[start:start + SizeofCint][0])) = C.int(val)
+	*(*C.int)(unsafe.Pointer(&bs[start : start+SizeofCint][0])) = C.int(val)
 }
 
 // C unsigned int
 func GetCuint(bs []byte, start int) uint {
-	return uint(*(*C.uint)(unsafe.Pointer(&bs[start:start + SizeofCint][0])))
+	return uint(*(*C.uint)(unsafe.Pointer(&bs[start : start+SizeofCint][0])))
 }
 func SetCuint(bs []byte, start int, val uint) {
-	*(*C.uint)(unsafe.Pointer(&bs[start:start + SizeofCint][0])) = C.uint(val)
+	*(*C.uint)(unsafe.Pointer(&bs[start : start+SizeofCint][0])) = C.uint(val)
 }
-
 
 // using encofing/binary
 var Endian binary.ByteOrder
 
 func init() {
 	var v uint16 = 1
-	if *(* byte)(unsafe.Pointer(&v)) == 1 {
+	if *(*byte)(unsafe.Pointer(&v)) == 1 {
 		Endian = binary.LittleEndian
 	} else {
 		Endian = binary.BigEndian
@@ -54,13 +52,13 @@ func SetUint8(bs []byte, start uint, val uint8) {
 
 // 2 byte
 func GetInt16(bs []byte, start int) int16 {
-	return int16(Endian.Uint16(bs[start:start+2]))
+	return int16(Endian.Uint16(bs[start : start+2]))
 }
 func SetInt16(bs []byte, start int, val int16) {
 	Endian.PutUint16(bs[start:start+2], uint16(val))
 }
 func GetUint16(bs []byte, start uint) uint16 {
-	return Endian.Uint16(bs[start:start+2])
+	return Endian.Uint16(bs[start : start+2])
 }
 func SetUint16(bs []byte, start uint, val uint16) {
 	Endian.PutUint16(bs[start:start+2], val)
@@ -68,28 +66,27 @@ func SetUint16(bs []byte, start uint, val uint16) {
 
 // 4 byte
 func GetInt32(bs []byte, start int) int32 {
-	return int32(Endian.Uint32(bs[start:start+4]))
+	return int32(Endian.Uint32(bs[start : start+4]))
 }
 func SetInt32(bs []byte, start int, val int32) {
 	Endian.PutUint32(bs[start:start+4], uint32(val))
 }
 func GetUint32(bs []byte, start uint) uint32 {
-	return Endian.Uint32(bs[start:start+4])
+	return Endian.Uint32(bs[start : start+4])
 }
 func SetUint32(bs []byte, start uint, val uint32) {
 	Endian.PutUint32(bs[start:start+4], val)
 }
 
-
 // 8 byte
 func GetInt64(bs []byte, start int) int64 {
-	return int64(Endian.Uint64(bs[start:start+8]))
+	return int64(Endian.Uint64(bs[start : start+8]))
 }
 func SetInt64(bs []byte, start int, val int64) {
 	Endian.PutUint64(bs[start:start+8], uint64(val))
 }
 func GetUint64(bs []byte, start uint) uint64 {
-	return Endian.Uint64(bs[start:start+8])
+	return Endian.Uint64(bs[start : start+8])
 }
 func SetUint64(bs []byte, start uint, val uint64) {
 	Endian.PutUint64(bs[start:start+8], val)
@@ -97,13 +94,14 @@ func SetUint64(bs []byte, start uint, val uint64) {
 
 // for struct nlmsghdr
 type NlmsghdrBuf []byte
+
 const (
-	nlmsghdr_len_index	= 0	// __u32	nlmsg_len
-	nlmsghdr_type_index	= 4	// __u16	nlmsg_type
-	nlmsghdr_flags_index	= 6	// __u16	nlmsg_flags
-	nlmsghdr_seq_index	= 8	// __u32	nlmsg_seq
-	nlmsghdr_pid_index	= 12	// __u32	nlmsg_pid
-	nlmsghdr_payload_index	= 16
+	nlmsghdr_len_index     = 0  // __u32	nlmsg_len
+	nlmsghdr_type_index    = 4  // __u16	nlmsg_type
+	nlmsghdr_flags_index   = 6  // __u16	nlmsg_flags
+	nlmsghdr_seq_index     = 8  // __u32	nlmsg_seq
+	nlmsghdr_pid_index     = 12 // __u32	nlmsg_pid
+	nlmsghdr_payload_index = 16
 )
 
 func NewNlmsghdrBuf(size int) *NlmsghdrBuf {
@@ -148,12 +146,14 @@ func (nlh *NlmsghdrBuf) Payload() []byte {
 }
 
 // for struct nlattr
-type NlattrBuf   []byte
+type NlattrBuf []byte
+
 const (
-	nla_len_index		= 0	// __u16	nla_len
-	nla_type_index		= 2	// __u16	nla_type
-	nla_payload_index	= 4
+	nla_len_index     = 0 // __u16	nla_len
+	nla_type_index    = 2 // __u16	nla_type
+	nla_payload_index = 4
 )
+
 func NewNlattrBuf(size int) *NlattrBuf {
 	nlb := NlattrBuf(make([]byte, size))
 	return &nlb

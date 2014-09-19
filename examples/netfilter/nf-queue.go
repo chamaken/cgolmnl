@@ -12,12 +12,12 @@ package main
 import "C"
 
 import (
+	mnl "cgolmnl"
+	"cgolmnl/inet"
 	"fmt"
 	"os"
 	"strconv"
 	"syscall"
-	mnl "cgolmnl"
-	"cgolmnl/inet"
 )
 
 func parse_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -29,10 +29,14 @@ func parse_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	}
 
 	switch int(attr_type) {
-	case C.NFQA_MARK: fallthrough
-	case C.NFQA_IFINDEX_INDEV: fallthrough
-	case C.NFQA_IFINDEX_OUTDEV: fallthrough
-	case C.NFQA_IFINDEX_PHYSINDEV: fallthrough
+	case C.NFQA_MARK:
+		fallthrough
+	case C.NFQA_IFINDEX_INDEV:
+		fallthrough
+	case C.NFQA_IFINDEX_OUTDEV:
+		fallthrough
+	case C.NFQA_IFINDEX_PHYSINDEV:
+		fallthrough
 	case C.NFQA_IFINDEX_PHYSOUTDEV:
 		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
@@ -58,7 +62,7 @@ func parse_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 func queue_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 	var ph *NfqnlMsgPacketHdr
 	var id uint32
-	tb := make(map[uint16]*mnl.Nlattr, C.NFQA_MAX + 1)
+	tb := make(map[uint16]*mnl.Nlattr, C.NFQA_MAX+1)
 
 	nlh.Parse(SizeofNfgenmsg, parse_attr_cb, tb)
 	if tb[C.NFQA_PACKET_HDR] != nil {
@@ -106,7 +110,7 @@ func nfq_build_cfg_request(buf []byte, command uint8, queue_num int) *mnl.Nlmsgh
 	nfg.Version = C.NFNETLINK_V0
 	nfg.Res_id = inet.Htons(uint16(queue_num))
 
-	cmd := &NfqnlMsgConfigCmd{ Command: command, Pf: inet.Htons(C.AF_INET) }
+	cmd := &NfqnlMsgConfigCmd{Command: command, Pf: inet.Htons(C.AF_INET)}
 	nlh.PutPtr(C.NFQA_CFG_CMD, cmd)
 
 	return nlh
@@ -126,13 +130,13 @@ func nfq_build_cfg_params(buf []byte, copy_mode uint8, copy_range, queue_num int
 	nfg.Version = C.NFNETLINK_V0
 	nfg.Res_id = inet.Htons(uint16(queue_num))
 
-	params := &NfqnlMsgConfigParams{ Range: inet.Htonl(uint32(copy_range)), Mode: copy_mode }
+	params := &NfqnlMsgConfigParams{Range: inet.Htonl(uint32(copy_range)), Mode: copy_mode}
 	nlh.PutPtr(C.NFQA_CFG_PARAMS, params)
 
 	return nlh
 }
 
-func nfq_build_verdict(buf [] byte, id, queue_num, verd int) *mnl.Nlmsghdr {
+func nfq_build_verdict(buf []byte, id, queue_num, verd int) *mnl.Nlmsghdr {
 	nlh, _ := mnl.NlmsgPutHeaderBytes(buf)
 	nlh.Type = (C.NFNL_SUBSYS_QUEUE << 8) | C.NFQNL_MSG_VERDICT
 	nlh.Flags = C.NLM_F_REQUEST
@@ -141,7 +145,7 @@ func nfq_build_verdict(buf [] byte, id, queue_num, verd int) *mnl.Nlmsghdr {
 	nfg.Version = C.NFNETLINK_V0
 	nfg.Res_id = inet.Htons(uint16(queue_num))
 
-	vh := &NfqnlMsgVerdictHdr{ Verdict: inet.Htonl(uint32(verd)), Id: inet.Htonl(uint32(id)) }
+	vh := &NfqnlMsgVerdictHdr{Verdict: inet.Htonl(uint32(verd)), Id: inet.Htonl(uint32(id))}
 	nlh.PutPtr(C.NFQA_VERDICT_HDR, vh)
 
 	return nlh

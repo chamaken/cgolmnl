@@ -11,11 +11,10 @@ import (
 	"syscall"
 )
 
-
 var _ = Describe("Socket", func() {
 	fmt.Fprintf(os.Stdout, "Hello, socket tester!\n") // to import os, sys for debugging
 	var (
-		nl	*Socket
+		nl *Socket
 	)
 
 	BeforeEach(func() {
@@ -59,7 +58,7 @@ var _ = Describe("Socket", func() {
 			_ = nl.Bind(0, MNL_SOCKET_AUTOPID)
 			nlh, _ = PutNewNlmsghdr(int(MNL_NLMSG_HDRLEN))
 			nlh.Type = NLMSG_NOOP
-			nlh.Flags = NLM_F_ECHO|NLM_F_ACK
+			nlh.Flags = NLM_F_ECHO | NLM_F_ACK
 			nlh.Pid = nl.Portid()
 			nlh.Seq = 1234
 		})
@@ -84,7 +83,7 @@ var _ = Describe("Socket", func() {
 			nle := (*Nlmsgerr)(nlr.Payload())
 			Expect(nle.Error).To(Equal(-int32(syscall.EPERM)))
 			Expect(nle.Msg.Len).To(Equal(MNL_NLMSG_HDRLEN))
-			Expect(nle.Msg.Flags).To(Equal(uint16(NLM_F_ECHO|NLM_F_ACK)))
+			Expect(nle.Msg.Flags).To(Equal(uint16(NLM_F_ECHO | NLM_F_ACK)))
 			Expect(nle.Msg.Pid).To(Equal(nl.Portid()))
 			Expect(nle.Msg.Seq).To(Equal(uint32(1234)))
 		})
@@ -107,7 +106,7 @@ var _ = Describe("Socket", func() {
 			nle := (*Nlmsgerr)(nlr.Payload())
 			Expect(nle.Error).To(Equal(-int32(syscall.EPERM)))
 			Expect(nle.Msg.Len).To(Equal(MNL_NLMSG_HDRLEN))
-			Expect(nle.Msg.Flags).To(Equal(uint16(NLM_F_ECHO|NLM_F_ACK)))
+			Expect(nle.Msg.Flags).To(Equal(uint16(NLM_F_ECHO | NLM_F_ACK)))
 			Expect(nle.Msg.Pid).To(Equal(nl.Portid()))
 			Expect(nle.Msg.Seq).To(Equal(uint32(1234)))
 		})

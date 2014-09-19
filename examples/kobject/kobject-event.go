@@ -7,9 +7,9 @@ package main
 import "C"
 
 import (
+	mnl "cgolmnl"
 	"fmt"
 	"os"
-	mnl "cgolmnl"
 )
 
 func main() {

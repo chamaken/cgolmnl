@@ -9,10 +9,10 @@ package main
 import "C"
 
 import (
+	mnl "cgolmnl"
 	"fmt"
 	"os"
 	"syscall"
-	mnl "cgolmnl"
 )
 
 func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -23,7 +23,7 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 		return mnl.MNL_CB_OK, 0
 	}
 
-	switch (attr_type) {
+	switch attr_type {
 	case C.IFLA_ADDRESS:
 		if err := attr.Validate(mnl.MNL_TYPE_BINARY); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
@@ -45,12 +45,12 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 }
 
 func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
-	tb := make(map[uint16]*mnl.Nlattr, C.IFLA_MAX + 1)
+	tb := make(map[uint16]*mnl.Nlattr, C.IFLA_MAX+1)
 	ifm := (*Ifinfomsg)(nlh.Payload())
 
 	fmt.Printf("index=%d type=%d flags=%d family=%d ", ifm.Index, ifm.Type, ifm.Flags, ifm.Family)
 
-	if ifm.Flags & C.IFF_RUNNING == C.IFF_RUNNING {
+	if ifm.Flags&C.IFF_RUNNING == C.IFF_RUNNING {
 		fmt.Printf("[RUNNING] ")
 	} else {
 		fmt.Printf("[NOT RUNNING] ")

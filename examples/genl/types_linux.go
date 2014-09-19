@@ -6,5 +6,6 @@ package main
 */
 import "C"
 
-const SizeofGenlmsghdr	= C.sizeof_struct_genlmsghdr
-type Genlmsghdr		C.struct_genlmsghdr
+const SizeofGenlmsghdr = C.sizeof_struct_genlmsghdr
+
+type Genlmsghdr C.struct_genlmsghdr

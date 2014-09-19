@@ -20,12 +20,12 @@ import (
 
 // from syscall
 func fcntl(fd int, cmd int, arg int) (val int, err error) {
-        r0, _, e1 := syscall.Syscall(syscall.SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))
-        val = int(r0)
-        if e1 != 0 {
-                err = e1
-        }
-        return
+	r0, _, e1 := syscall.Syscall(syscall.SYS_FCNTL, uintptr(fd), uintptr(cmd), uintptr(arg))
+	val = int(r0)
+	if e1 != 0 {
+		err = e1
+	}
+	return
 }
 
 func IsValidFd(fd int) bool {

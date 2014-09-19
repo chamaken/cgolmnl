@@ -7,9 +7,9 @@ package cgolmnl
 */
 import "C"
 import (
-	"unsafe"
 	"errors"
 	"os"
+	"unsafe"
 )
 
 // get type of netlink attribute
@@ -172,7 +172,7 @@ func (attr *Nlattr) Str() string {
 // by adding the size (header + payload) of the new attribute.
 func (nlh *Nlmsghdr) Put(attr_type uint16, size Size_t, p unsafe.Pointer) {
 	attrPut(nlh, attr_type, size, p)
- }
+}
 
 // add an attribute to netlink message
 //
@@ -373,7 +373,6 @@ func (nlh *Nlmsghdr) NestCancel(start *Nlattr) {
 	attrNestCancel(nlh, start)
 }
 
-
 // mnl_attr_for_each() macro in libmnl.h
 func (nlh *Nlmsghdr) Attributes(offset Size_t) <-chan *Nlattr {
 	c := make(chan *Nlattr)
@@ -435,7 +434,6 @@ func NlattrPointer(b []byte) *Nlattr {
 	//      nla.len <= len(b)
 	return (*Nlattr)(unsafe.Pointer(&b[0]))
 }
-
 
 // get the length of the Netlink payload
 //
@@ -667,7 +665,6 @@ func (b *NlmsgBatch) Current() unsafe.Pointer {
 func (b *NlmsgBatch) IsEmpty() bool {
 	return nlmsgBatchIsEmpty(b)
 }
-
 
 // create a new Nlmsghdr
 func NewNlmsghdr(size int) (*Nlmsghdr, error) {

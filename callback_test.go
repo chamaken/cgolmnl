@@ -6,9 +6,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"syscall"
 	"fmt"
 	"os"
+	"syscall"
 )
 
 var _ = Describe("callback", func() {
@@ -22,7 +22,7 @@ var _ = Describe("callback", func() {
 		nlmsghdr_typeFF,
 		nlmsghdr_pid2,
 		nlmsghdr_seq2,
-		nlmsghdr_intr	*NlmsghdrBuf
+		nlmsghdr_intr *NlmsghdrBuf
 	)
 
 	BeforeEach(func() {
@@ -172,7 +172,7 @@ var _ = Describe("callback", func() {
 		// NLMSG_MIN_TYPE	0x10
 
 		ctl_cb := func(nlh *Nlmsghdr, msgtype uint16, data interface{}) (int, syscall.Errno) {
-			switch (msgtype) {
+			switch msgtype {
 			case NLMSG_NOOP:
 				return MNL_CB_ERROR, 0
 			case NLMSG_OVERRUN:

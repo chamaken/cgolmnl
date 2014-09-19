@@ -11,12 +11,12 @@ package main
 import "C"
 
 import (
+	mnl "cgolmnl"
+	"cgolmnl/inet"
 	"fmt"
 	"os"
 	"strconv"
 	"syscall"
-	mnl "cgolmnl"
-	"cgolmnl/inet"
 )
 
 func parse_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -27,10 +27,14 @@ func parse_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 		return mnl.MNL_CB_OK, 0
 	}
 	switch int(attr_type) {
-	case C.NFULA_MARK: fallthrough
-	case C.NFULA_IFINDEX_INDEV: fallthrough
-	case C.NFULA_IFINDEX_OUTDEV: fallthrough
-	case C.NFULA_IFINDEX_PHYSINDEV: fallthrough
+	case C.NFULA_MARK:
+		fallthrough
+	case C.NFULA_IFINDEX_INDEV:
+		fallthrough
+	case C.NFULA_IFINDEX_OUTDEV:
+		fallthrough
+	case C.NFULA_IFINDEX_PHYSINDEV:
+		fallthrough
 	case C.NFULA_IFINDEX_PHYSOUTDEV:
 		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
@@ -62,7 +66,7 @@ func log_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 	var ph *NfulnlMsgPacketHdr
 	var prefix string
 	var mark uint32
-	tb := make(map[uint16]*mnl.Nlattr, C.NFULA_MAX + 1)
+	tb := make(map[uint16]*mnl.Nlattr, C.NFULA_MAX+1)
 
 	nlh.Parse(SizeofNfgenmsg, parse_attr_cb, tb)
 	if tb[C.NFULA_PACKET_HDR] != nil {
@@ -137,7 +141,7 @@ func nflog_build_cfg_params(buf []byte, copy_mode uint8, copy_range, qnum int) *
 	nfg.Version = C.NFNETLINK_V0
 	nfg.Res_id = inet.Htons(uint16(qnum))
 
-	params := &NfulnlMsgConfigMode{	Range: inet.Htonl(uint32(copy_range)), Mode: copy_mode }
+	params := &NfulnlMsgConfigMode{Range: inet.Htonl(uint32(copy_range)), Mode: copy_mode}
 	nlh.PutPtr(C.NFULA_CFG_MODE, params)
 
 	return nlh

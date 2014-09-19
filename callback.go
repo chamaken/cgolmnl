@@ -11,8 +11,8 @@ package cgolmnl
 import "C"
 
 import (
-	"unsafe"
 	"syscall"
+	"unsafe"
 	// "fmt"
 	// "os"
 )
@@ -33,7 +33,6 @@ type MnlCtlCb func(*Nlmsghdr, uint16, interface{}) (int, syscall.Errno)
 //
 // packing at CbRun2, CbRun
 // unpacking at GoCb, GoCtlCb
-
 
 // callback wrapper called from original cb_run(), cb_run2().
 //export GoCb
@@ -94,8 +93,8 @@ func CbRun2(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{},
 
 	args := [3]unsafe.Pointer{unsafe.Pointer(&cb_ctl), unsafe.Pointer(&cb_data), unsafe.Pointer(&data)}
 	ret, err := C.cb_run2_wrapper(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),
-				      C.uint32_t(seq), C.uint32_t(portid), unsafe.Pointer(&args),
-				      (*C.uint16_t)(&ctltypes[0]), C.size_t(len(ctltypes)))
+		C.uint32_t(seq), C.uint32_t(portid), unsafe.Pointer(&args),
+		(*C.uint16_t)(&ctltypes[0]), C.size_t(len(ctltypes)))
 	return int(ret), err
 }
 
@@ -113,6 +112,6 @@ func CbRun2(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{},
 func CbRun(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{}) (int, error) {
 	args := [3]unsafe.Pointer{unsafe.Pointer(nil), unsafe.Pointer(&cb_data), unsafe.Pointer(&data)}
 	ret, err := C.cb_run_wrapper(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),
-				     C.uint32_t(seq), C.uint32_t(portid), unsafe.Pointer(&args))
+		C.uint32_t(seq), C.uint32_t(portid), unsafe.Pointer(&args))
 	return int(ret), err
 }

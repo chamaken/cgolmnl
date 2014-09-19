@@ -11,13 +11,13 @@ package main
 import "C"
 
 import (
+	mnl "cgolmnl"
+	"cgolmnl/inet"
 	"fmt"
 	"net"
 	"os"
 	"syscall"
 	"time"
-	mnl "cgolmnl"
-	"cgolmnl/inet"
 )
 
 func parse_counters_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -29,7 +29,8 @@ func parse_counters_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) 
 	}
 
 	switch attr_type {
-	case C.CTA_COUNTERS_PACKETS: fallthrough
+	case C.CTA_COUNTERS_PACKETS:
+		fallthrough
 	case C.CTA_COUNTERS_BYTES:
 		if err := attr.Validate(mnl.MNL_TYPE_U64); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
@@ -41,7 +42,7 @@ func parse_counters_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) 
 }
 
 func print_counters(nest *mnl.Nlattr) {
-	tb := make(map[uint16]*mnl.Nlattr, C.CTA_COUNTERS_MAX + 1)
+	tb := make(map[uint16]*mnl.Nlattr, C.CTA_COUNTERS_MAX+1)
 
 	nest.ParseNested(parse_counters_cb, tb)
 	if tb[C.CTA_COUNTERS_PACKETS] != nil {
@@ -61,13 +62,15 @@ func parse_ip_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	}
 
 	switch attr_type {
-	case C.CTA_IP_V4_SRC: fallthrough
+	case C.CTA_IP_V4_SRC:
+		fallthrough
 	case C.CTA_IP_V4_DST:
 		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
-	case C.CTA_IP_V6_SRC: fallthrough
+	case C.CTA_IP_V6_SRC:
+		fallthrough
 	case C.CTA_IP_V6_DST:
 		if err := attr.Validate2(mnl.MNL_TYPE_BINARY, net.IPv6len); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate2: %s\n", err)
@@ -105,15 +108,19 @@ func parse_proto_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	}
 
 	switch attr_type {
-	case C.CTA_PROTO_NUM:		fallthrough
-	case C.CTA_PROTO_ICMP_TYPE:	fallthrough
+	case C.CTA_PROTO_NUM:
+		fallthrough
+	case C.CTA_PROTO_ICMP_TYPE:
+		fallthrough
 	case C.CTA_PROTO_ICMP_CODE:
 		if err := attr.Validate(mnl.MNL_TYPE_U8); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
-	case C.CTA_PROTO_SRC_PORT:	fallthrough
-	case C.CTA_PROTO_DST_PORT:	fallthrough
+	case C.CTA_PROTO_SRC_PORT:
+		fallthrough
+	case C.CTA_PROTO_DST_PORT:
+		fallthrough
 	case C.CTA_PROTO_ICMP_ID:
 		if err := attr.Validate(mnl.MNL_TYPE_U16); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
@@ -188,8 +195,10 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	}
 
 	switch attr_type {
-	case C.CTA_TUPLE_ORIG: fallthrough
-	case C.CTA_COUNTERS_ORIG: fallthrough
+	case C.CTA_TUPLE_ORIG:
+		fallthrough
+	case C.CTA_COUNTERS_ORIG:
+		fallthrough
 	case C.CTA_COUNTERS_REPLY:
 		if err := attr.Validate(mnl.MNL_TYPE_NESTED); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)

@@ -9,11 +9,11 @@ package main
 import "C"
 
 import (
+	mnl "cgolmnl"
 	"fmt"
 	"os"
 	"strings"
 	"time"
-	mnl "cgolmnl"
 )
 
 func main() {

@@ -12,6 +12,8 @@ package main
 import "C"
 
 import (
+	mnl "cgolmnl"
+	"cgolmnl/inet"
 	"fmt"
 	"net"
 	"os"
@@ -19,13 +21,11 @@ import (
 	"syscall"
 	"time"
 	"unsafe"
-	mnl "cgolmnl"
-	"cgolmnl/inet"
 )
 
 type Nstats struct {
-	Addr		net.IP
-	Pkts, Bytes	uint64
+	Addr        net.IP
+	Pkts, Bytes uint64
 }
 
 var nstats_map = make(map[string]*Nstats)
@@ -39,7 +39,8 @@ func parse_counters_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) 
 	}
 
 	switch attr_type {
-	case C.CTA_COUNTERS_PACKETS: fallthrough
+	case C.CTA_COUNTERS_PACKETS:
+		fallthrough
 	case C.CTA_COUNTERS_BYTES:
 		if err := attr.Validate(mnl.MNL_TYPE_U64); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
@@ -51,7 +52,7 @@ func parse_counters_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) 
 }
 
 func parse_counters(nest *mnl.Nlattr, ns *Nstats) {
-	tb := make(map[uint16]*mnl.Nlattr, C.CTA_COUNTERS_MAX + 1)
+	tb := make(map[uint16]*mnl.Nlattr, C.CTA_COUNTERS_MAX+1)
 
 	nest.ParseNested(parse_counters_cb, tb)
 	if tb[C.CTA_COUNTERS_PACKETS] != nil {
@@ -71,13 +72,15 @@ func parse_ip_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	}
 
 	switch attr_type {
-	case C.CTA_IP_V4_SRC: fallthrough
+	case C.CTA_IP_V4_SRC:
+		fallthrough
 	case C.CTA_IP_V4_DST:
 		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
-	case C.CTA_IP_V6_SRC: fallthrough
+	case C.CTA_IP_V6_SRC:
+		fallthrough
 	case C.CTA_IP_V6_DST:
 		if err := attr.Validate2(mnl.MNL_TYPE_BINARY, net.IPv6len); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate2: %s\n", err)
@@ -89,7 +92,7 @@ func parse_ip_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 }
 
 func parse_ip(nest *mnl.Nlattr, ns *Nstats) {
-	tb := make(map[uint16]*mnl.Nlattr, C.CTA_IP_MAX + 1)
+	tb := make(map[uint16]*mnl.Nlattr, C.CTA_IP_MAX+1)
 
 	nest.ParseNested(parse_ip_cb, tb)
 	if tb[C.CTA_IP_V4_SRC] != nil {
@@ -120,7 +123,7 @@ func parse_tuple_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 }
 
 func parse_tuple(nest *mnl.Nlattr, ns *Nstats) {
-	tb := make(map[uint16]*mnl.Nlattr, C.CTA_TUPLE_MAX + 1)
+	tb := make(map[uint16]*mnl.Nlattr, C.CTA_TUPLE_MAX+1)
 
 	nest.ParseNested(parse_tuple_cb, tb)
 	if tb[C.CTA_TUPLE_IP] != nil {
@@ -137,8 +140,10 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	}
 
 	switch attr_type {
-	case C.CTA_TUPLE_ORIG: fallthrough
-	case C.CTA_COUNTERS_ORIG: fallthrough
+	case C.CTA_TUPLE_ORIG:
+		fallthrough
+	case C.CTA_COUNTERS_ORIG:
+		fallthrough
 	case C.CTA_COUNTERS_REPLY:
 		if err := attr.Validate(mnl.MNL_TYPE_NESTED); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
@@ -150,7 +155,7 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 }
 
 func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
-	tb := make(map[uint16]*mnl.Nlattr, C.CTA_MAX + 1)
+	tb := make(map[uint16]*mnl.Nlattr, C.CTA_MAX+1)
 	ns := &Nstats{}
 
 	nlh.Parse(SizeofNfgenmsg, data_attr_cb, tb)
@@ -185,9 +190,9 @@ func handle(nl *mnl.Socket) int {
 		// It only happens if NETLINK_NO_ENOBUFS is not set, it means
 		// we are leaking statistics.
 		if err == syscall.ENOBUFS {
-			fmt.Fprintf(os.Stderr, "The daemon has hit ENOBUFS, you can " +
-				"increase the size of your receiver " +
-				"buffer to mitigate this or enable " +
+			fmt.Fprintf(os.Stderr, "The daemon has hit ENOBUFS, you can "+
+				"increase the size of your receiver "+
+				"buffer to mitigate this or enable "+
 				"reliable delivery.\n")
 			// http://stackoverflow.com/questions/7933460/how-do-you-write-multiline-strings-in-go
 			// `line1
@@ -276,7 +281,7 @@ func main() {
 	go func() {
 		for _ = range ticker.C {
 			// periodic atomic-dump-and-reset messages
-			if _, err := nl.SendNlmsg(nlh);  err != nil {
+			if _, err := nl.SendNlmsg(nlh); err != nil {
 				fmt.Fprintf(os.Stderr, "mnl_socket_sendto: %s\n", err)
 				os.Exit(C.EXIT_FAILURE)
 			}
@@ -325,5 +330,5 @@ func main() {
 				os.Exit(C.EXIT_FAILURE)
 			}
 		}
-	}		
+	}
 }

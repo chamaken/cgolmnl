@@ -7,11 +7,11 @@ package main
 import "C"
 
 import (
+	mnl "cgolmnl"
 	"fmt"
 	"os"
 	"strconv"
 	"syscall"
-	mnl "cgolmnl"
 )
 
 var group int
@@ -40,7 +40,7 @@ func main() {
 		os.Exit(C.EXIT_FAILURE)
 	}
 	if err := nl.SetsockoptCint(C.NETLINK_ADD_MEMBERSHIP, group); err != nil {
-		fmt.Fprintf(os.Stderr, "mnl_setsockopt");
+		fmt.Fprintf(os.Stderr, "mnl_setsockopt")
 		os.Exit(C.EXIT_FAILURE)
 	}
 

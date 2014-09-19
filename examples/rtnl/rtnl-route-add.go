@@ -8,20 +8,20 @@ package main
 import "C"
 
 import (
+	mnl "cgolmnl"
+	"cgolmnl/inet"
 	"fmt"
 	"net"
 	"os"
 	"strconv"
 	"time"
-	mnl "cgolmnl"
-	"cgolmnl/inet"
 )
 
 func main() {
 	if len(os.Args) <= 3 {
-		fmt.Printf("Usage: %s iface destination cidr [gateway]\n", os.Args[0]);
-		fmt.Printf("Example: %s eth0 10.0.1.12 32 10.0.1.11\n", os.Args[0]);
-		fmt.Printf("	 %s eth0 ffff::10.0.1.12 128 fdff::1\n", os.Args[0]);
+		fmt.Printf("Usage: %s iface destination cidr [gateway]\n", os.Args[0])
+		fmt.Printf("Example: %s eth0 10.0.1.12 32 10.0.1.11\n", os.Args[0])
+		fmt.Printf("	 %s eth0 ffff::10.0.1.12 128 fdff::1\n", os.Args[0])
 		os.Exit(C.EXIT_FAILURE)
 	}
 

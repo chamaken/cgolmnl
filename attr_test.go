@@ -6,16 +6,15 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	"fmt"
 	"math/rand"
+	"os"
 	"syscall"
 	"time"
 	"unsafe"
-	"fmt"
-	"os"
 
 	"testing"
 )
-
 
 //
 // use testing
@@ -70,49 +69,49 @@ func TestAttrParse(t *testing.T) {
 		t.Errorf("type - want: %v, but: %v", nil, err)
 	}
 }
+
 // used testing
 //
-
 
 var _ = Describe("Attr", func() {
 	fmt.Fprintf(os.Stdout, "Hello, attr tester!\n") // to import os, sys for debugging
 	var (
-		BUFLEN		= 512
-		r		*rand.Rand
+		BUFLEN = 512
+		r      *rand.Rand
 
 		// Nlmsghdr
-		hbuf		*NlmsghdrBuf
-		nlh		*Nlmsghdr
-		rand_hbuf	*NlmsghdrBuf
-		rand_nlh	*Nlmsghdr
+		hbuf      *NlmsghdrBuf
+		nlh       *Nlmsghdr
+		rand_hbuf *NlmsghdrBuf
+		rand_nlh  *Nlmsghdr
 
 		// Nlattr
-		abuf		*NlattrBuf
-		nla		*Nlattr
-		rand_abuf	*NlattrBuf
-		rand_nla	*Nlattr
+		abuf      *NlattrBuf
+		nla       *Nlattr
+		rand_abuf *NlattrBuf
+		rand_nla  *Nlattr
 
 		// for nlattr validation
-		valid_len 	= map[AttrDataType][2]uint16 {
-			MNL_TYPE_UNSPEC		: {0, 0},
-			MNL_TYPE_U8		: {1, 1},
-			MNL_TYPE_U16		: {2, 2},
-			MNL_TYPE_U32		: {4, 4},
-			MNL_TYPE_U64		: {8, 8},
-			MNL_TYPE_STRING		: {64, 64},
-			MNL_TYPE_FLAG		: {0, 0},
-			MNL_TYPE_MSECS		: {8, 8},
-			MNL_TYPE_NESTED		: {32, 32},
-			MNL_TYPE_NESTED_COMPAT	: {32, 32},
-			MNL_TYPE_NUL_STRING	: {64, 64},
-			MNL_TYPE_BINARY		: {64, 64},
+		valid_len = map[AttrDataType][2]uint16{
+			MNL_TYPE_UNSPEC:        {0, 0},
+			MNL_TYPE_U8:            {1, 1},
+			MNL_TYPE_U16:           {2, 2},
+			MNL_TYPE_U32:           {4, 4},
+			MNL_TYPE_U64:           {8, 8},
+			MNL_TYPE_STRING:        {64, 64},
+			MNL_TYPE_FLAG:          {0, 0},
+			MNL_TYPE_MSECS:         {8, 8},
+			MNL_TYPE_NESTED:        {32, 32},
+			MNL_TYPE_NESTED_COMPAT: {32, 32},
+			MNL_TYPE_NUL_STRING:    {64, 64},
+			MNL_TYPE_BINARY:        {64, 64},
 			// mnl.TYPE_MAX		: {, ),
 		}
-		invalid_len	= map[AttrDataType][2]uint16 {
-			MNL_TYPE_U8		: {2, 3},
-			MNL_TYPE_U16		: {3, 4},
-			MNL_TYPE_U32		: {5, 6},
-			MNL_TYPE_U64		: {9, 10},
+		invalid_len = map[AttrDataType][2]uint16{
+			MNL_TYPE_U8:  {2, 3},
+			MNL_TYPE_U16: {3, 4},
+			MNL_TYPE_U32: {5, 6},
+			MNL_TYPE_U64: {9, 10},
 		}
 	)
 
@@ -243,7 +242,7 @@ var _ = Describe("Attr", func() {
 			for t := range valid_len {
 				abuf.SetLen(uint16(MNL_ATTR_HDRLEN) + valid_len[t][0])
 
-				err := nla.Validate( t)
+				err := nla.Validate(t)
 				Expect(err).To(BeNil())
 
 				err = nla.Validate2(t, Size_t(valid_len[t][1]))
@@ -264,7 +263,7 @@ var _ = Describe("Attr", func() {
 		})
 		It("should be invalid MNL_TYPE_NUL_STRING", func() {
 			abuf.SetLen(256)
-			(*abuf)[abuf.Len() - 1] = 1
+			(*abuf)[abuf.Len()-1] = 1
 			err := nla.Validate(MNL_TYPE_NUL_STRING)
 			Expect(err.(syscall.Errno)).To(Equal(syscall.EINVAL))
 
@@ -283,14 +282,14 @@ var _ = Describe("Attr", func() {
 			Expect(err).To(BeNil())
 		})
 		It("should be invalid MNL_TYPE_NESTED", func() {
-			abuf.SetLen(uint16(MNL_ATTR_HDRLEN * 2 - 1))
+			abuf.SetLen(uint16(MNL_ATTR_HDRLEN*2 - 1))
 			err := nla.Validate(MNL_TYPE_NESTED)
 			Expect(err.(syscall.Errno)).To(Equal(syscall.ERANGE))
 		})
 	})
 
 	Context("AttrParse", func() {
-		cb := func(val uint8) (func(*Nlattr, interface{}) (int, syscall.Errno)) {
+		cb := func(val uint8) func(*Nlattr, interface{}) (int, syscall.Errno) {
 			return func(attr *Nlattr, data interface{}) (int, syscall.Errno) {
 				if data != nil {
 					return MNL_CB_ERROR, data.(syscall.Errno)
@@ -344,7 +343,7 @@ var _ = Describe("Attr", func() {
 	})
 
 	Describe("Attribute callback", func() {
-		cb_f := func(val uint16) (func(*Nlattr, interface{}) (int, syscall.Errno)) {
+		cb_f := func(val uint16) func(*Nlattr, interface{}) (int, syscall.Errno) {
 			return func(attr *Nlattr, data interface{}) (int, syscall.Errno) {
 				if !data.(bool) {
 					return MNL_CB_STOP, 0
@@ -450,7 +449,7 @@ var _ = Describe("Attr", func() {
 			abuf.SetLen(11)
 			abuf.SetType(uint16(MNL_TYPE_STRING))
 			for i, c := range []byte("abcDEF") {
-				(*abuf)[i + 4] = c
+				(*abuf)[i+4] = c
 			}
 			(*abuf)[11] = 0
 			Expect(nla.Str()).To(Equal("abcDEF"))
@@ -474,7 +473,7 @@ var _ = Describe("Attr", func() {
 			Expect(_tbuf.Len()).To(Equal(uint16(MNL_ATTR_HDRLEN + MNL_NLMSG_HDRLEN)))
 		})
 		It("attr contents should be equal", func() {
-			Expect(([]byte)(_tbuf)[MNL_ATTR_HDRLEN:int(MNL_ATTR_HDRLEN + MNL_NLMSG_HDRLEN)]).To(Equal((*(*[]byte)(rand_hbuf))[:MNL_NLMSG_HDRLEN]))
+			Expect(([]byte)(_tbuf)[MNL_ATTR_HDRLEN:int(MNL_ATTR_HDRLEN+MNL_NLMSG_HDRLEN)]).To(Equal((*(*[]byte)(rand_hbuf))[:MNL_NLMSG_HDRLEN]))
 		})
 	})
 
@@ -495,7 +494,7 @@ var _ = Describe("Attr", func() {
 			Expect(_tbuf.Len()).To(Equal(uint16(MNL_ATTR_HDRLEN + MNL_NLMSG_HDRLEN)))
 		})
 		It("attr contents should be equal", func() {
-			Expect(([]byte)(_tbuf)[MNL_ATTR_HDRLEN:int(MNL_ATTR_HDRLEN + MNL_NLMSG_HDRLEN)]).To(Equal((*(*[]byte)(rand_hbuf))[:MNL_NLMSG_HDRLEN]))
+			Expect(([]byte)(_tbuf)[MNL_ATTR_HDRLEN:int(MNL_ATTR_HDRLEN+MNL_NLMSG_HDRLEN)]).To(Equal((*(*[]byte)(rand_hbuf))[:MNL_NLMSG_HDRLEN]))
 		})
 	})
 
@@ -517,7 +516,7 @@ var _ = Describe("Attr", func() {
 			Expect(_tbuf.Len()).To(Equal(uint16(MNL_ATTR_HDRLEN + uint32(len(b)))))
 		})
 		It("attr contents should be equal", func() {
-			Expect(([]byte)(_tbuf)[MNL_ATTR_HDRLEN:int(MNL_ATTR_HDRLEN) + len(b)]).To(Equal(b))
+			Expect(([]byte)(_tbuf)[MNL_ATTR_HDRLEN : int(MNL_ATTR_HDRLEN)+len(b)]).To(Equal(b))
 		})
 	})
 
@@ -623,15 +622,15 @@ var _ = Describe("Attr", func() {
 			Expect(_tbuf.Len()).To(Equal(uint16(int(MNL_ATTR_HDRLEN) + len(s))))
 		})
 		It("value should be equal to s", func() {
-			Expect(([]byte)(_tbuf[MNL_ATTR_HDRLEN:int(MNL_ATTR_HDRLEN) + len(s)])).To(Equal(([]byte)(s)))
+			Expect(([]byte)(_tbuf[MNL_ATTR_HDRLEN : int(MNL_ATTR_HDRLEN)+len(s)])).To(Equal(([]byte)(s)))
 		})
 		It("next byte should not be NULL", func() {
 			t := [333]byte{} // 256 <= size  <= 512
 			for i, _ := range t {
-				t[i]= 'a'
+				t[i] = 'a'
 			}
 			nlh.PutStr(uint16(MNL_TYPE_STRING), string(t[:]))
-			Expect(_tbuf[int(MNL_ATTR_HDRLEN) + len(s) + 1]).NotTo(BeZero())
+			Expect(_tbuf[int(MNL_ATTR_HDRLEN)+len(s)+1]).NotTo(BeZero())
 		})
 	})
 
@@ -644,7 +643,7 @@ var _ = Describe("Attr", func() {
 			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
 		})
 		It("nlh len should be 16 + 4 + align(len(s) + 1)", func() {
-			Expect(nlh.Len).To(Equal(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN + MnlAlign(uint32(len(s) + 1))))
+			Expect(nlh.Len).To(Equal(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN + MnlAlign(uint32(len(s)+1))))
 		})
 		It("attr type should be MNL_TYPE_NUL_STRING", func() {
 			Expect(_tbuf.Type()).To(Equal(uint16(MNL_TYPE_NUL_STRING)))
@@ -653,15 +652,15 @@ var _ = Describe("Attr", func() {
 			Expect(_tbuf.Len()).To(Equal(uint16(int(MNL_ATTR_HDRLEN) + len(s) + 1)))
 		})
 		It("value should be equal to s", func() {
-			Expect(([]byte)(_tbuf[MNL_ATTR_HDRLEN:int(MNL_ATTR_HDRLEN) + len(s)])).To(Equal(([]byte)(s)))
+			Expect(([]byte)(_tbuf[MNL_ATTR_HDRLEN : int(MNL_ATTR_HDRLEN)+len(s)])).To(Equal(([]byte)(s)))
 		})
 		It("next byte should not be NULL", func() {
 			t := [333]byte{} // 256 <= size  <= 512
 			for i, _ := range t {
-				t[i]= 'a'
+				t[i] = 'a'
 			}
 			nlh.PutStr(uint16(MNL_TYPE_STRING), string(t[:]))
-			Expect(_tbuf[int(MNL_ATTR_HDRLEN) + len(s) + 1]).To(BeZero())
+			Expect(_tbuf[int(MNL_ATTR_HDRLEN)+len(s)+1]).To(BeZero())
 		})
 	})
 
@@ -703,7 +702,7 @@ var _ = Describe("Attr", func() {
 			Expect(_tbuf.Len()).To(Equal(uint16(MNL_ATTR_HDRLEN + uint32(len(b)))))
 		})
 		It("attr contents should be equal", func() {
-			Expect(([]byte)(_tbuf)[MNL_ATTR_HDRLEN:int(MNL_ATTR_HDRLEN) + len(b)]).To(Equal(b))
+			Expect(([]byte)(_tbuf)[MNL_ATTR_HDRLEN : int(MNL_ATTR_HDRLEN)+len(b)]).To(Equal(b))
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsghdrBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
@@ -711,7 +710,7 @@ var _ = Describe("Attr", func() {
 			_nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
-			Expect(nlh.PutCheck(Size_t(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN), 1, 3, unsafe.Pointer(&b[0]))).To(Equal(false))
+			Expect(nlh.PutCheck(Size_t(MNL_NLMSG_HDRLEN+MNL_ATTR_HDRLEN), 1, 3, unsafe.Pointer(&b[0]))).To(Equal(false))
 			Expect(*(*[]byte)(_hbuf)).To(BeEquivalentTo(pb))
 		})
 	})
@@ -743,7 +742,7 @@ var _ = Describe("Attr", func() {
 			_nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
-			Expect(nlh.PutU8Check(Size_t(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN), uint16(MNL_TYPE_U8), 7)).To(Equal(false))
+			Expect(nlh.PutU8Check(Size_t(MNL_NLMSG_HDRLEN+MNL_ATTR_HDRLEN), uint16(MNL_TYPE_U8), 7)).To(Equal(false))
 			Expect(*(*[]byte)(_hbuf)).To(BeEquivalentTo(pb))
 		})
 	})
@@ -775,7 +774,7 @@ var _ = Describe("Attr", func() {
 			_nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
-			Expect(nlh.PutU16Check(Size_t(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN), uint16(MNL_TYPE_U16), 12345)).To(Equal(false))
+			Expect(nlh.PutU16Check(Size_t(MNL_NLMSG_HDRLEN+MNL_ATTR_HDRLEN), uint16(MNL_TYPE_U16), 12345)).To(Equal(false))
 			Expect(*(*[]byte)(_hbuf)).To(BeEquivalentTo(pb))
 		})
 	})
@@ -807,7 +806,7 @@ var _ = Describe("Attr", func() {
 			_nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
-			Expect(nlh.PutU32Check(Size_t(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN), uint16(MNL_TYPE_U32), 0x12345678)).To(Equal(false))
+			Expect(nlh.PutU32Check(Size_t(MNL_NLMSG_HDRLEN+MNL_ATTR_HDRLEN), uint16(MNL_TYPE_U32), 0x12345678)).To(Equal(false))
 			Expect(*(*[]byte)(_hbuf)).To(BeEquivalentTo(pb))
 		})
 	})
@@ -839,7 +838,7 @@ var _ = Describe("Attr", func() {
 			_nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
-			Expect(nlh.PutU64Check(Size_t(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN), uint16(MNL_TYPE_U64), 0x123456789abcdef0)).To(Equal(false))
+			Expect(nlh.PutU64Check(Size_t(MNL_NLMSG_HDRLEN+MNL_ATTR_HDRLEN), uint16(MNL_TYPE_U64), 0x123456789abcdef0)).To(Equal(false))
 			Expect(*(*[]byte)(_hbuf)).To(BeEquivalentTo(pb))
 		})
 	})
@@ -864,15 +863,15 @@ var _ = Describe("Attr", func() {
 			Expect(_tbuf.Len()).To(Equal(uint16(int(MNL_ATTR_HDRLEN) + len(s))))
 		})
 		It("value should be equal to s", func() {
-			Expect(([]byte)(_tbuf[MNL_ATTR_HDRLEN:int(MNL_ATTR_HDRLEN) + len(s)])).To(Equal(([]byte)(s)))
+			Expect(([]byte)(_tbuf[MNL_ATTR_HDRLEN : int(MNL_ATTR_HDRLEN)+len(s)])).To(Equal(([]byte)(s)))
 		})
 		It("next byte should not be NULL", func() {
 			t := [333]byte{} // 256 <= size  <= 512
 			for i, _ := range t {
-				t[i]= 'a'
+				t[i] = 'a'
 			}
 			nlh.PutStr(uint16(MNL_TYPE_STRING), string(t[:]))
-			Expect(_tbuf[int(MNL_ATTR_HDRLEN) + len(s) + 1]).NotTo(BeZero())
+			Expect(_tbuf[int(MNL_ATTR_HDRLEN)+len(s)+1]).NotTo(BeZero())
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsghdrBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
@@ -880,7 +879,7 @@ var _ = Describe("Attr", func() {
 			_nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
-			Expect(nlh.PutStrCheck(Size_t(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN), uint16(MNL_TYPE_STRING), s)).To(Equal(false))
+			Expect(nlh.PutStrCheck(Size_t(MNL_NLMSG_HDRLEN+MNL_ATTR_HDRLEN), uint16(MNL_TYPE_STRING), s)).To(Equal(false))
 			Expect(*(*[]byte)(_hbuf)).To(BeEquivalentTo(pb))
 		})
 	})
@@ -896,7 +895,7 @@ var _ = Describe("Attr", func() {
 			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
 		})
 		It("nlh len should be 16 + 4 + align(len(s) + 1)", func() {
-			Expect(nlh.Len).To(Equal(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN + MnlAlign(uint32(len(s) + 1))))
+			Expect(nlh.Len).To(Equal(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN + MnlAlign(uint32(len(s)+1))))
 		})
 		It("attr type should be MNL_TYPE_NUL_STRING", func() {
 			Expect(_tbuf.Type()).To(Equal(uint16(MNL_TYPE_NUL_STRING)))
@@ -905,15 +904,15 @@ var _ = Describe("Attr", func() {
 			Expect(_tbuf.Len()).To(Equal(uint16(int(MNL_ATTR_HDRLEN) + len(s) + 1)))
 		})
 		It("value should be equal to s", func() {
-			Expect(([]byte)(_tbuf[MNL_ATTR_HDRLEN:int(MNL_ATTR_HDRLEN) + len(s)])).To(Equal(([]byte)(s)))
+			Expect(([]byte)(_tbuf[MNL_ATTR_HDRLEN : int(MNL_ATTR_HDRLEN)+len(s)])).To(Equal(([]byte)(s)))
 		})
 		It("next byte should not be NULL", func() {
 			t := [333]byte{} // 256 <= size  <= 512
 			for i, _ := range t {
-				t[i]= 'a'
+				t[i] = 'a'
 			}
 			nlh.PutStr(uint16(MNL_TYPE_STRING), string(t[:]))
-			Expect(_tbuf[int(MNL_ATTR_HDRLEN) + len(s) + 1]).To(BeZero())
+			Expect(_tbuf[int(MNL_ATTR_HDRLEN)+len(s)+1]).To(BeZero())
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsghdrBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
@@ -921,7 +920,7 @@ var _ = Describe("Attr", func() {
 			_nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
-			Expect(nlh.PutStrzCheck(Size_t(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN), uint16(MNL_TYPE_NUL_STRING), s)).To(Equal(false))
+			Expect(nlh.PutStrzCheck(Size_t(MNL_NLMSG_HDRLEN+MNL_ATTR_HDRLEN), uint16(MNL_TYPE_NUL_STRING), s)).To(Equal(false))
 			Expect(*(*[]byte)(_hbuf)).To(BeEquivalentTo(pb))
 		})
 	})
@@ -929,13 +928,13 @@ var _ = Describe("Attr", func() {
 	Context("AttrNestEnd", func() {
 		It("attr len should be updated", func() {
 			nlh.PutHeader()
-			_nla := nlh.NestStart(1)				// payload len: aligned
-			nlh.PutU8(uint16(MNL_TYPE_U8), 0x12)			// 1: 4
-			nlh.PutU16(uint16(MNL_TYPE_U16), 0x3456)		// 2: 4
-			nlh.PutU32(uint16(MNL_TYPE_U32), 0x3456789a)		// 4: 4
-			nlh.PutU64(uint16(MNL_TYPE_U64), 0xbcdef0123456789a)	// 8: 8
-			nlh.PutStr(uint16(MNL_TYPE_STRING), "bcdef")		// 5: 8
-			nlh.PutStrz(uint16(MNL_TYPE_NUL_STRING), "01234567")	// 9: 12 = 40 + MNL_ATTR_HDRLEN * 7
+			_nla := nlh.NestStart(1)                             // payload len: aligned
+			nlh.PutU8(uint16(MNL_TYPE_U8), 0x12)                 // 1: 4
+			nlh.PutU16(uint16(MNL_TYPE_U16), 0x3456)             // 2: 4
+			nlh.PutU32(uint16(MNL_TYPE_U32), 0x3456789a)         // 4: 4
+			nlh.PutU64(uint16(MNL_TYPE_U64), 0xbcdef0123456789a) // 8: 8
+			nlh.PutStr(uint16(MNL_TYPE_STRING), "bcdef")         // 5: 8
+			nlh.PutStrz(uint16(MNL_TYPE_NUL_STRING), "01234567") // 9: 12 = 40 + MNL_ATTR_HDRLEN * 7
 			nlh.NestEnd(_nla)
 			_abuf := NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
 			Expect(_abuf.Len()).To(Equal(uint16(68)))
@@ -945,13 +944,13 @@ var _ = Describe("Attr", func() {
 	Context("AttrNestCancel", func() {
 		It("nlh len should be updated", func() {
 			nlh.PutHeader()
-			_nla := nlh.NestStart(1)				// payload len: aligned
-			nlh.PutU8(uint16(MNL_TYPE_U8), 0x12)			// 1: 4
-			nlh.PutU16(uint16(MNL_TYPE_U16), 0x3456)		// 2: 4
-			nlh.PutU32(uint16(MNL_TYPE_U32), 0x3456789a)		// 4: 4
-			nlh.PutU64(uint16(MNL_TYPE_U64), 0xbcdef0123456789a)	// 8: 8
-			nlh.PutStr(uint16(MNL_TYPE_STRING), "bcdef")		// 5: 8
-			nlh.PutStrz(uint16(MNL_TYPE_NUL_STRING), "01234567")	// 9: 12 = 40 + MNL_ATTR_HDRLEN * 7
+			_nla := nlh.NestStart(1)                             // payload len: aligned
+			nlh.PutU8(uint16(MNL_TYPE_U8), 0x12)                 // 1: 4
+			nlh.PutU16(uint16(MNL_TYPE_U16), 0x3456)             // 2: 4
+			nlh.PutU32(uint16(MNL_TYPE_U32), 0x3456789a)         // 4: 4
+			nlh.PutU64(uint16(MNL_TYPE_U64), 0xbcdef0123456789a) // 8: 8
+			nlh.PutStr(uint16(MNL_TYPE_STRING), "bcdef")         // 5: 8
+			nlh.PutStrz(uint16(MNL_TYPE_NUL_STRING), "01234567") // 9: 12 = 40 + MNL_ATTR_HDRLEN * 7
 			Expect(hbuf.Len()).To(Equal(uint32(MNL_NLMSG_HDRLEN + 68)))
 			nlh.NestCancel(_nla)
 			Expect(hbuf.Len()).To(Equal(uint32(MNL_NLMSG_HDRLEN)))
@@ -966,7 +965,7 @@ var _ = Describe("Attr", func() {
 			nlh.PutU8(uint16(2), 0x12)
 			nlh.PutU8(uint16(3), 0x13)
 			i := 0
-			for attr := range(nlh.Attributes(0)) {
+			for attr := range nlh.Attributes(0) {
 				Expect(attr.Type).To(Equal(uint16(i)))
 				Expect(attr.U8()).To(Equal(uint8(0x10 + i)))
 				i += 1
@@ -984,7 +983,7 @@ var _ = Describe("Attr", func() {
 			nlh.PutU8(uint16(3), 30)
 			nlh.NestEnd(nested)
 			i := 0
-			for attr := range(nested.Nesteds()) {
+			for attr := range nested.Nesteds() {
 				Expect(attr.Type).To(Equal(uint16(i)))
 				Expect(attr.U8()).To(Equal(uint8(10 * i)))
 				i += 1
@@ -1001,7 +1000,7 @@ var _ = Describe("Attr", func() {
 			nlh.PutU8(uint16(4), 40)
 
 			i := 0
-			for attr := range(PayloadAttributes(*hbuf)) {
+			for attr := range PayloadAttributes(*hbuf) {
 				Expect(attr.Type).To(Equal(uint16(i)))
 				Expect(attr.U8()).To(Equal(uint8(10 * i)))
 				i += 1

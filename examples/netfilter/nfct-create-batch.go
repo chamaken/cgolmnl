@@ -13,19 +13,19 @@ package main
 import "C"
 
 import (
+	mnl "cgolmnl"
+	"cgolmnl/inet"
 	"fmt"
 	"os"
 	"syscall"
 	"time"
 	"unsafe"
-	mnl "cgolmnl"
-	"cgolmnl/inet"
 )
 
 func put_msg(p unsafe.Pointer, i uint16, seq uint32) {
 	nlh := mnl.NlmsgPutHeader(p)
 	nlh.Type = (C.NFNL_SUBSYS_CTNETLINK << 8) | C.IPCTNL_MSG_CT_NEW
-	nlh.Flags = C.NLM_F_REQUEST|C.NLM_F_CREATE|C.NLM_F_EXCL|C.NLM_F_ACK
+	nlh.Flags = C.NLM_F_REQUEST | C.NLM_F_CREATE | C.NLM_F_EXCL | C.NLM_F_ACK
 	nlh.Seq = seq
 
 	nfh := (*Nfgenmsg)(nlh.PutExtraHeader(SizeofNfgenmsg))
@@ -125,7 +125,7 @@ func send_batch(nl *mnl.Socket, b *mnl.NlmsgBatch, portid uint32) {
 	for ret > 0 {
 		var n int
 		nevents, err := syscall.EpollWait(epfd, events[:], 0)
-		if nevents == 0 { 
+		if nevents == 0 {
 			break
 		}
 		for n = 0; n < nevents; n++ {
@@ -151,7 +151,7 @@ func main() {
 	var nl *mnl.Socket
 	var b *mnl.NlmsgBatch
 
-	snd_buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE * 2)
+	snd_buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE*2)
 	if nl, err = mnl.NewSocket(C.NETLINK_NETFILTER); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_open: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
@@ -172,7 +172,7 @@ func main() {
 
 	seq := uint32(time.Now().Unix())
 	for i := 1024; i < 65535; i++ {
-		put_msg(b.Current(), uint16(i), seq + uint32(i) - 1024)
+		put_msg(b.Current(), uint16(i), seq+uint32(i)-1024)
 		if b.Next() {
 			continue
 		}

@@ -2,9 +2,9 @@ package cgolmnl
 
 import (
 	"C"
-	"unsafe"
-	"syscall"
 	"reflect"
+	"syscall"
+	"unsafe"
 )
 
 // make copy
@@ -63,8 +63,8 @@ func (attr *Nlattr) UnmarshalBinary(data []byte) error {
 func SharedBytes(p unsafe.Pointer, plen int) []byte {
 	var b []byte
 	h := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-        h.Cap = plen
-        h.Len = plen
-        h.Data = uintptr(p)
+	h.Cap = plen
+	h.Len = plen
+	h.Data = uintptr(p)
 	return b
 }

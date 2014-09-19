@@ -293,7 +293,7 @@ func attrPutStrzCheck(nlh *Nlmsghdr, buflen Size_t, attr_type uint16, data strin
 func attrNestStartCheck(nlh *Nlmsghdr, buflen Size_t, attr_type uint16) *Nlattr {
 	return (*Nlattr)(unsafe.Pointer(C.mnl_attr_nest_start_check((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
 		C.size_t(buflen), C.uint16_t(attr_type))))
-	}
+}
 
 // void
 // mnl_attr_nest_end(struct nlmsghdr *nlh, struct nlattr *start)

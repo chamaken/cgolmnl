@@ -8,11 +8,11 @@ package main
 import "C"
 
 import (
+	mnl "cgolmnl"
+	"cgolmnl/inet"
 	"fmt"
 	"os"
 	"syscall"
-	mnl "cgolmnl"
-	"cgolmnl/inet"
 )
 
 func data_attr_cb2(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -21,12 +21,12 @@ func data_attr_cb2(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	if err := attr.TypeValid(C.RTAX_MAX); err != nil {
 		return mnl.MNL_CB_OK, 0
 	}
-	
+
 	if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 		return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 	}
-	
+
 	tb[attr.GetType()] = attr
 	return mnl.MNL_CB_OK, 0
 }
@@ -61,7 +61,7 @@ func attributes_show_ipv4(tb map[uint16]*mnl.Nlattr) {
 		fmt.Printf("prio=%d ", tb[C.RTA_PRIORITY].U32())
 	}
 	if tb[C.RTA_METRICS] != nil {
-		tbx := make([]*mnl.Nlattr, C.RTAX_MAX + 1)
+		tbx := make([]*mnl.Nlattr, C.RTAX_MAX+1)
 		tb[C.RTA_METRICS].ParseNested(data_attr_cb2, tbx)
 
 		for i := 0; i < C.RTAX_MAX; i++ {
@@ -98,7 +98,7 @@ func attributes_show_ipv6(tb map[uint16]*mnl.Nlattr) {
 		fmt.Printf("prio=%u ", tb[C.RTA_PRIORITY].U32())
 	}
 	if tb[C.RTA_METRICS] != nil {
-		tbx := make([]*mnl.Nlattr, C.RTAX_MAX + 1)
+		tbx := make([]*mnl.Nlattr, C.RTAX_MAX+1)
 		tb[C.RTA_METRICS].ParseNested(data_attr_cb2, tbx)
 
 		for i := 0; i < C.RTA_MAX; i++ {
@@ -118,13 +118,20 @@ func data_ipv4_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) 
 	}
 
 	switch attr_type {
-	case C.RTA_TABLE:	fallthrough
-	case C.RTA_DST:		fallthrough
-	case C.RTA_SRC:		fallthrough
-	case C.RTA_OIF:		fallthrough
-	case C.RTA_FLOW:	fallthrough
-	case C.RTA_PREFSRC:	fallthrough
-	case C.RTA_GATEWAY:	fallthrough
+	case C.RTA_TABLE:
+		fallthrough
+	case C.RTA_DST:
+		fallthrough
+	case C.RTA_SRC:
+		fallthrough
+	case C.RTA_OIF:
+		fallthrough
+	case C.RTA_FLOW:
+		fallthrough
+	case C.RTA_PREFSRC:
+		fallthrough
+	case C.RTA_GATEWAY:
+		fallthrough
 	case C.RTA_PRIORITY:
 		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
@@ -149,8 +156,10 @@ func data_ipv6_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) 
 	}
 
 	switch attr_type {
-	case C.RTA_TABLE:	fallthrough
-	case C.RTA_OIF:		fallthrough
+	case C.RTA_TABLE:
+		fallthrough
+	case C.RTA_OIF:
+		fallthrough
 	case C.RTA_FLOW:
 	case C.RTA_PRIORITY:
 		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
@@ -176,14 +185,14 @@ func data_ipv6_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) 
 }
 
 func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
-	tb := make(map[uint16]*mnl.Nlattr, C.RTA_MAX + 1)
+	tb := make(map[uint16]*mnl.Nlattr, C.RTA_MAX+1)
 	rm := (*Rtmsg)(nlh.Payload())
 
 	switch nlh.Type {
 	case C.RTM_NEWROUTE:
-		fmt.Printf("[NEW] ");
+		fmt.Printf("[NEW] ")
 	case C.RTM_DELROUTE:
-		fmt.Printf("[DEL] ");
+		fmt.Printf("[DEL] ")
 	}
 
 	fmt.Printf("family=%d ", rm.Family)
@@ -219,7 +228,7 @@ func main() {
 	}
 	defer nl.Close()
 
-	if err = nl.Bind(C.RTMGRP_IPV4_ROUTE | C.RTMGRP_IPV6_ROUTE, mnl.MNL_SOCKET_AUTOPID); err != nil {
+	if err = nl.Bind(C.RTMGRP_IPV4_ROUTE|C.RTMGRP_IPV6_ROUTE, mnl.MNL_SOCKET_AUTOPID); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_bind: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
 	}

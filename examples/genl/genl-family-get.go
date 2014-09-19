@@ -7,11 +7,11 @@ package main
 import "C"
 
 import (
+	mnl "cgolmnl"
 	"fmt"
 	"os"
 	"syscall"
 	"time"
-	mnl "cgolmnl"
 )
 
 func parse_mc_grps_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -40,7 +40,7 @@ func parse_mc_grps_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 
 func parse_genl_mc_grps(nested *mnl.Nlattr) {
 	for pos := range nested.Nesteds() {
-		tb := make(map[uint16]*mnl.Nlattr, C.CTRL_ATTR_MCAST_GRP_MAX + 1)
+		tb := make(map[uint16]*mnl.Nlattr, C.CTRL_ATTR_MCAST_GRP_MAX+1)
 
 		pos.ParseNested(parse_mc_grps_cb, tb)
 		if tb[C.CTRL_ATTR_MCAST_GRP_ID] != nil {
@@ -78,14 +78,14 @@ func parse_family_ops_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno
 
 func parse_genl_family_ops(nested *mnl.Nlattr) {
 	for pos := range nested.Nesteds() {
-		tb := make(map[uint16]*mnl.Nlattr, C.CTRL_ATTR_OP_MAX + 1)
+		tb := make(map[uint16]*mnl.Nlattr, C.CTRL_ATTR_OP_MAX+1)
 
 		pos.ParseNested(parse_family_ops_cb, tb)
 		if tb[C.CTRL_ATTR_OP_ID] != nil {
 			fmt.Printf("id-0x%x ", tb[C.CTRL_ATTR_OP_ID].U32())
 		}
 		if tb[C.CTRL_ATTR_OP_MAX] != nil {
-			fmt.Printf("flags ");
+			fmt.Printf("flags ")
 		}
 		fmt.Println()
 	}
@@ -110,14 +110,17 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
-	case C.CTRL_ATTR_VERSION:	fallthrough
-	case C.CTRL_ATTR_HDRSIZE:	fallthrough
+	case C.CTRL_ATTR_VERSION:
+		fallthrough
+	case C.CTRL_ATTR_HDRSIZE:
+		fallthrough
 	case C.CTRL_ATTR_MAXATTR:
 		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
-	case C.CTRL_ATTR_OPS:		fallthrough
+	case C.CTRL_ATTR_OPS:
+		fallthrough
 	case C.CTRL_ATTR_MCAST_GROUPS:
 		if err := attr.Validate(mnl.MNL_TYPE_NESTED); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
@@ -129,7 +132,7 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 }
 
 func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
-	tb := make(map[uint16]*mnl.Nlattr, C.CTRL_ATTR_MAX + 1)
+	tb := make(map[uint16]*mnl.Nlattr, C.CTRL_ATTR_MAX+1)
 	// genl := (*Genlmsghdr)(nlh.Payload())
 
 	nlh.Parse(SizeofGenlmsghdr, data_attr_cb, tb)

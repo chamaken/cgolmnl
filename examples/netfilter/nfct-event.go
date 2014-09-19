@@ -10,12 +10,12 @@ package main
 import "C"
 
 import (
+	mnl "cgolmnl"
+	"cgolmnl/inet"
 	"fmt"
 	"net"
 	"os"
 	"syscall"
-	mnl "cgolmnl"
-	"cgolmnl/inet"
 )
 
 func parse_ip_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -27,7 +27,8 @@ func parse_ip_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	}
 
 	switch attr_type {
-	case C.CTA_IP_V4_SRC: fallthrough
+	case C.CTA_IP_V4_SRC:
+		fallthrough
 	case C.CTA_IP_V4_DST:
 		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
@@ -59,15 +60,19 @@ func parse_proto_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	}
 
 	switch attr_type {
-	case C.CTA_PROTO_NUM:		fallthrough
-	case C.CTA_PROTO_ICMP_TYPE:	fallthrough
+	case C.CTA_PROTO_NUM:
+		fallthrough
+	case C.CTA_PROTO_ICMP_TYPE:
+		fallthrough
 	case C.CTA_PROTO_ICMP_CODE:
 		if err := attr.Validate(mnl.MNL_TYPE_U8); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
-	case C.CTA_PROTO_SRC_PORT:	fallthrough
-	case C.CTA_PROTO_DST_PORT:	fallthrough
+	case C.CTA_PROTO_SRC_PORT:
+		fallthrough
+	case C.CTA_PROTO_DST_PORT:
+		fallthrough
 	case C.CTA_PROTO_ICMP_ID:
 		if err := attr.Validate(mnl.MNL_TYPE_U16); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
@@ -152,8 +157,10 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
 			return mnl.MNL_CB_ERROR, err.(syscall.Errno)
 		}
-	case C.CTA_TIMEOUT:	fallthrough
-	case C.CTA_MARK:	fallthrough
+	case C.CTA_TIMEOUT:
+		fallthrough
+	case C.CTA_MARK:
+		fallthrough
 	case C.CTA_SECMARK:
 		if err := attr.Validate(mnl.MNL_TYPE_U32); err != nil {
 			fmt.Fprintf(os.Stderr, "mnl_attr_validate: %s\n", err)
@@ -170,7 +177,7 @@ func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 
 	switch nlh.Type & 0xFF {
 	case C.IPCTNL_MSG_CT_NEW:
-		if nlh.Flags & (C.NLM_F_CREATE|C.NLM_F_EXCL) != 0 {
+		if nlh.Flags&(C.NLM_F_CREATE|C.NLM_F_EXCL) != 0 {
 			fmt.Printf("%9s ", "[NEW] ")
 		} else {
 			fmt.Printf("%9s ", "[UPDATE] ")
@@ -201,8 +208,8 @@ func main() {
 	}
 	defer nl.Close()
 
-	if err := nl.Bind(C.NF_NETLINK_CONNTRACK_NEW |
-		C.NF_NETLINK_CONNTRACK_UPDATE |
+	if err := nl.Bind(C.NF_NETLINK_CONNTRACK_NEW|
+		C.NF_NETLINK_CONNTRACK_UPDATE|
 		C.NF_NETLINK_CONNTRACK_DESTROY,
 		mnl.MNL_SOCKET_AUTOPID); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_bind: %s\n", err)

@@ -8,30 +8,29 @@ import (
 
 	"math/rand"
 	// "syscall"
-	"time"
-	"unsafe"
 	"fmt"
 	"os"
+	"time"
+	"unsafe"
 )
-
 
 var _ = Describe("Attr", func() {
 	fmt.Fprintf(os.Stdout, "Hello, nlmsg tester!\n") // to import os, sys for debugging
 	var (
-		BUFLEN		= 512
-		r		*rand.Rand
+		BUFLEN = 512
+		r      *rand.Rand
 
 		// Nlmsghdr
-		hbuf		*NlmsghdrBuf
-		nlh		*Nlmsghdr
-		rand_hbuf	*NlmsghdrBuf
-		rand_nlh	*Nlmsghdr
+		hbuf      *NlmsghdrBuf
+		nlh       *Nlmsghdr
+		rand_hbuf *NlmsghdrBuf
+		rand_nlh  *Nlmsghdr
 
 		// Nlattr
-		abuf		*NlattrBuf
-		nla		*Nlattr
-		rand_abuf	*NlattrBuf
-		rand_nla	*Nlattr
+		abuf      *NlattrBuf
+		nla       *Nlattr
+		rand_abuf *NlattrBuf
+		rand_nla  *Nlattr
 	)
 
 	BeforeEach(func() {
@@ -113,7 +112,7 @@ var _ = Describe("Attr", func() {
 			Expect(rand_nlh.Len).To(Equal(uint32(256 + MnlAlign(123))))
 		})
 		It("contents should be all 0", func() {
-			for i := 256; i < 256 + int(MnlAlign(123)); i++ {
+			for i := 256; i < 256+int(MnlAlign(123)); i++ {
 				Expect((*rand_hbuf)[i]).To(BeZero())
 			}
 		})
@@ -139,22 +138,22 @@ var _ = Describe("Attr", func() {
 
 	Context("NlmsgGetPayloadOffset", func() {
 		It("points buffer[MNL_NLMSG_HDRLEN + offset]", func() {
-			Expect(rand_nlh.PayloadOffset(191)).To(Equal(unsafe.Pointer(&(*rand_hbuf)[MNL_NLMSG_HDRLEN + MnlAlign(191)])))
+			Expect(rand_nlh.PayloadOffset(191)).To(Equal(unsafe.Pointer(&(*rand_hbuf)[MNL_NLMSG_HDRLEN+MnlAlign(191)])))
 		})
 	})
 
 	Context("NlmsgGetPayloadOffsetBytes", func() {
 		It("length should be len - MNL_NLMSG_HDRLEN - offset", func() {
-			Expect(len(rand_nlh.PayloadOffsetBytes(191))).To(Equal(BUFLEN - int(MNL_NLMSG_HDRLEN + MnlAlign(191))))
+			Expect(len(rand_nlh.PayloadOffsetBytes(191))).To(Equal(BUFLEN - int(MNL_NLMSG_HDRLEN+MnlAlign(191))))
 		})
 		It("contets should be the same", func() {
-			Expect(rand_nlh.PayloadOffsetBytes(191)).To(Equal((*(*[]byte)(rand_hbuf))[int(MNL_NLMSG_HDRLEN + MnlAlign(191)):]))
+			Expect(rand_nlh.PayloadOffsetBytes(191)).To(Equal((*(*[]byte)(rand_hbuf))[int(MNL_NLMSG_HDRLEN+MnlAlign(191)):]))
 		})
 	})
 
 	Context("NlmsgOk", func() {
 		Describe("length: 16", func() {
-			BeforeEach(func () {
+			BeforeEach(func() {
 				hbuf.SetLen(16)
 			})
 			It("param 15 should be false", func() {
@@ -201,7 +200,7 @@ var _ = Describe("Attr", func() {
 		It("should have 3 valid (empty) messages", func() {
 			hbuf.SetLen(MnlAlign(256))
 			SetUint32(*hbuf, uint(MnlAlign(256)), 128)
-			SetUint32(*hbuf, uint(MnlAlign(256) + MnlAlign(128)), 64)
+			SetUint32(*hbuf, uint(MnlAlign(256)+MnlAlign(128)), 64)
 
 			next_nlh, rest := nlh.Next(BUFLEN)
 			Expect(rest).To(Equal(BUFLEN - 256))
@@ -264,7 +263,7 @@ var _ = Describe("Attr", func() {
 			Expect(len(b.HeadBytes())).To(BeZero())
 			Expect(b.IsEmpty()).To(BeTrue())
 		})
-		It("has apropriate length in filling buffer", func() {	
+		It("has apropriate length in filling buffer", func() {
 			// filling buf
 			for i := 1; i < 11; i++ {
 				_nlh := (*Nlmsghdr)(b.Current())
@@ -302,6 +301,6 @@ var _ = Describe("Attr", func() {
 			Expect(b.Size()).To(BeZero())
 			Expect(len(b.HeadBytes())).To(BeZero())
 			Expect(b.IsEmpty()).To(BeTrue())
-		})				
+		})
 	})
 })

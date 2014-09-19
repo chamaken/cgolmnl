@@ -8,12 +8,12 @@ package main
 import "C"
 
 import (
+	mnl "cgolmnl"
+	"cgolmnl/inet"
 	"fmt"
 	"os"
 	"syscall"
 	"time"
-	mnl "cgolmnl"
-	"cgolmnl/inet"
 )
 
 func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
@@ -36,7 +36,7 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 }
 
 func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
-	tb := make(map[uint16]*mnl.Nlattr, C.IFLA_MAX + 1)
+	tb := make(map[uint16]*mnl.Nlattr, C.IFLA_MAX+1)
 	ifa := (*Ifaddrmsg)(nlh.Payload())
 
 	fmt.Printf("index=%d family=%d ", ifa.Index, ifa.Family)
@@ -114,7 +114,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "mnl_socket_recvfrom: %s\n", err)
 			os.Exit(C.EXIT_FAILURE)
 		}
-		ret, err = mnl.CbRun(buf[:nrcv], seq, portid, data_cb, nil)		
+		ret, err = mnl.CbRun(buf[:nrcv], seq, portid, data_cb, nil)
 	}
 
 	if ret < mnl.MNL_CB_STOP {

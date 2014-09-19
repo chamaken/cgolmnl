@@ -10,9 +10,9 @@ package cgolmnl
 import "C"
 
 import (
-	"unsafe"
 	"os"
 	"syscall"
+	"unsafe"
 )
 
 // mnl_nlmsg_size - calculate the size of Netlink message (without alignment)
@@ -37,11 +37,14 @@ func nlmsgGetPayloadLen(nlh *Nlmsghdr) Size_t {
 func NlmsgPutHeader(buf unsafe.Pointer) *Nlmsghdr {
 	return (*Nlmsghdr)(unsafe.Pointer(C.mnl_nlmsg_put_header(buf)))
 }
+
 // reserve and prepare room for Netlink header
 //
 // This function wraps NlmsgPutHeader().
 func NlmsgPutHeaderBytes(buf []byte) (*Nlmsghdr, error) {
-	if len(buf) < int(MNL_NLMSG_HDRLEN) { return nil, syscall.EINVAL }
+	if len(buf) < int(MNL_NLMSG_HDRLEN) {
+		return nil, syscall.EINVAL
+	}
 	return NlmsgPutHeader(unsafe.Pointer(&buf[0])), nil
 }
 
@@ -65,7 +68,7 @@ func nlmsgGetPayloadOffset(nlh *Nlmsghdr, offset Size_t) unsafe.Pointer {
 	return C.mnl_nlmsg_get_payload_offset((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.size_t(offset))
 }
 func nlmsgGetPayloadOffsetBytes(nlh *Nlmsghdr, offset Size_t) []byte {
-	return SharedBytes(nlmsgGetPayloadOffset(nlh, offset), int(nlmsgGetPayloadLen(nlh) - Size_t(MnlAlign(uint32(offset)))))
+	return SharedBytes(nlmsgGetPayloadOffset(nlh, offset), int(nlmsgGetPayloadLen(nlh)-Size_t(MnlAlign(uint32(offset)))))
 }
 
 // bool mnl_nlmsg_ok(const struct nlmsghdr *nlh, int len)
@@ -74,7 +77,9 @@ func nlmsgOk(nlh *Nlmsghdr, size int) bool {
 	//   unexpected fault address 0x--------
 	//   fatal error: fault
 	// sometimes without below
-	if size < SizeofNlmsghdr { return false }
+	if size < SizeofNlmsghdr {
+		return false
+	}
 	return bool(C.mnl_nlmsg_ok((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.int(size)))
 }
 
@@ -102,7 +107,6 @@ func nlmsgSeqOk(nlh *Nlmsghdr, seq uint32) bool {
 func nlmsgPortidOk(nlh *Nlmsghdr, portid uint32) bool {
 	return bool(C.mnl_nlmsg_portid_ok((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.uint(portid)))
 }
-
 
 // void
 // mnl_nlmsg_fprintf(FILE *fd, const void *data, size_t datalen,
@@ -153,7 +157,7 @@ type NlmsgBatch C.struct_mnl_nlmsg_batch // [0]byte
 // struct mnl_nlmsg_batch *mnl_nlmsg_batch_start(void *buf, size_t limit)
 func nlmsgBatchStart(buf []byte, limit Size_t) (*NlmsgBatch, error) {
 	ret, err := C.mnl_nlmsg_batch_start(unsafe.Pointer(&buf[0]), C.size_t(limit))
-	return  (*NlmsgBatch)(ret), err
+	return (*NlmsgBatch)(ret), err
 }
 
 // void mnl_nlmsg_batch_stop(struct mnl_nlmsg_batch *b)

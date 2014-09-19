@@ -18,6 +18,7 @@ import "C"
 
 type Ring C.struct_mnl_ring
 type RingTypes C.enum_mnl_ring_types
+
 const (
 	MNL_RING_RX RingTypes = C.MNL_RING_RX
 	MNL_RING_TX RingTypes = C.MNL_RING_TX
@@ -54,7 +55,7 @@ func socketGetRing(nl *Socket, rtype RingTypes) (*Ring, error) {
 }
 
 // struct nl_mmap_hdr *mnl_ring_get_frame(const struct mnl_ring *ring)
-func ringGetFrame(ring *Ring) (*NlMmapHdr) {
+func ringGetFrame(ring *Ring) *NlMmapHdr {
 	return (*NlMmapHdr)(unsafe.Pointer(C.mnl_ring_get_frame((*C.struct_mnl_ring)(ring))))
 }
 
