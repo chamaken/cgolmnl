@@ -9,8 +9,8 @@ package main
 import "C"
 
 import (
-	mnl "cgolmnl"
 	"fmt"
+	mnl "github.com/chamaken/cgolmnl"
 	"os"
 	"strings"
 	"time"

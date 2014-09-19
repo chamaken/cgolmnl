@@ -13,9 +13,9 @@ package main
 import "C"
 
 import (
-	mnl "cgolmnl"
-	"cgolmnl/inet"
 	"fmt"
+	mnl "github.com/chamaken/cgolmnl"
+	inet "github.com/chamaken/cgolmnl/inet"
 	"os"
 	"syscall"
 	"time"
