@@ -708,6 +708,18 @@ func NewSocket(bus int) (*Socket, error) {
 	return socketOpen(bus)
 }
 
+// associates a mnl_socket object with pre-existing socket.
+//
+// On error, it returns NULL and errno is appropriately set. Otherwise, it
+// returns a valid pointer to the mnl_socket structure. It also sets the portID
+// if the socket fd is already bound and it is AF_NETLINK.
+//
+// Note that mnl_socket_get_portid() returns 0 if this function is used with
+// non-netlink socket.
+func NewSocketFd(fd int) (*Socket, error) {
+	return socketFdopen(fd)
+}
+
 // obtain file descriptor from netlink socket
 //
 // This function returns the file descriptor of a given netlink socket.
