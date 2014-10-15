@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <sys/socket.h> /* for sa_family_t */
 #include <linux/netlink.h>
-#include <linux/kernel.h> /* for __ALIGN_KERNEL */
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,31 +19,7 @@ extern "C" {
 #define MNL_SOCKET_AUTOPID	0
 #define MNL_SOCKET_BUFFER_SIZE (getpagesize() < 8192L ? getpagesize() : 8192L)
 
-#ifndef NETLINK_RX_RING
-struct nl_mmap_hdr {
-	unsigned int	nm_status;
-	unsigned int	nm_len;
-	__u32		nm_group;
-	/* credentials */
-	__u32		nm_pid;
-	__u32		nm_uid;
-	__u32		nm_gid;
-};
-
-enum nl_mmap_status {
-	NL_MMAP_STATUS_UNUSED,
-	NL_MMAP_STATUS_RESERVED,
-	NL_MMAP_STATUS_VALID,
-	NL_MMAP_STATUS_COPY,
-	NL_MMAP_STATUS_SKIP,
-};
-
-#define NL_MMAP_MSG_ALIGNMENT		NLMSG_ALIGNTO
-#define NL_MMAP_MSG_ALIGN(sz)		__ALIGN_KERNEL(sz, NL_MMAP_MSG_ALIGNMENT)
-#define NL_MMAP_HDRLEN			NL_MMAP_MSG_ALIGN(sizeof(struct nl_mmap_hdr))
-#endif /* NETLINK_RX_RING */
-
-enum mnl_ring_types {
+enum mnl_ring_type {
 	MNL_RING_RX,
 	MNL_RING_TX,
 };
@@ -57,11 +32,6 @@ struct mnl_ring;
 extern struct mnl_socket *mnl_socket_open(int type);
 extern struct mnl_socket *mnl_socket_fdopen(int fd);
 extern int mnl_socket_bind(struct mnl_socket *nl, unsigned int groups, pid_t pid);
-extern int mnl_socket_set_ringopt(struct mnl_socket *nl, enum mnl_ring_types type,
-				  unsigned int block_size, unsigned int block_nf,
-				  unsigned int frame_size, unsigned int frame_nr);
-extern int mnl_socket_map_ring(struct mnl_socket *nl);
-extern int mnl_socket_unmap_ring(struct mnl_socket *nl);
 extern int mnl_socket_close(struct mnl_socket *nl);
 extern int mnl_socket_get_fd(const struct mnl_socket *nl);
 extern unsigned int mnl_socket_get_portid(const struct mnl_socket *nl);
@@ -69,7 +39,12 @@ extern ssize_t mnl_socket_sendto(const struct mnl_socket *nl, const void *req, s
 extern ssize_t mnl_socket_recvfrom(const struct mnl_socket *nl, void *buf, size_t siz);
 extern int mnl_socket_setsockopt(const struct mnl_socket *nl, int type, void *buf, socklen_t len);
 extern int mnl_socket_getsockopt(const struct mnl_socket *nl, int type, void *buf, socklen_t *len);
-extern struct mnl_ring *mnl_socket_get_ring(const struct mnl_socket *nl, enum mnl_ring_types type);
+extern int mnl_socket_set_ringopt(struct mnl_socket *nl, enum mnl_ring_type type,
+				  unsigned int block_size, unsigned int block_nf,
+				  unsigned int frame_size, unsigned int frame_nr);
+extern int mnl_socket_map_ring(struct mnl_socket *nl);
+extern int mnl_socket_unmap_ring(struct mnl_socket *nl);
+extern struct mnl_ring *mnl_socket_get_ring(const struct mnl_socket *nl, enum mnl_ring_type type);
 extern void mnl_ring_advance(struct mnl_ring *ring);
 extern struct nl_mmap_hdr *mnl_ring_get_frame(const struct mnl_ring *ring);
 

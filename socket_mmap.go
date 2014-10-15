@@ -17,7 +17,7 @@ void *mnl_frame_payload(void *hdr)
 import "C"
 
 type Ring C.struct_mnl_ring
-type RingTypes C.enum_mnl_ring_types
+type RingTypes C.enum_mnl_ring_type
 
 const (
 	MNL_RING_RX RingTypes = C.MNL_RING_RX
@@ -29,9 +29,9 @@ func FramePayload(hdr *NlMmapHdr) []byte {
 }
 
 // int mnl_socket_set_ringopt(struct mnl_socket *nl, struct nl_mmap_req *req,
-//			      enum mnl_ring_types type)
+//			      enum mnl_ring_type type)
 func socketSetRingopt(nl *Socket, rtype RingTypes, block_size, block_nr, frame_size, frame_nr uint) error {
-	_, err := C.mnl_socket_set_ringopt((*C.struct_mnl_socket)(nl), (C.enum_mnl_ring_types)(rtype),
+	_, err := C.mnl_socket_set_ringopt((*C.struct_mnl_socket)(nl), (C.enum_mnl_ring_type)(rtype),
 		C.uint(block_size), C.uint(block_nr), C.uint(frame_size), C.uint(frame_nr))
 	return err
 }
@@ -48,9 +48,9 @@ func socketUnmapRing(nl *Socket) error {
 	return err
 }
 
-// struct mnl_ring *mnl_socket_get_ring(const struct mnl_socket *nl, enum mnl_ring_types type)
+// struct mnl_ring *mnl_socket_get_ring(const struct mnl_socket *nl, enum mnl_ring_type type)
 func socketGetRing(nl *Socket, rtype RingTypes) (*Ring, error) {
-	ret, err := C.mnl_socket_get_ring((*C.struct_mnl_socket)(nl), (C.enum_mnl_ring_types)(rtype))
+	ret, err := C.mnl_socket_get_ring((*C.struct_mnl_socket)(nl), (C.enum_mnl_ring_type)(rtype))
 	return (*Ring)(unsafe.Pointer(ret)), err
 }
 
