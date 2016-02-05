@@ -74,15 +74,18 @@ func attrValidate2(attr *Nlattr, data_type AttrDataType, exp_len Size_t) error {
 // attribute callback wrapper called from original
 type MnlAttrCb func(*Nlattr, interface{}) (int, syscall.Errno)
 
+type attrCbData struct {
+	cb MnlAttrCb
+	data interface{}
+}
+
 //export GoAttrCb
 func GoAttrCb(nla *C.struct_nlattr, argp unsafe.Pointer) C.int {
-	args := *(*[2]unsafe.Pointer)(argp)
-	cb := *(*MnlAttrCb)(args[0])
-	if cb == nil {
+	args := *(*attrCbData)(argp)
+	if args.cb == nil {
 		return MNL_CB_OK
 	}
-	data := *(*interface{})(args[1])
-	ret, err := cb((*Nlattr)(unsafe.Pointer(nla)), data) // returns (int, syscall.Errno)
+	ret, err := args.cb((*Nlattr)(unsafe.Pointer(nla)), args.data) // returns (int, syscall.Errno)
 	if err != 0 {
 		// C.errno = int(err) // ``cannot refer to errno directly; see documentation''
 		C.SetErrno(C.int(err))
@@ -94,9 +97,9 @@ func GoAttrCb(nla *C.struct_nlattr, argp unsafe.Pointer) C.int {
 // mnl_attr_parse(const struct nlmsghdr *nlh, unsigned int offset,
 //	          mnl_attr_cb_t cb, void *data)
 func attrParse(nlh *Nlmsghdr, offset Size_t, cb MnlAttrCb, data interface{}) (int, error) {
-	args := [2]unsafe.Pointer{unsafe.Pointer(&cb), unsafe.Pointer(&data)}
+	args := uintptr(unsafe.Pointer(&attrCbData{cb, data}))
 	ret, err := C.attr_parse_wrapper((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
-		C.size_t(offset), unsafe.Pointer(&args))
+		C.size_t(offset), C.uintptr_t(args))
 	return int(ret), err
 }
 
@@ -104,8 +107,8 @@ func attrParse(nlh *Nlmsghdr, offset Size_t, cb MnlAttrCb, data interface{}) (in
 // mnl_attr_parse_nested(const struct nlattr *nested, mnl_attr_cb_t cb,
 // 			 void *data)
 func attrParseNested(nested *Nlattr, cb MnlAttrCb, data interface{}) (int, error) {
-	args := [2]unsafe.Pointer{unsafe.Pointer(&cb), unsafe.Pointer(&data)}
-	ret, err := C.attr_parse_nested_wrapper((*C.struct_nlattr)(unsafe.Pointer(nested)), unsafe.Pointer(&args))
+	args := uintptr(unsafe.Pointer(&attrCbData{cb, data}))
+	ret, err := C.attr_parse_nested_wrapper((*C.struct_nlattr)(unsafe.Pointer(nested)), C.uintptr_t(args))
 	return int(ret), err
 }
 
@@ -123,8 +126,8 @@ func attrParseNested(nested *Nlattr, cb MnlAttrCb, data interface{}) (int, error
 // This function propagates the return value of the callback, which can be
 // MNL_CB_ERROR, MNL_CB_OK or MNL_CB_STOP.
 func AttrParsePayload(payload []byte, cb MnlAttrCb, data interface{}) (int, error) {
-	args := [2]unsafe.Pointer{unsafe.Pointer(&cb), unsafe.Pointer(&data)}
-	ret, err := C.attr_parse_payload_wrapper(unsafe.Pointer(&payload[0]), C.size_t(len(payload)), unsafe.Pointer(&args))
+	args := uintptr(unsafe.Pointer(&attrCbData{cb, data}))
+	ret, err := C.attr_parse_payload_wrapper(unsafe.Pointer(&payload[0]), C.size_t(len(payload)), C.uintptr_t(args))
 	return int(ret), err
 }
 
