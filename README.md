@@ -101,7 +101,7 @@ snippets below
         ret, err := cbfunc(real_data)
 	// set C errno here
     }
-     
+
     func cb(data interface{}) (int, error) {
         i := data.(int)
         if i < 0:
@@ -198,6 +198,7 @@ comparison
 | mnl_socket_get_fd			| SocketGgetFd			|				|
 | mnl_socket_get_portid			| SocketGetPortid		|				|
 | mnl_socket_open			| NewSocket			| 				|
+| mnl_socket_open2			| NewSocket2			| 				|
 | mnl_socket_fdopen			| NewSocketFd			| 				|
 | mnl_socket_bind			| SocketBind			|				|
 | mnl_socket_sendto			| SocketSendto			|				|

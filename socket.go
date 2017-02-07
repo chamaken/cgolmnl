@@ -31,12 +31,6 @@ func socketOpen(bus int) (*Socket, error) {
 	return (*Socket)(ret), err
 }
 
-// struct mnl_socket *mnl_socket_fdopen(int fd)
-func socketFdopen(fd int) (*Socket, error) {
-	ret, err := C.mnl_socket_fdopen(C.int(fd))
-	return (*Socket)(ret), err
-}
-
 // int mnl_socket_bind(struct mnl_socket *nl, unsigned int groups, pid_t pid)
 func socketBind(nl *Socket, groups uint, pid Pid_t) error {
 	_, err := C.mnl_socket_bind((*C.struct_mnl_socket)(nl), C.uint(groups), C.pid_t(pid))

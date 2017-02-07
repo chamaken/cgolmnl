@@ -128,21 +128,3 @@ var _ = Describe("Socket", func() {
 
 	socketContexts(nl)
 })
-
-var _ = Describe("Socket", func() {
-	fmt.Fprintf(os.Stdout, "Hello, socket fd tester!\n") // to import os, sys for debugging
-	var (
-		nl *Socket
-	)
-
-	BeforeEach(func() {
-		fd, _ := syscall.Socket(syscall.AF_NETLINK, syscall.SOCK_RAW, NETLINK_NETFILTER)
-		nl, _ = NewSocketFd(fd)
-	})
-
-	AfterEach(func() {
-		nl.Close()
-	})
-
-	socketContexts(nl)
-})
