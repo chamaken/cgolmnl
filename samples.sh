@@ -6,7 +6,6 @@ GOOSARCH="${GOOS}_${GOARCH}"
 
 cwd=`pwd`
 cmd=${3:-"build"}
-with_nl_mmap=$4
 
 case "$cmd" in
     build)
@@ -15,10 +14,6 @@ case "$cmd" in
 	    case "$pathname" in
 		*types_${GOOS}.go) continue;;
 		*ztypes_${GOOSARCH}.go) continue;;
-		*mmap*)
-		    [ -z $with_nl_mmap ] && continue
-		    gopt="-tags nlmmap"
-		    ;;
 	    esac
 
 	    cd `dirname $pathname`

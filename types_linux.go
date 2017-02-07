@@ -35,14 +35,6 @@ const SizeofNlPktinfo = C.sizeof_struct_nl_pktinfo
 
 type NlPktinfo C.struct_nl_pktinfo
 
-const SizeofNlMmapReq = C.sizeof_struct_nl_mmap_req
-
-type NlMmapReq C.struct_nl_mmap_req
-
-const SizeofNlMmapHdr = C.sizeof_struct_nl_mmap_hdr
-
-type NlMmapHdr C.struct_nl_mmap_hdr
-
 const SizeofNlattr = C.sizeof_struct_nlattr
 
 type nlattr C.struct_nlattr

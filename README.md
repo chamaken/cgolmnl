@@ -14,7 +14,6 @@ installation
 ------------
 
 Need running `mktypes.sh` before build.
-To enable mmap, specify "nlmmap" tag, e.g. `go build -tags nlmmap`
 
 
 requires
