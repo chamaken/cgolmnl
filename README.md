@@ -128,82 +128,83 @@ comparison
 
 | original				| cgolmnl			| remarks			|
 | ------------------------------------- | ----------------------------- | ----------------------------- |
-| mnl_attr_get_type			| AttrGetType			|				|
-| mnl_attr_get_len			| AttrGetLen			|				|
-| mnl_attr_get_payload_len		| AttrGetPayloadLen		|				|
-| mnl_attr_get_payload			| AttrGetPayload		|				|
-| (add)					| AttrGetPayloadBytes		| returns []byte		|
-| mnl_attr_ok				| AttrOk			|				|
-| mnl_attr_next				| AttrNext			| 				|
-| mnl_attr_type_valid			| AttrTypeValid			| returns ret, error		|
-| mnl_attr_validate			| AttrValidate			| returns ret, errno		|
-| mnl_attr_validate2			| AttrValidate2			| returns ret, errno		|
-| mnl_attr_parse			| AttrParse			| returns ret, errno		|
-| mnl_attr_parse_nested			| AttrParseNested		| returns ret, errno		|
-| mnl_attr_parse_payload		| AttrParsePayload		| returns ret, errno		|
-| mnl_attr_get_u8			| AttrGetU8			|				|
-| mnl_attr_get_u16			| AttrGetU16			|				|
-| mnl_attr_get_u32			| AttrGetU32			|				|
-| mnl_attr_get_u64			| AttrGetU64			|				|
-| mnl_attr_get_str			| AttrGetStr			|				|
-| mnl_attr_put				| AttrPut			|				|
-| (add)					| AttrPutPtr			|				|
-| (add)					| AttrPutBytes			|				|
-| mnl_attr_put_u8			| AttrPutU8			|				|
-| mnl_attr_put_u16			| AttrPutU16			|				|
-| mnl_attr_put_u32			| AttrPutU32			|				|
-| mnl_attr_put_u64			| AttrPutU64			|				|
-| mnl_attr_put_str			| AttrPutstr			|				|
-| mnl_attr_put_strz			| AttrPutstrz			|				|
-| mnl_attr_nest_start			| AttrNestStart			|				|
-| mnl_attr_put_check			| AttrPutCheck			|				|
-| mnl_attr_put_u8_check			| AttrPutU8Check		|				|
-| mnl_attr_put_u16_check		| AttrPutU16Check		|				|
-| mnl_attr_put_u32_check		| AttrPutU32Check		|				|
-| mnl_attr_put_u64_check		| AttrPutU64Check		|				|
-| mnl_attr_put_str_check		| AttrPutStrCheck		|				|
-| mnl_attr_put_strz_check		| AttrPutStrzCheck		|				|
-| mnl_attr_nest_start_check		| AttrnestStartCheck		|				|
-| mnl_attr_nest_end			| AttrnestEnd			|				|
-| mnl_attr_nest_cancel			| AttrnestCancel		|				|
+| mnl_attr_get_type			| Attr.GetType			|				|
+| mnl_attr_get_len			| Attr.GetLen			|				|
+| mnl_attr_get_payload_len		| Attr.GetPayloadLen		|				|
+| mnl_attr_get_payload			| Attr.GetPayload		|				|
+| (add)					| Attr.GetPayloadBytes		| returns []byte		|
+| mnl_attr_ok				| Attr.Ok			|				|
+| mnl_attr_next				| Attr.Next			| 				|
+| mnl_attr_type_valid			| Attr.TypeValid		| returns ret, error		|
+| mnl_attr_validate			| Attr.Validate			| returns ret, errno		|
+| mnl_attr_validate2			| Attr.Validate2		| returns ret, errno		|
+| mnl_attr_parse			| Attr.Parse			| returns ret, errno		|
+| mnl_attr_parse_nested			| Attr.ParseNested		| returns ret, errno		|
+| mnl_attr_parse_payload		| Attr.ParsePayload		| returns ret, errno		|
+| mnl_attr_get_u8			| Attr.GetU8			|				|
+| mnl_attr_get_u16			| Attr.GetU16			|				|
+| mnl_attr_get_u32			| Attr.GetU32			|				|
+| mnl_attr_get_u64			| Attr.GetU64			|				|
+| mnl_attr_get_str			| Attr.GetStr			|				|
+| mnl_attr_put				| Attr.Put			|				|
+| (add)					| Attr.PutPtr			|				|
+| (add)					| Attr.PutBytes			|				|
+| mnl_attr_put_u8			| Attr.PutU8			|				|
+| mnl_attr_put_u16			| Attr.PutU16			|				|
+| mnl_attr_put_u32			| Attr.PutU32			|				|
+| mnl_attr_put_u64			| Attr.PutU64			|				|
+| mnl_attr_put_str			| Attr.Putstr			|				|
+| mnl_attr_put_strz			| Attr.Putstrz			|				|
+| mnl_attr_nest_start			| Attr.NestStart		|				|
+| mnl_attr_put_check			| Attr.PutCheck			|				|
+| mnl_attr_put_u8_check			| Attr.PutU8Check		|				|
+| mnl_attr_put_u16_check		| Attr.PutU16Check		|				|
+| mnl_attr_put_u32_check		| Attr.PutU32Check		|				|
+| mnl_attr_put_u64_check		| Attr.PutU64Check		|				|
+| mnl_attr_put_str_check		| Attr.PutStrCheck		|				|
+| mnl_attr_put_strz_check		| Attr.PutStrzCheck		|				|
+| mnl_attr_nest_start_check		| Attr.nestStartCheck		|				|
+| mnl_attr_nest_end			| Attr.nestEnd			|				|
+| mnl_attr_nest_cancel			| Attr.nestCancel		|				|
 | ------------------------------------- | ----------------------------- | ----------------------------- |
 | mnl_nlmsg_size			| NlmsgSize			|				|
-| mnl_nlmsg_get_payload_len		| NlmsgGetPayloadLen		|				|
-| mnl_nlmsg_put_header			| NlmsgPutHeader		| require unsafe.Pointer	|
-| (add)					| NlmsgPutHeaderBytes		| wrap above, require []byte	|
-| mnl_nlmsg_put_extra_header		| NlmsgPutExtraHeader		|  				|
-| mnl_nlmsg_get_paylod			| NlmsgGetPayload		| 				|
-| (add)					| NlmsgGetPayloadBytes		| returns []byte		|
-| mnl_nlmsg_get_payload_offset		| NlmsgGetPayloadOffset		| 				|
-| (add)					| NlmsgGetPayloadOffsetBytes	| returns []byte		|
-| mnl_nlmsg_ok				| NlmsgOk			| 				|
-| mnl_nlmsg_next			| NlmsgNext			|				|
-| mnl_nlmsg_get_payload_tail		| NlmsgGetPayloadTail		| 				|
-| mnl_nlmsg_seq_ok			| NlmsgSeqOk			|				|
-| mnl_nlmsg_portid_ok			| NlmsgPortidOk			| 				|
-| mnl_nlmsg_fprintf			| NlmsgFprint			| *os.File, not descriptor	|
-| mnl_nlmsg_batch_start			| NlmsgBatchStart		|				|
-| mnl_nlmsg_batch_stop			| NlmsgBatchStop		| 				|
-| mnl_nlmsg_batch_next			| NlmsgBatchNext		|	 			|
-| mnl_nlmsg_batch_reset			| NlmsgBatchReset		|	 			|
-| mnl_nlmsg_batch_size			| NlmsgBatchSize		|	 			|
-| mnl_nlmsg_batch_head			| NlmsgBatchHead		|	 			|
-| (add)					| NlmsgBatchHeadBytes		| returns []byte		|
-| mnl_nlmsg_batch_current		| NlmsgBatchCurrent		|				|
-| mnl_nlmsg_batch_is_empty		| NlmsgBatchIsEmpty		|				|
+| mnl_nlmsg_get_payload_len		| Nlmsg.GetPayloadLen		|				|
+| mnl_nlmsg_put_header			| Nlmsg.PutHeader		|				|
+| (add)					| NlmsgBytes			| build new nlmsg from []byte	|
+| (add)					| NewNlmsg			| build new nlmsg		|
+| mnl_nlmsg_put_extra_header		| Nlmsg.PutExtraHeader		|  				|
+| mnl_nlmsg_get_paylod			| Nlmsg.GetPayload		| 				|
+| (add)					| Nlmsg.GetPayloadBytes		| returns []byte		|
+| mnl_nlmsg_get_payload_offset		| Nlmsg.GetPayloadOffset	| 				|
+| (add)					| Nlmsg.GetPayloadOffsetBytes	| returns []byte		|
+| mnl_nlmsg_ok				| Nlmsg.Ok			| 				|
+| mnl_nlmsg_next			| Nlmsg.Next			|				|
+| mnl_nlmsg_get_payload_tail		| Nlmsg.GetPayloadTail		| 				|
+| mnl_nlmsg_seq_ok			| Nlmsg.SeqOk			|				|
+| mnl_nlmsg_portid_ok			| Nlmsg.PortidOk		| 				|
+| mnl_nlmsg_fprintf			| Nlmsg.Fprint			| *os.File, not descriptor	|
+| mnl_nlmsg_batch_start			| NewNlmsgBatch			|				|
+| mnl_nlmsg_batch_stop			| NlmsgBatch.Stop		| 				|
+| mnl_nlmsg_batch_next			| NlmsgBatch.Next		|	 			|
+| mnl_nlmsg_batch_reset			| NlmsgBatch.Reset		|	 			|
+| mnl_nlmsg_batch_size			| NlmsgBatch.Size		|	 			|
+| mnl_nlmsg_batch_head			| NlmsgBatch.Head		|	 			|
+| (add)					| NlmsgBatch.HeadBytes		| returns []byte		|
+| mnl_nlmsg_batch_current		| NlmsgBatch.Current		|				|
+| mnl_nlmsg_batch_is_empty		| NlmsgBatch.IsEmpty		|				|
 | ------------------------------------- | ----------------------------- | ----------------------------- |
 | mnl_cb_run				| CbRun				| 				|
 | mnl_cb_run2				| CbRun2			| changed signature		|
 | ------------------------------------- | ----------------------------- | ----------------------------- |
-| mnl_socket_get_fd			| SocketGgetFd			|				|
-| mnl_socket_get_portid			| SocketGetPortid		|				|
+| mnl_socket_get_fd			| Socket.GgetFd			|				|
+| mnl_socket_get_portid			| Socket.GetPortid		|				|
 | mnl_socket_open			| NewSocket			| 				|
 | mnl_socket_open2			| NewSocket2			| 				|
 | mnl_socket_fdopen			| NewSocketFd			| 				|
-| mnl_socket_bind			| SocketBind			|				|
-| mnl_socket_sendto			| SocketSendto			|				|
-| (add)					| SocketSendNlmsg		|				|
-| mnl_socket_recvfrom			| SocketRecvfrom		|				|
-| mnl_socket_close			| SocketClose			|				|
-| mnl_socket_setsockopt			| SocketSetsockopt		|				|
-| mnl_socket_getsockopt			| SocketGetsockopt		|				|
+| mnl_socket_bind			| Socket.Bind			|				|
+| mnl_socket_sendto			| Socket.Sendto			|				|
+| (add)					| Socket.SendNlmsg		|				|
+| mnl_socket_recvfrom			| Socket.Recvfrom		|				|
+| mnl_socket_close			| Socket.Close			|				|
+| mnl_socket_setsockopt			| Socket.Setsockopt		|				|
+| mnl_socket_getsockopt			| Socket.Getsockopt		|				|
