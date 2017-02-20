@@ -151,7 +151,6 @@ func main() {
 	var nl *mnl.Socket
 	var b *mnl.NlmsgBatch
 
-	snd_buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE*2)
 	if nl, err = mnl.NewSocket(C.NETLINK_NETFILTER); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_socket_open: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
@@ -164,6 +163,7 @@ func main() {
 	}
 	portid := nl.Portid()
 
+	snd_buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE*2, mnl.MNL_SOCKET_BUFFER_SIZE*2)
 	if b, err = mnl.NewNlmsgBatch(snd_buf, mnl.Size_t(mnl.MNL_SOCKET_BUFFER_SIZE)); err != nil {
 		fmt.Fprintf(os.Stderr, "mnl_nlmsg_batch_start: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
