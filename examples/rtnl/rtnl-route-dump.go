@@ -219,7 +219,7 @@ func main() {
 	}
 
 	buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE)
-	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
+	nlh, err := mnl.NewNlmsgBytes(buf)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)

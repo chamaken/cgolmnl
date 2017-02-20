@@ -254,7 +254,7 @@ func main() {
 	}
 
 	buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE)
-	nlh, _ := mnl.NlmsgPutHeaderBytes(buf)
+	nlh, _ := mnl.NewNlmsgBytes(buf)
 	nlh.Type = (C.NFNL_SUBSYS_CTNETLINK << 8) | C.IPCTNL_MSG_CT_GET
 	nlh.Flags = C.NLM_F_REQUEST | C.NLM_F_DUMP
 	seq := uint32(time.Now().Unix())

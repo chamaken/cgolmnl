@@ -168,7 +168,7 @@ func main() {
 	}
 
 	buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE)
-	nlh, _ := mnl.NlmsgPutHeaderBytes(buf)
+	nlh, _ := mnl.NewNlmsgBytes(buf)
 	nlh.Type = C.GENL_ID_CTRL
 	nlh.Flags = C.NLM_F_REQUEST | C.NLM_F_ACK
 	seq := uint32(time.Now().Unix())

@@ -76,7 +76,7 @@ func queue_cb(nlh *mnl.Nlmsg, data interface{}) (int, syscall.Errno) {
 }
 
 func nfq_build_cfg_pf_request(buf []byte, command uint8) *mnl.Nlmsg {
-	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
+	nlh, err := mnl.NewNlmsgBytes(buf)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
@@ -96,7 +96,7 @@ func nfq_build_cfg_pf_request(buf []byte, command uint8) *mnl.Nlmsg {
 }
 
 func nfq_build_cfg_request(buf []byte, command uint8, queue_num int) *mnl.Nlmsg {
-	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
+	nlh, err := mnl.NewNlmsgBytes(buf)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
@@ -117,7 +117,7 @@ func nfq_build_cfg_request(buf []byte, command uint8, queue_num int) *mnl.Nlmsg 
 }
 
 func nfq_build_cfg_params(buf []byte, copy_mode uint8, copy_range, queue_num int) *mnl.Nlmsg {
-	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
+	nlh, err := mnl.NewNlmsgBytes(buf)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
@@ -137,7 +137,7 @@ func nfq_build_cfg_params(buf []byte, copy_mode uint8, copy_range, queue_num int
 }
 
 func nfq_build_verdict(buf []byte, id, queue_num, verd int) *mnl.Nlmsg {
-	nlh, _ := mnl.NlmsgPutHeaderBytes(buf)
+	nlh, _ := mnl.NewNlmsgBytes(buf)
 	nlh.Type = (C.NFNL_SUBSYS_QUEUE << 8) | C.NFQNL_MSG_VERDICT
 	nlh.Flags = C.NLM_F_REQUEST
 	nfg := (*Nfgenmsg)(nlh.PutExtraHeader(SizeofNfgenmsg))

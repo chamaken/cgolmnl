@@ -264,7 +264,7 @@ func main() {
 	nl.SetsockoptCint(C.NETLINK_NO_ENOBUFS, 1)
 
 	buf := make([]byte, mnl.MNL_SOCKET_BUFFER_SIZE)
-	nlh, _ := mnl.NlmsgPutHeaderBytes(buf)
+	nlh, _ := mnl.NewNlmsgBytes(buf)
 	// Counters are atomically zeroed in each dump
 	nlh.Type = (C.NFNL_SUBSYS_CTNETLINK << 8) | C.IPCTNL_MSG_CT_GET_CTRZERO
 	nlh.Flags = C.NLM_F_REQUEST | C.NLM_F_DUMP

@@ -86,7 +86,7 @@ func log_cb(nlh *mnl.Nlmsg, data interface{}) (int, syscall.Errno) {
 }
 
 func nflog_build_cfg_pf_request(buf []byte, command uint8) *mnl.Nlmsg {
-	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
+	nlh, err := mnl.NewNlmsgBytes(buf)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
@@ -106,7 +106,7 @@ func nflog_build_cfg_pf_request(buf []byte, command uint8) *mnl.Nlmsg {
 }
 
 func nflog_build_cfg_request(buf []byte, command uint8, qnum int) *mnl.Nlmsg {
-	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
+	nlh, err := mnl.NewNlmsgBytes(buf)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)
@@ -127,7 +127,7 @@ func nflog_build_cfg_request(buf []byte, command uint8, qnum int) *mnl.Nlmsg {
 }
 
 func nflog_build_cfg_params(buf []byte, copy_mode uint8, copy_range, qnum int) *mnl.Nlmsg {
-	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
+	nlh, err := mnl.NewNlmsgBytes(buf)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
 		os.Exit(C.EXIT_FAILURE)

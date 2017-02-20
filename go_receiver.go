@@ -9,6 +9,7 @@ import "C"
 import (
 	"errors"
 	"os"
+	"syscall"
 	"unsafe"
 )
 
@@ -685,15 +686,23 @@ func (nlh *Nlmsg) PutHeader() {
 	C.mnl_nlmsg_put_header(unsafe.Pointer(nlh))
 }
 
+// reserve and prepare room for Netlink header
+//
+// This function sets to zero the room that is required to put the Netlink
+// header in the memory buffer passed as parameter. This function also
+// initializes the nlmsg_len field to the size of the Netlink header. This
+// function returns a pointer to the Netlink header structure.
+func NewNlmsgBytes(buf []byte) (*Nlmsg, error) {
+	if len(buf) < int(MNL_NLMSG_HDRLEN) {
+		return nil, syscall.EINVAL
+	}
+	return (*Nlmsg)(unsafe.Pointer(C.mnl_nlmsg_put_header(unsafe.Pointer(&buf[0])))), nil
+}
+
 // create and reserve room for Netlink header
 func NewNlmsg(size int) (*Nlmsg, error) {
-	if size < int(MNL_NLMSG_HDRLEN) {
-		return nil, errors.New("too short size")
-	}
 	b := make([]byte, size)
-	nlh := (*Nlmsg)(unsafe.Pointer(&b[0]))
-	nlh.PutHeader()
-	return nlh, nil
+	return NewNlmsgBytes(b)
 }
 
 // open a netlink socket

@@ -11,7 +11,6 @@ import "C"
 
 import (
 	"os"
-	"syscall"
 	"unsafe"
 )
 
@@ -26,19 +25,6 @@ func NlmsgSize(size Size_t) Size_t {
 // size_t mnl_nlmsg_get_payload_len(const struct nlmsghdr *nlh)
 func nlmsgGetPayloadLen(nlh *Nlmsg) Size_t {
 	return Size_t(C.mnl_nlmsg_get_payload_len((*C.struct_nlmsghdr)(unsafe.Pointer(nlh))))
-}
-
-// reserve and prepare room for Netlink header
-//
-// This function sets to zero the room that is required to put the Netlink
-// header in the memory buffer passed as parameter. This function also
-// initializes the nlmsg_len field to the size of the Netlink header. This
-// function returns a pointer to the Netlink header structure.
-func NlmsgPutHeaderBytes(buf []byte) (*Nlmsg, error) {
-	if len(buf) < int(MNL_NLMSG_HDRLEN) {
-		return nil, syscall.EINVAL
-	}
-	return (*Nlmsg)(unsafe.Pointer(C.mnl_nlmsg_put_header(unsafe.Pointer(&buf[0])))), nil
 }
 
 // void *
