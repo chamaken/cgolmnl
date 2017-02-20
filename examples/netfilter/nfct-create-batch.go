@@ -19,11 +19,10 @@ import (
 	"os"
 	"syscall"
 	"time"
-	"unsafe"
 )
 
-func put_msg(p unsafe.Pointer, i uint16, seq uint32) {
-	nlh := mnl.NlmsgPutHeader(p)
+func put_msg(nlh *mnl.Nlmsghdr, i uint16, seq uint32) {
+	nlh.PutHeader()
 	nlh.Type = (C.NFNL_SUBSYS_CTNETLINK << 8) | C.IPCTNL_MSG_CT_NEW
 	nlh.Flags = C.NLM_F_REQUEST | C.NLM_F_CREATE | C.NLM_F_EXCL | C.NLM_F_ACK
 	nlh.Seq = seq
@@ -172,7 +171,7 @@ func main() {
 
 	seq := uint32(time.Now().Unix())
 	for i := 1024; i < 65535; i++ {
-		put_msg(b.Current(), uint16(i), seq+uint32(i)-1024)
+		put_msg(b.CurrentNlmsghdr(), uint16(i), seq+uint32(i)-1024)
 		if b.Next() {
 			continue
 		}

@@ -659,20 +659,15 @@ func (b *NlmsgBatch) Current() unsafe.Pointer {
 	return nlmsgBatchCurrent(b)
 }
 
+func (b *NlmsgBatch) CurrentNlmsghdr() *Nlmsghdr {
+	return (*Nlmsghdr)(nlmsgBatchCurrent(b))
+}
+
 // check if there is any message in the batch
 //
 // This function returns true if the batch is empty.
 func (b *NlmsgBatch) IsEmpty() bool {
 	return nlmsgBatchIsEmpty(b)
-}
-
-// create a new Nlmsghdr
-func NewNlmsghdr(size int) (*Nlmsghdr, error) {
-	if size < int(MNL_NLMSG_HDRLEN) {
-		return nil, errors.New("too short size")
-	}
-	b := make([]byte, size)
-	return (*Nlmsghdr)(unsafe.Pointer(&b[0])), nil
 }
 
 // create a new Nlmsghdr from []byte
@@ -691,11 +686,12 @@ func (nlh *Nlmsghdr) PutHeader() {
 }
 
 // create and reserve room for Netlink header
-func PutNewNlmsghdr(size int) (*Nlmsghdr, error) {
-	nlh, err := NewNlmsghdr(size)
-	if err != nil {
-		return nil, err
+func NewNlmsghdr(size int) (*Nlmsghdr, error) {
+	if size < int(MNL_NLMSG_HDRLEN) {
+		return nil, errors.New("too short size")
 	}
+	b := make([]byte, size)
+	nlh := (*Nlmsghdr)(unsafe.Pointer(&b[0]))
 	nlh.PutHeader()
 	return nlh, nil
 }

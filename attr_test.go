@@ -305,7 +305,7 @@ var _ = Describe("Attr", func() {
 
 		// XXX: using functions defined here nlmsg.go
 		It("should return MNL_CB_OK, nil", func() {
-			nlh, _ := PutNewNlmsghdr(512)
+			nlh, _ := NewNlmsghdr(512)
 			nlh.PutU8(uint16(MNL_TYPE_U8), 0x10)
 			nlh.PutU8(uint16(MNL_TYPE_U8), 0x11)
 			nlh.PutU8(uint16(MNL_TYPE_U8), 0x12)
@@ -314,7 +314,7 @@ var _ = Describe("Attr", func() {
 			Expect(ret).To(Equal(MNL_CB_OK))
 			Expect(err).To(BeNil())
 
-			nlh, _ = PutNewNlmsghdr(512)
+			nlh, _ = NewNlmsghdr(512)
 			nlh.PutU8(uint16(MNL_TYPE_U8), 0x14)
 			nlh.PutU8(uint16(MNL_TYPE_U8), 0x15)
 			nlh.PutU8(uint16(MNL_TYPE_U8), 0x16)
@@ -324,7 +324,7 @@ var _ = Describe("Attr", func() {
 			Expect(err).To(BeNil())
 		})
 		It("should return MNL_CB_STOP, nil", func() {
-			nlh, _ := PutNewNlmsghdr(512)
+			nlh, _ := NewNlmsghdr(512)
 			nlh.PutU8(uint16(MNL_TYPE_U8), 0x18)
 			nlh.PutU8(uint16(MNL_TYPE_U8), 0x19)
 			nlh.PutU8(uint16(MNL_TYPE_U8), 0x1a)
@@ -334,7 +334,7 @@ var _ = Describe("Attr", func() {
 			Expect(err).To(BeNil())
 		})
 		It("should return MNL_CB_ERROR, nil", func() {
-			nlh, _ := PutNewNlmsghdr(512)
+			nlh, _ := NewNlmsghdr(512)
 			nlh.PutU8(uint16(MNL_TYPE_U8), 0x00)
 			ret, err := nlh.Parse(0, cb, syscall.Errno(3))
 			Expect(ret).To(Equal(MNL_CB_ERROR))
@@ -358,7 +358,7 @@ var _ = Describe("Attr", func() {
 
 		Context("AttrParseNested", func() {
 			// XXX: using functions defined here nlmsg.go
-			nlh, _ := PutNewNlmsghdr(512)
+			nlh, _ := NewNlmsghdr(512)
 			nested := nlh.NestStart(1)
 			nlh.PutU8(uint16(2), 10)
 			nlh.PutU8(uint16(3), 20)
@@ -384,7 +384,7 @@ var _ = Describe("Attr", func() {
 
 		Context("AttrParsePayload", func() {
 			// again, using functions defined here, nlmsg.go
-			nlh, _ := PutNewNlmsghdr(512)
+			nlh, _ := NewNlmsghdr(512)
 			nlh.PutU8(uint16(2), 10)
 			nlh.PutU8(uint16(3), 20)
 			nlh.PutU8(uint16(4), 30)

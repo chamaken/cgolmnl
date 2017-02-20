@@ -44,7 +44,7 @@ func socketContexts(nl *Socket) func() {
 
 			BeforeEach(func() {
 				_ = nl.Bind(0, MNL_SOCKET_AUTOPID)
-				nlh, _ = PutNewNlmsghdr(int(MNL_NLMSG_HDRLEN))
+				nlh, _ = NewNlmsghdr(int(MNL_NLMSG_HDRLEN))
 				nlh.Type = NLMSG_NOOP
 				nlh.Flags = NLM_F_ECHO | NLM_F_ACK
 				nlh.Pid = nl.Portid()

@@ -34,18 +34,11 @@ func nlmsgGetPayloadLen(nlh *Nlmsghdr) Size_t {
 // header in the memory buffer passed as parameter. This function also
 // initializes the nlmsg_len field to the size of the Netlink header. This
 // function returns a pointer to the Netlink header structure.
-func NlmsgPutHeader(buf unsafe.Pointer) *Nlmsghdr {
-	return (*Nlmsghdr)(unsafe.Pointer(C.mnl_nlmsg_put_header(buf)))
-}
-
-// reserve and prepare room for Netlink header
-//
-// This function wraps NlmsgPutHeader().
 func NlmsgPutHeaderBytes(buf []byte) (*Nlmsghdr, error) {
 	if len(buf) < int(MNL_NLMSG_HDRLEN) {
 		return nil, syscall.EINVAL
 	}
-	return NlmsgPutHeader(unsafe.Pointer(&buf[0])), nil
+	return (*Nlmsghdr)(unsafe.Pointer(C.mnl_nlmsg_put_header(unsafe.Pointer(&buf[0])))), nil
 }
 
 // void *

@@ -90,18 +90,6 @@ var _ = Describe("Attr", func() {
 		})
 	})
 
-	Context("NlmsgPutHeaer series", func() {
-		It("raw NlmsgPutHeader - nlmsg_len should be MNL_NLMSG_HDRLEN", func() {
-			b := make([]byte, 128)
-			_nlh := NlmsgPutHeader(unsafe.Pointer(&b[0]))
-			Expect(_nlh.Len).To(Equal(MNL_NLMSG_HDRLEN))
-		})
-		It("PutNewNlmsghdr len should be MNL_NLMSG_HDRLEN", func() {
-			_nlh, _ := PutNewNlmsghdr(128)
-			Expect(_nlh.Len).To(Equal(MNL_NLMSG_HDRLEN))
-		})
-	})
-
 	Context("NlmsgPutExtraHeader", func() {
 		var p unsafe.Pointer
 		BeforeEach(func() {
