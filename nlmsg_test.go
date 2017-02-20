@@ -20,11 +20,11 @@ var _ = Describe("Attr", func() {
 		BUFLEN = 512
 		r      *rand.Rand
 
-		// Nlmsghdr
-		hbuf      *NlmsghdrBuf
-		nlh       *Nlmsghdr
-		rand_hbuf *NlmsghdrBuf
-		rand_nlh  *Nlmsghdr
+		// Nlmsg
+		hbuf      *NlmsgBuf
+		nlh       *Nlmsg
+		rand_hbuf *NlmsgBuf
+		rand_nlh  *Nlmsg
 
 		// Nlattr
 		abuf      *NlattrBuf
@@ -35,13 +35,13 @@ var _ = Describe("Attr", func() {
 
 	BeforeEach(func() {
 		r = rand.New(rand.NewSource(time.Now().Unix()))
-		hbuf = NewNlmsghdrBuf(BUFLEN)
-		nlh = NlmsghdrBytes(*hbuf)
-		rand_hbuf = NewNlmsghdrBuf(BUFLEN)
+		hbuf = NewNlmsgBuf(BUFLEN)
+		nlh = NlmsgBytes(*hbuf)
+		rand_hbuf = NewNlmsgBuf(BUFLEN)
 		for i := 0; i < BUFLEN; i++ {
 			(*(*[]byte)(rand_hbuf))[i] = byte(r.Int() % 256)
 		}
-		rand_nlh = NlmsghdrBytes(*rand_hbuf)
+		rand_nlh = NlmsgBytes(*rand_hbuf)
 		rand_hbuf.SetLen(uint32(BUFLEN))
 
 		abuf = NewNlattrBuf(BUFLEN)
@@ -54,7 +54,7 @@ var _ = Describe("Attr", func() {
 		rand_abuf.SetLen(uint16(BUFLEN))
 	})
 
-	Context("NlmsghdrBytes", func() {
+	Context("NlmsgBytes", func() {
 		It("should share uint32 0x12345678 len", func() {
 			hbuf.SetLen(0x12345678)
 			Expect(nlh.Len).To(Equal(uint32(0x12345678)))
@@ -254,7 +254,7 @@ var _ = Describe("Attr", func() {
 		It("has apropriate length in filling buffer", func() {
 			// filling buf
 			for i := 1; i < 11; i++ {
-				_nlh := (*Nlmsghdr)(b.Current())
+				_nlh := (*Nlmsg)(b.Current())
 				_nlh.PutHeader()
 				Expect(b.Next()).To(BeTrue())
 				Expect(b.Size()).To(Equal(Size_t(int(MNL_NLMSG_HDRLEN) * i)))
@@ -264,7 +264,7 @@ var _ = Describe("Attr", func() {
 		})
 		It("next should indicate false after filling up", func() {
 			for i := 0; i < 11; i++ {
-				_nlh := (*Nlmsghdr)(b.Current())
+				_nlh := (*Nlmsg)(b.Current())
 				_nlh.PutHeader()
 				b.Next()
 			}
@@ -275,7 +275,7 @@ var _ = Describe("Attr", func() {
 		})
 		It("should one header after filling up and reset", func() {
 			for i := 0; i < 11; i++ {
-				_nlh := (*Nlmsghdr)(b.Current())
+				_nlh := (*Nlmsg)(b.Current())
 				_nlh.PutHeader()
 				b.Next()
 			}

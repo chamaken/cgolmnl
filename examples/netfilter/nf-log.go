@@ -62,7 +62,7 @@ func parse_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	return mnl.MNL_CB_OK, 0
 }
 
-func log_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
+func log_cb(nlh *mnl.Nlmsg, data interface{}) (int, syscall.Errno) {
 	var ph *NfulnlMsgPacketHdr
 	var prefix string
 	var mark uint32
@@ -85,7 +85,7 @@ func log_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 	return mnl.MNL_CB_OK, 0
 }
 
-func nflog_build_cfg_pf_request(buf []byte, command uint8) *mnl.Nlmsghdr {
+func nflog_build_cfg_pf_request(buf []byte, command uint8) *mnl.Nlmsg {
 	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
@@ -105,7 +105,7 @@ func nflog_build_cfg_pf_request(buf []byte, command uint8) *mnl.Nlmsghdr {
 	return nlh
 }
 
-func nflog_build_cfg_request(buf []byte, command uint8, qnum int) *mnl.Nlmsghdr {
+func nflog_build_cfg_request(buf []byte, command uint8, qnum int) *mnl.Nlmsg {
 	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
@@ -126,7 +126,7 @@ func nflog_build_cfg_request(buf []byte, command uint8, qnum int) *mnl.Nlmsghdr 
 	return nlh
 }
 
-func nflog_build_cfg_params(buf []byte, copy_mode uint8, copy_range, qnum int) *mnl.Nlmsghdr {
+func nflog_build_cfg_params(buf []byte, copy_mode uint8, copy_range, qnum int) *mnl.Nlmsg {
 	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)

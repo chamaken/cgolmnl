@@ -25,7 +25,7 @@ func MnlAlign(mnl_len uint32) uint32 {
 	return (mnl_len + MNL_ALIGNTO - 1) & ^(MNL_ALIGNTO - 1)
 }
 
-var MNL_NLMSG_HDRLEN = MnlAlign(SizeofNlmsghdr)
+var MNL_NLMSG_HDRLEN = MnlAlign(SizeofNlmsg)
 
 func init() {
 	pagesize := os.Getpagesize()

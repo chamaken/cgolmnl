@@ -9,14 +9,14 @@ import (
 
 // make copy
 
-func (nlh *Nlmsghdr) MarshalBinary() ([]byte, error) {
+func (nlh *Nlmsg) MarshalBinary() ([]byte, error) {
 	dst := make([]byte, nlh.Len)
 	copy(dst, C.GoBytes(unsafe.Pointer(nlh), C.int(nlh.Len)))
 	return dst, nil
 }
 
 // confide receiver len
-func (nlh *Nlmsghdr) UnmarshalBinary(data []byte) error {
+func (nlh *Nlmsg) UnmarshalBinary(data []byte) error {
 	if len(data) < int(MNL_NLMSG_HDRLEN) {
 		return syscall.EINVAL // errors.New("too short data length")
 	}

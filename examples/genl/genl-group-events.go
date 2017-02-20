@@ -16,7 +16,7 @@ import (
 
 var group int
 
-func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
+func data_cb(nlh *mnl.Nlmsg, data interface{}) (int, syscall.Errno) {
 	fmt.Printf("received event type=%d from genetlink group %d\n", nlh.Type, group)
 	return mnl.MNL_CB_OK, 0
 }

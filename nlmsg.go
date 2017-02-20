@@ -24,7 +24,7 @@ func NlmsgSize(size Size_t) Size_t {
 }
 
 // size_t mnl_nlmsg_get_payload_len(const struct nlmsghdr *nlh)
-func nlmsgGetPayloadLen(nlh *Nlmsghdr) Size_t {
+func nlmsgGetPayloadLen(nlh *Nlmsg) Size_t {
 	return Size_t(C.mnl_nlmsg_get_payload_len((*C.struct_nlmsghdr)(unsafe.Pointer(nlh))))
 }
 
@@ -34,43 +34,43 @@ func nlmsgGetPayloadLen(nlh *Nlmsghdr) Size_t {
 // header in the memory buffer passed as parameter. This function also
 // initializes the nlmsg_len field to the size of the Netlink header. This
 // function returns a pointer to the Netlink header structure.
-func NlmsgPutHeaderBytes(buf []byte) (*Nlmsghdr, error) {
+func NlmsgPutHeaderBytes(buf []byte) (*Nlmsg, error) {
 	if len(buf) < int(MNL_NLMSG_HDRLEN) {
 		return nil, syscall.EINVAL
 	}
-	return (*Nlmsghdr)(unsafe.Pointer(C.mnl_nlmsg_put_header(unsafe.Pointer(&buf[0])))), nil
+	return (*Nlmsg)(unsafe.Pointer(C.mnl_nlmsg_put_header(unsafe.Pointer(&buf[0])))), nil
 }
 
 // void *
 // mnl_nlmsg_put_extra_header(struct nlmsghdr *nlh, size_t size)
-func nlmsgPutExtraHeader(nlh *Nlmsghdr, size Size_t) unsafe.Pointer {
+func nlmsgPutExtraHeader(nlh *Nlmsg, size Size_t) unsafe.Pointer {
 	return C.mnl_nlmsg_put_extra_header((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.size_t(size))
 }
 
 // void *mnl_nlmsg_get_payload(const struct nlmsghdr *nlh)
-func nlmsgGetPayload(nlh *Nlmsghdr) unsafe.Pointer {
+func nlmsgGetPayload(nlh *Nlmsg) unsafe.Pointer {
 	return C.mnl_nlmsg_get_payload((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)))
 }
-func nlmsgGetPayloadBytes(nlh *Nlmsghdr) []byte {
+func nlmsgGetPayloadBytes(nlh *Nlmsg) []byte {
 	return SharedBytes(nlmsgGetPayload(nlh), int(nlmsgGetPayloadLen(nlh)))
 }
 
 // void *
 // mnl_nlmsg_get_payload_offset(const struct nlmsghdr *nlh, size_t offset)
-func nlmsgGetPayloadOffset(nlh *Nlmsghdr, offset Size_t) unsafe.Pointer {
+func nlmsgGetPayloadOffset(nlh *Nlmsg, offset Size_t) unsafe.Pointer {
 	return C.mnl_nlmsg_get_payload_offset((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.size_t(offset))
 }
-func nlmsgGetPayloadOffsetBytes(nlh *Nlmsghdr, offset Size_t) []byte {
+func nlmsgGetPayloadOffsetBytes(nlh *Nlmsg, offset Size_t) []byte {
 	return SharedBytes(nlmsgGetPayloadOffset(nlh, offset), int(nlmsgGetPayloadLen(nlh)-Size_t(MnlAlign(uint32(offset)))))
 }
 
 // bool mnl_nlmsg_ok(const struct nlmsghdr *nlh, int len)
-func nlmsgOk(nlh *Nlmsghdr, size int) bool {
+func nlmsgOk(nlh *Nlmsg, size int) bool {
 	// test fails
 	//   unexpected fault address 0x--------
 	//   fatal error: fault
 	// sometimes without below
-	if size < SizeofNlmsghdr {
+	if size < SizeofNlmsg {
 		return false
 	}
 	return bool(C.mnl_nlmsg_ok((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.int(size)))
@@ -78,26 +78,26 @@ func nlmsgOk(nlh *Nlmsghdr, size int) bool {
 
 // struct nlmsghdr *
 // mnl_nlmsg_next(const struct nlmsghdr *nlh, int *len)
-func nlmsgNext(nlh *Nlmsghdr, size int) (*Nlmsghdr, int) {
+func nlmsgNext(nlh *Nlmsg, size int) (*Nlmsg, int) {
 	c_size := C.int(size)
-	h := (*Nlmsghdr)(unsafe.Pointer(C.mnl_nlmsg_next((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), &c_size)))
+	h := (*Nlmsg)(unsafe.Pointer(C.mnl_nlmsg_next((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), &c_size)))
 	return h, int(c_size)
 }
 
 // void *mnl_nlmsg_get_payload_tail(const struct nlmsghdr *nlh)
-func nlmsgGetPayloadTail(nlh *Nlmsghdr) unsafe.Pointer {
+func nlmsgGetPayloadTail(nlh *Nlmsg) unsafe.Pointer {
 	return C.mnl_nlmsg_get_payload_tail((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)))
 }
 
 // bool
 // mnl_nlmsg_seq_ok(const struct nlmsghdr *nlh, uint32_t seq)
-func nlmsgSeqOk(nlh *Nlmsghdr, seq uint32) bool {
+func nlmsgSeqOk(nlh *Nlmsg, seq uint32) bool {
 	return bool(C.mnl_nlmsg_seq_ok((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.uint(seq)))
 }
 
 // bool
 // mnl_nlmsg_portid_ok(const struct nlmsghdr *nlh, uint32_t portid)
-func nlmsgPortidOk(nlh *Nlmsghdr, portid uint32) bool {
+func nlmsgPortidOk(nlh *Nlmsg, portid uint32) bool {
 	return bool(C.mnl_nlmsg_portid_ok((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.uint(portid)))
 }
 
@@ -113,7 +113,7 @@ func nlmsgFprint(fd *os.File, data unsafe.Pointer, size Size_t, extra_header_siz
 func nlmsgFprintBytes(fd *os.File, data []byte, extra_header_size Size_t) {
 	nlmsgFprint(fd, unsafe.Pointer(&data[0]), Size_t(len(data)), extra_header_size)
 }
-func nlmsgFprintNlmsg(fd *os.File, nlh *Nlmsghdr, extra_header_size Size_t) {
+func nlmsgFprintNlmsg(fd *os.File, nlh *Nlmsg, extra_header_size Size_t) {
 	nlmsgFprint(fd, unsafe.Pointer(nlh), Size_t(nlh.Len), extra_header_size)
 }
 

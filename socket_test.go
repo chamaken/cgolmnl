@@ -40,11 +40,11 @@ func socketContexts(nl *Socket) func() {
 			})
 		})
 		Context("Send and Recv", func() {
-			var nlh *Nlmsghdr
+			var nlh *Nlmsg
 
 			BeforeEach(func() {
 				_ = nl.Bind(0, MNL_SOCKET_AUTOPID)
-				nlh, _ = NewNlmsghdr(int(MNL_NLMSG_HDRLEN))
+				nlh, _ = NewNlmsg(int(MNL_NLMSG_HDRLEN))
 				nlh.Type = NLMSG_NOOP
 				nlh.Flags = NLM_F_ECHO | NLM_F_ACK
 				nlh.Pid = nl.Portid()
@@ -60,8 +60,8 @@ func socketContexts(nl *Socket) func() {
 				Expect(err).To(BeNil())
 				Expect(nrecv).To(Equal(Ssize_t(36))) // nlmsghdr + nlmsgerr
 
-				// nlr := NlmsghdrBytes(b2[:nrecv])
-				nlr, _ := NewNlmsghdr(int(nrecv))
+				// nlr := NlmsgBytes(b2[:nrecv])
+				nlr, _ := NewNlmsg(int(nrecv))
 				nlr.Len = uint32(nrecv)
 				nlr.UnmarshalBinary(b2[:nrecv])
 
@@ -84,7 +84,7 @@ func socketContexts(nl *Socket) func() {
 				Expect(err).To(BeNil())
 				Expect(nrecv).To(Equal(Ssize_t(36)))
 
-				nlr, _ := NewNlmsghdr(int(nrecv))
+				nlr, _ := NewNlmsg(int(nrecv))
 				nlr.Len = uint32(nrecv)
 				nlr.UnmarshalBinary(b2[:nrecv])
 

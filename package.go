@@ -71,7 +71,7 @@ package cgolmnl
 // beginning of the payload). This extra header is specific of the Netlink
 // subsystem. After this extra header, it comes the sequence of attributes
 // that are expressed in Type-Length-Value (TLV) format.
-type Nlmsghdr nlmsghdr
+type Nlmsg nlmsghdr
 
 // Netlink Type-Length-Value (TLV) attribute:
 //

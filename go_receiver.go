@@ -114,7 +114,7 @@ func (attr *Nlattr) Validate2(data_type AttrDataType, exp_len Size_t) error {
 //
 // This function propagates the return value of the callback, which can be
 // MNL_CB_ERROR, MNL_CB_OK or MNL_CB_STOP.
-func (nlh *Nlmsghdr) Parse(offset Size_t, cb MnlAttrCb, data interface{}) (int, error) {
+func (nlh *Nlmsg) Parse(offset Size_t, cb MnlAttrCb, data interface{}) (int, error) {
 	return attrParse(nlh, offset, cb, data)
 }
 
@@ -170,21 +170,21 @@ func (attr *Nlattr) Str() string {
 //
 // This function updates the length field of the Netlink message (nlmsg_len)
 // by adding the size (header + payload) of the new attribute.
-func (nlh *Nlmsghdr) Put(attr_type uint16, size Size_t, p unsafe.Pointer) {
+func (nlh *Nlmsg) Put(attr_type uint16, size Size_t, p unsafe.Pointer) {
 	attrPut(nlh, attr_type, size, p)
 }
 
 // add an attribute to netlink message
 //
 // This function wraps Put().
-func (nlh *Nlmsghdr) PutPtr(attr_type uint16, data interface{}) {
+func (nlh *Nlmsg) PutPtr(attr_type uint16, data interface{}) {
 	attrPutPtr(nlh, attr_type, data)
 }
 
 // add an attribute to netlink message
 //
 // This function wraps Put().
-func (nlh *Nlmsghdr) PutBytes(attr_type uint16, data []byte) {
+func (nlh *Nlmsg) PutBytes(attr_type uint16, data []byte) {
 	attrPutBytes(nlh, attr_type, data)
 }
 
@@ -192,7 +192,7 @@ func (nlh *Nlmsghdr) PutBytes(attr_type uint16, data []byte) {
 //
 // This function updates the length field of the Netlink message (nlmsg_len)
 // by adding the size (header + payload) of the new attribute.
-func (nlh *Nlmsghdr) PutU8(attr_type uint16, data uint8) {
+func (nlh *Nlmsg) PutU8(attr_type uint16, data uint8) {
 	attrPutU8(nlh, attr_type, data)
 }
 
@@ -200,7 +200,7 @@ func (nlh *Nlmsghdr) PutU8(attr_type uint16, data uint8) {
 //
 // This function updates the length field of the Netlink message (nlmsg_len)
 // by adding the size (header + payload) of the new attribute.
-func (nlh *Nlmsghdr) PutU16(attr_type uint16, data uint16) {
+func (nlh *Nlmsg) PutU16(attr_type uint16, data uint16) {
 	attrPutU16(nlh, attr_type, data)
 }
 
@@ -208,7 +208,7 @@ func (nlh *Nlmsghdr) PutU16(attr_type uint16, data uint16) {
 //
 // This function updates the length field of the Netlink message (nlmsg_len)
 // by adding the size (header + payload) of the new attribute.
-func (nlh *Nlmsghdr) PutU32(attr_type uint16, data uint32) {
+func (nlh *Nlmsg) PutU32(attr_type uint16, data uint32) {
 	attrPutU32(nlh, attr_type, data)
 }
 
@@ -216,7 +216,7 @@ func (nlh *Nlmsghdr) PutU32(attr_type uint16, data uint32) {
 //
 // This function updates the length field of the Netlink message (nlmsg_len)
 // by adding the size (header + payload) of the new attribute.
-func (nlh *Nlmsghdr) PutU64(attr_type uint16, data uint64) {
+func (nlh *Nlmsg) PutU64(attr_type uint16, data uint64) {
 	attrPutU64(nlh, attr_type, data)
 }
 
@@ -224,7 +224,7 @@ func (nlh *Nlmsghdr) PutU64(attr_type uint16, data uint64) {
 //
 // This function updates the length field of the Netlink message (nlmsg_len)
 // by adding the size (header + payload) of the new attribute.
-func (nlh *Nlmsghdr) PutStr(attr_type uint16, data string) {
+func (nlh *Nlmsg) PutStr(attr_type uint16, data string) {
 	attrPutStr(nlh, attr_type, data)
 }
 
@@ -235,7 +235,7 @@ func (nlh *Nlmsghdr) PutStr(attr_type uint16, data string) {
 //
 // This function updates the length field of the Netlink message (nlmsg_len)
 // by adding the size (header + payload) of the new attribute.
-func (nlh *Nlmsghdr) PutStrz(attr_type uint16, data string) {
+func (nlh *Nlmsg) PutStrz(attr_type uint16, data string) {
 	attrPutStrz(nlh, attr_type, data)
 }
 
@@ -244,7 +244,7 @@ func (nlh *Nlmsghdr) PutStrz(attr_type uint16, data string) {
 // This function adds the attribute header that identifies the beginning of
 // an attribute nest. This function always returns a valid pointer to the
 // beginning of the nest.
-func (nlh *Nlmsghdr) NestStart(attr_type uint16) *Nlattr {
+func (nlh *Nlmsg) NestStart(attr_type uint16) *Nlattr {
 	return attrNestStart(nlh, attr_type)
 }
 
@@ -255,21 +255,21 @@ func (nlh *Nlmsghdr) NestStart(attr_type uint16) *Nlattr {
 // message (nlmsg_len) by adding the size (header + payload) of the new
 // attribute. The function returns true if the attribute could be added
 // to the message, otherwise false is returned.
-func (nlh *Nlmsghdr) PutCheck(buflen Size_t, attr_type uint16, size Size_t, data unsafe.Pointer) bool {
+func (nlh *Nlmsg) PutCheck(buflen Size_t, attr_type uint16, size Size_t, data unsafe.Pointer) bool {
 	return attrPutCheck(nlh, buflen, attr_type, size, data)
 }
 
 // add an attribute to netlink message
 //
 // This function wraps PutCheck().
-func (nlh *Nlmsghdr) PutCheckPtr(buflen Size_t, attr_type uint16, data interface{}) bool {
+func (nlh *Nlmsg) PutCheckPtr(buflen Size_t, attr_type uint16, data interface{}) bool {
 	return attrPutCheckPtr(nlh, buflen, attr_type, data)
 }
 
 // add an attribute to netlink message
 //
 // This function wraps PutCheck().
-func (nlh *Nlmsghdr) PutCheckBytes(buflen Size_t, attr_type uint16, data []byte) bool {
+func (nlh *Nlmsg) PutCheckBytes(buflen Size_t, attr_type uint16, data []byte) bool {
 	return attrPutCheckBytes(nlh, buflen, attr_type, data)
 }
 
@@ -280,7 +280,7 @@ func (nlh *Nlmsghdr) PutCheckBytes(buflen Size_t, attr_type uint16, data []byte)
 // message (nlmsg_len) by adding the size (header + payload) of the new
 // attribute. The function returns true if the attribute could be added
 // to the message, otherwise false is returned.
-func (nlh *Nlmsghdr) PutU8Check(buflen Size_t, attr_type uint16, data uint8) bool {
+func (nlh *Nlmsg) PutU8Check(buflen Size_t, attr_type uint16, data uint8) bool {
 	return attrPutU8Check(nlh, buflen, attr_type, data)
 }
 
@@ -293,7 +293,7 @@ func (nlh *Nlmsghdr) PutU8Check(buflen Size_t, attr_type uint16, data uint8) boo
 // to the message, otherwise false is returned.
 // This function updates the length field of the Netlink message (nlmsg_len)
 // by adding the size (header + payload) of the new attribute.
-func (nlh *Nlmsghdr) PutU16Check(buflen Size_t, attr_type uint16, data uint16) bool {
+func (nlh *Nlmsg) PutU16Check(buflen Size_t, attr_type uint16, data uint16) bool {
 	return attrPutU16Check(nlh, buflen, attr_type, data)
 }
 
@@ -306,7 +306,7 @@ func (nlh *Nlmsghdr) PutU16Check(buflen Size_t, attr_type uint16, data uint16) b
 // to the message, otherwise false is returned.
 // This function updates the length field of the Netlink message (nlmsg_len)
 // by adding the size (header + payload) of the new attribute.
-func (nlh *Nlmsghdr) PutU32Check(buflen Size_t, attr_type uint16, data uint32) bool {
+func (nlh *Nlmsg) PutU32Check(buflen Size_t, attr_type uint16, data uint32) bool {
 	return attrPutU32Check(nlh, buflen, attr_type, data)
 }
 
@@ -319,7 +319,7 @@ func (nlh *Nlmsghdr) PutU32Check(buflen Size_t, attr_type uint16, data uint32) b
 // to the message, otherwise false is returned.
 // This function updates the length field of the Netlink message (nlmsg_len)
 // by adding the size (header + payload) of the new attribute.
-func (nlh *Nlmsghdr) PutU64Check(buflen Size_t, attr_type uint16, data uint64) bool {
+func (nlh *Nlmsg) PutU64Check(buflen Size_t, attr_type uint16, data uint64) bool {
 	return attrPutU64Check(nlh, buflen, attr_type, data)
 }
 
@@ -332,7 +332,7 @@ func (nlh *Nlmsghdr) PutU64Check(buflen Size_t, attr_type uint16, data uint64) b
 // to the message, otherwise false is returned.
 // This function updates the length field of the Netlink message (nlmsg_len)
 // by adding the size (header + payload) of the new attribute.
-func (nlh *Nlmsghdr) PutStrCheck(buflen Size_t, attr_type uint16, data string) bool {
+func (nlh *Nlmsg) PutStrCheck(buflen Size_t, attr_type uint16, data string) bool {
 	return attrPutStrCheck(nlh, buflen, attr_type, data)
 }
 
@@ -346,7 +346,7 @@ func (nlh *Nlmsghdr) PutStrCheck(buflen Size_t, attr_type uint16, data string) b
 // message (nlmsg_len) by adding the size (header + payload) of the new
 // attribute. The function returns true if the attribute could be added
 // to the message, otherwise false is returned.
-func (nlh *Nlmsghdr) PutStrzCheck(buflen Size_t, attr_type uint16, data string) bool {
+func (nlh *Nlmsg) PutStrzCheck(buflen Size_t, attr_type uint16, data string) bool {
 	return attrPutStrzCheck(nlh, buflen, attr_type, data)
 }
 
@@ -355,26 +355,26 @@ func (nlh *Nlmsghdr) PutStrzCheck(buflen Size_t, attr_type uint16, data string) 
 // This function adds the attribute header that identifies the beginning of
 // an attribute nest. If the nested attribute cannot be added then nil,
 // otherwise valid pointer to the beginning of the nest is returned.
-func (nlh *Nlmsghdr) NestStartCheck(buflen Size_t, attr_type uint16) *Nlattr {
+func (nlh *Nlmsg) NestStartCheck(buflen Size_t, attr_type uint16) *Nlattr {
 	return attrNestStartCheck(nlh, buflen, attr_type)
 }
 
 // end an attribute nest
 //
 // This function updates the attribute header that identifies the nest.
-func (nlh *Nlmsghdr) NestEnd(start *Nlattr) {
+func (nlh *Nlmsg) NestEnd(start *Nlattr) {
 	attrNestEnd(nlh, start)
 }
 
 // cancel an attribute nest
 //
 // This function updates the attribute header that identifies the nest.
-func (nlh *Nlmsghdr) NestCancel(start *Nlattr) {
+func (nlh *Nlmsg) NestCancel(start *Nlattr) {
 	attrNestCancel(nlh, start)
 }
 
 // mnl_attr_for_each() macro in libmnl.h
-func (nlh *Nlmsghdr) Attributes(offset Size_t) <-chan *Nlattr {
+func (nlh *Nlmsg) Attributes(offset Size_t) <-chan *Nlattr {
 	c := make(chan *Nlattr)
 	go func() {
 		attr := (*Nlattr)(nlh.PayloadOffset(offset))
@@ -439,7 +439,7 @@ func NlattrPointer(b []byte) *Nlattr {
 //
 // This function returns the Length of the netlink payload, ie. the length
 // of the full message minus the size of the Netlink header.
-func (nlh *Nlmsghdr) PayloadLen() Size_t {
+func (nlh *Nlmsg) PayloadLen() Size_t {
 	return nlmsgGetPayloadLen(nlh)
 }
 
@@ -450,21 +450,21 @@ func (nlh *Nlmsghdr) PayloadLen() Size_t {
 // the nlmsg_len field. You have to invoke mnl_nlmsg_put_header() before
 // you call this function. This function returns a pointer to the extra
 // header.
-func (nlh *Nlmsghdr) PutExtraHeader(size Size_t) unsafe.Pointer {
+func (nlh *Nlmsg) PutExtraHeader(size Size_t) unsafe.Pointer {
 	return nlmsgPutExtraHeader(nlh, size)
 }
 
 // get a pointer to the payload of the netlink message
 //
 // This function returns a pointer to the payload of the netlink message.
-func (nlh *Nlmsghdr) Payload() unsafe.Pointer {
+func (nlh *Nlmsg) Payload() unsafe.Pointer {
 	return nlmsgGetPayload(nlh)
 }
 
 // get the payload of the netlink message as a []byte
 //
 // This function returns the payload of the netlink message as a []byte.
-func (nlh *Nlmsghdr) PayloadBytes() []byte {
+func (nlh *Nlmsg) PayloadBytes() []byte {
 	return nlmsgGetPayloadBytes(nlh)
 }
 
@@ -472,14 +472,14 @@ func (nlh *Nlmsghdr) PayloadBytes() []byte {
 //
 // This function returns a pointer to the payload of the netlink message plus
 // a given offset.
-func (nlh *Nlmsghdr) PayloadOffset(offset Size_t) unsafe.Pointer {
+func (nlh *Nlmsg) PayloadOffset(offset Size_t) unsafe.Pointer {
 	return nlmsgGetPayloadOffset(nlh, offset)
 }
 
 // get the payload of the message as a []byte
 //
 // This function returns the payload of the netlink message as a []byte.
-func (nlh *Nlmsghdr) PayloadOffsetBytes(offset Size_t) []byte {
+func (nlh *Nlmsg) PayloadOffsetBytes(offset Size_t) []byte {
 	return nlmsgGetPayloadOffsetBytes(nlh, offset)
 }
 
@@ -495,7 +495,7 @@ func (nlh *Nlmsghdr) PayloadOffsetBytes(offset Size_t) []byte {
 //
 // The size parameter may become negative in malformed messages during message
 // iteration, that is why we use a signed integer.
-func (nlh *Nlmsghdr) Ok(size int) bool {
+func (nlh *Nlmsg) Ok(size int) bool {
 	return nlmsgOk(nlh, size)
 }
 
@@ -508,7 +508,7 @@ func (nlh *Nlmsghdr) Ok(size int) bool {
 //
 // You have to use Ok() to check if the next Netlink message is
 // valid.
-func (nlh *Nlmsghdr) Next(size int) (*Nlmsghdr, int) {
+func (nlh *Nlmsg) Next(size int) (*Nlmsg, int) {
 	return nlmsgNext(nlh, size)
 }
 
@@ -517,7 +517,7 @@ func (nlh *Nlmsghdr) Next(size int) (*Nlmsghdr, int) {
 // This function returns a pointer to the netlink message tail. This is useful
 // to build a message since we continue adding attributes at the end of the
 // message.
-func (nlh *Nlmsghdr) PayloadTail() unsafe.Pointer {
+func (nlh *Nlmsg) PayloadTail() unsafe.Pointer {
 	return nlmsgGetPayloadTail(nlh)
 }
 
@@ -531,7 +531,7 @@ func (nlh *Nlmsghdr) PayloadTail() unsafe.Pointer {
 // then we also skip the tracking. This approach is good if we use the same
 // socket to send commands to kernel-space (that we want to track) and to
 // listen to events (that we do not track).
-func (nlh *Nlmsghdr) SeqOk(seq uint32) bool {
+func (nlh *Nlmsg) SeqOk(seq uint32) bool {
 	return nlmsgSeqOk(nlh, seq)
 }
 
@@ -545,7 +545,7 @@ func (nlh *Nlmsghdr) SeqOk(seq uint32) bool {
 // tracking. This approach is good if we use the same socket to send commands
 // to kernel-space (that we want to track) and to listen to events (that we
 // do not track).
-func (nlh *Nlmsghdr) PortidOk(portid uint32) bool {
+func (nlh *Nlmsg) PortidOk(portid uint32) bool {
 	return nlmsgPortidOk(nlh, portid)
 }
 
@@ -584,7 +584,7 @@ func (nlh *Nlmsghdr) PortidOk(portid uint32) bool {
 //
 // - N, that indicates that NLA_F_NESTED is set.
 // - B, that indicates that NLA_F_NET_BYTEORDER is set.
-func (nlh *Nlmsghdr) Fprint(fd *os.File, extra_header_size Size_t) {
+func (nlh *Nlmsg) Fprint(fd *os.File, extra_header_size Size_t) {
 	nlmsgFprintNlmsg(fd, nlh, extra_header_size)
 }
 
@@ -659,8 +659,8 @@ func (b *NlmsgBatch) Current() unsafe.Pointer {
 	return nlmsgBatchCurrent(b)
 }
 
-func (b *NlmsgBatch) CurrentNlmsghdr() *Nlmsghdr {
-	return (*Nlmsghdr)(nlmsgBatchCurrent(b))
+func (b *NlmsgBatch) CurrentNlmsg() *Nlmsg {
+	return (*Nlmsg)(nlmsgBatchCurrent(b))
 }
 
 // check if there is any message in the batch
@@ -670,9 +670,9 @@ func (b *NlmsgBatch) IsEmpty() bool {
 	return nlmsgBatchIsEmpty(b)
 }
 
-// create a new Nlmsghdr from []byte
-func NlmsghdrBytes(b []byte) *Nlmsghdr {
-	return (*Nlmsghdr)(unsafe.Pointer(&b[0]))
+// create a new Nlmsg from []byte
+func NlmsgBytes(b []byte) *Nlmsg {
+	return (*Nlmsg)(unsafe.Pointer(&b[0]))
 }
 
 // reserve and prepare room for Netlink header
@@ -681,17 +681,17 @@ func NlmsghdrBytes(b []byte) *Nlmsghdr {
 // header in the memory buffer passed as parameter. This function also
 // initializes the nlmsg_len field to the size of the Netlink header. This
 // function returns a pointer to the Netlink header structure.
-func (nlh *Nlmsghdr) PutHeader() {
+func (nlh *Nlmsg) PutHeader() {
 	C.mnl_nlmsg_put_header(unsafe.Pointer(nlh))
 }
 
 // create and reserve room for Netlink header
-func NewNlmsghdr(size int) (*Nlmsghdr, error) {
+func NewNlmsg(size int) (*Nlmsg, error) {
 	if size < int(MNL_NLMSG_HDRLEN) {
 		return nil, errors.New("too short size")
 	}
 	b := make([]byte, size)
-	nlh := (*Nlmsghdr)(unsafe.Pointer(&b[0]))
+	nlh := (*Nlmsg)(unsafe.Pointer(&b[0]))
 	nlh.PutHeader()
 	return nlh, nil
 }
@@ -741,7 +741,7 @@ func (nl *Socket) Sendto(buf []byte) (Ssize_t, error) {
 // send a netlink message
 //
 // This function wraps Sendto().
-func (nl *Socket) SendNlmsg(nlh *Nlmsghdr) (Ssize_t, error) {
+func (nl *Socket) SendNlmsg(nlh *Nlmsg) (Ssize_t, error) {
 	return socketSendNlmsg(nl, nlh)
 }
 

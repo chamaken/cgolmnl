@@ -25,7 +25,7 @@ type (
 // Netlink message
 type nlmsghdr C.struct_nlmsghdr
 
-const SizeofNlmsghdr = C.sizeof_struct_nlmsghdr
+const SizeofNlmsg = C.sizeof_struct_nlmsghdr
 
 const SizeofNlmsgerr = C.sizeof_struct_nlmsgerr
 

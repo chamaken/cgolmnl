@@ -59,7 +59,7 @@ func parse_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	return mnl.MNL_CB_OK, 0
 }
 
-func queue_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
+func queue_cb(nlh *mnl.Nlmsg, data interface{}) (int, syscall.Errno) {
 	var ph *NfqnlMsgPacketHdr
 	var id uint32
 	tb := make(map[uint16]*mnl.Nlattr, C.NFQA_MAX+1)
@@ -75,7 +75,7 @@ func queue_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
 	return mnl.MNL_CB_OK + int(id), 0
 }
 
-func nfq_build_cfg_pf_request(buf []byte, command uint8) *mnl.Nlmsghdr {
+func nfq_build_cfg_pf_request(buf []byte, command uint8) *mnl.Nlmsg {
 	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
@@ -95,7 +95,7 @@ func nfq_build_cfg_pf_request(buf []byte, command uint8) *mnl.Nlmsghdr {
 	return nlh
 }
 
-func nfq_build_cfg_request(buf []byte, command uint8, queue_num int) *mnl.Nlmsghdr {
+func nfq_build_cfg_request(buf []byte, command uint8, queue_num int) *mnl.Nlmsg {
 	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
@@ -116,7 +116,7 @@ func nfq_build_cfg_request(buf []byte, command uint8, queue_num int) *mnl.Nlmsgh
 	return nlh
 }
 
-func nfq_build_cfg_params(buf []byte, copy_mode uint8, copy_range, queue_num int) *mnl.Nlmsghdr {
+func nfq_build_cfg_params(buf []byte, copy_mode uint8, copy_range, queue_num int) *mnl.Nlmsg {
 	nlh, err := mnl.NlmsgPutHeaderBytes(buf)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "nlmsg_put_header: %s\n", err)
@@ -136,7 +136,7 @@ func nfq_build_cfg_params(buf []byte, copy_mode uint8, copy_range, queue_num int
 	return nlh
 }
 
-func nfq_build_verdict(buf []byte, id, queue_num, verd int) *mnl.Nlmsghdr {
+func nfq_build_verdict(buf []byte, id, queue_num, verd int) *mnl.Nlmsg {
 	nlh, _ := mnl.NlmsgPutHeaderBytes(buf)
 	nlh.Type = (C.NFNL_SUBSYS_QUEUE << 8) | C.NFQNL_MSG_VERDICT
 	nlh.Flags = C.NLM_F_REQUEST

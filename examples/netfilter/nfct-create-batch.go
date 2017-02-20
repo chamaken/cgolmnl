@@ -21,7 +21,7 @@ import (
 	"time"
 )
 
-func put_msg(nlh *mnl.Nlmsghdr, i uint16, seq uint32) {
+func put_msg(nlh *mnl.Nlmsg, i uint16, seq uint32) {
 	nlh.PutHeader()
 	nlh.Type = (C.NFNL_SUBSYS_CTNETLINK << 8) | C.IPCTNL_MSG_CT_NEW
 	nlh.Flags = C.NLM_F_REQUEST | C.NLM_F_CREATE | C.NLM_F_EXCL | C.NLM_F_ACK
@@ -68,7 +68,7 @@ func put_msg(nlh *mnl.Nlmsghdr, i uint16, seq uint32) {
 	nlh.PutU32(C.CTA_TIMEOUT, inet.Htonl(1000))
 }
 
-func cb_ctl(nlh *mnl.Nlmsghdr, msgtype uint16, data interface{}) (int, syscall.Errno) {
+func cb_ctl(nlh *mnl.Nlmsg, msgtype uint16, data interface{}) (int, syscall.Errno) {
 	switch msgtype {
 	case C.NLMSG_NOOP:
 	case C.NLMSG_OVERRUN:
@@ -86,7 +86,7 @@ func cb_ctl(nlh *mnl.Nlmsghdr, msgtype uint16, data interface{}) (int, syscall.E
 	return mnl.MNL_CB_OK, 0
 }
 
-func cb_err(nlh *mnl.Nlmsghdr, data interface{}) int {
+func cb_err(nlh *mnl.Nlmsg, data interface{}) int {
 	err := (*mnl.Nlmsgerr)(nlh.Payload())
 	if err.Error != 0 {
 		fmt.Printf("message with seq %d has failed: %s", nlh.Seq, syscall.Errno(-err.Error))
@@ -171,7 +171,7 @@ func main() {
 
 	seq := uint32(time.Now().Unix())
 	for i := 1024; i < 65535; i++ {
-		put_msg(b.CurrentNlmsghdr(), uint16(i), seq+uint32(i)-1024)
+		put_msg(b.CurrentNlmsg(), uint16(i), seq+uint32(i)-1024)
 		if b.Next() {
 			continue
 		}

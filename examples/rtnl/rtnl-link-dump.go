@@ -45,7 +45,7 @@ func data_attr_cb(attr *mnl.Nlattr, data interface{}) (int, syscall.Errno) {
 	return mnl.MNL_CB_OK, 0
 }
 
-func data_cb(nlh *mnl.Nlmsghdr, data interface{}) (int, syscall.Errno) {
+func data_cb(nlh *mnl.Nlmsg, data interface{}) (int, syscall.Errno) {
 	tb := make(map[uint16]*mnl.Nlattr, C.IFLA_MAX+1)
 
 	ifm := (*Ifinfomsg)(nlh.Payload())

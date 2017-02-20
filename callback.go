@@ -17,14 +17,14 @@ import (
 	// "os"
 )
 
-type MnlCb func(*Nlmsghdr, interface{}) (int, syscall.Errno)
+type MnlCb func(*Nlmsg, interface{}) (int, syscall.Errno)
 
 // callback type for CbRun2
 //
 // Different from original, control message callback is not array of
 // MnlCb type. This callback receives Netlink message type as second
 // parameter. Your callback will dispatch by it.
-type MnlCtlCb func(*Nlmsghdr, uint16, interface{}) (int, syscall.Errno)
+type MnlCtlCb func(*Nlmsg, uint16, interface{}) (int, syscall.Errno)
 
 type msgCbData struct {
 	ctlcb MnlCtlCb
@@ -39,7 +39,7 @@ func GoCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 	if args.cb == nil {
 		return MNL_CB_OK
 	}
-	ret, err := args.cb((*Nlmsghdr)(unsafe.Pointer(nlh)), args.data) // returns (int, syscall.Errno)
+	ret, err := args.cb((*Nlmsg)(unsafe.Pointer(nlh)), args.data) // returns (int, syscall.Errno)
 	if err != 0 {
 		// C.errno = int(err) // cannot refer to errno directly; see documentation
 		C.SetErrno(C.int(err))
@@ -55,7 +55,7 @@ func GoCtlCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 		C.SetErrno(C.int(syscall.EOPNOTSUPP))
 		return MNL_CB_ERROR
 	}
-	h := (*Nlmsghdr)(unsafe.Pointer(nlh))
+	h := (*Nlmsg)(unsafe.Pointer(nlh))
 	ret, err := args.ctlcb(h, h.Type, args.data)
 	if err != 0 {
 		C.SetErrno(C.int(err))

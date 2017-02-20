@@ -93,7 +93,7 @@ func SetUint64(bs []byte, start uint, val uint64) {
 }
 
 // for struct nlmsghdr
-type NlmsghdrBuf []byte
+type NlmsgBuf []byte
 
 const (
 	nlmsghdr_len_index     = 0  // __u32	nlmsg_len
@@ -104,44 +104,44 @@ const (
 	nlmsghdr_payload_index = 16
 )
 
-func NewNlmsghdrBuf(size int) *NlmsghdrBuf {
-	nlb := NlmsghdrBuf(make([]byte, size))
+func NewNlmsgBuf(size int) *NlmsgBuf {
+	nlb := NlmsgBuf(make([]byte, size))
 	return &nlb
 }
-func (nlh *NlmsghdrBuf) SetLen(nlmsg_len uint32) {
+func (nlh *NlmsgBuf) SetLen(nlmsg_len uint32) {
 	SetUint32(*nlh, nlmsghdr_len_index, nlmsg_len)
 }
-func (nlh *NlmsghdrBuf) Len() uint32 {
+func (nlh *NlmsgBuf) Len() uint32 {
 	return GetUint32(*nlh, nlmsghdr_len_index)
 }
-func (nlh *NlmsghdrBuf) SetType(nlmsg_type uint16) {
+func (nlh *NlmsgBuf) SetType(nlmsg_type uint16) {
 	SetUint16(*nlh, nlmsghdr_type_index, nlmsg_type)
 }
-func (nlh *NlmsghdrBuf) Type() uint16 {
+func (nlh *NlmsgBuf) Type() uint16 {
 	return GetUint16(*nlh, nlmsghdr_type_index)
 }
-func (nlh *NlmsghdrBuf) SetFlags(nlmsg_flags uint16) {
+func (nlh *NlmsgBuf) SetFlags(nlmsg_flags uint16) {
 	SetUint16(*nlh, nlmsghdr_flags_index, nlmsg_flags)
 }
-func (nlh *NlmsghdrBuf) Flags() uint16 {
+func (nlh *NlmsgBuf) Flags() uint16 {
 	return GetUint16(*nlh, nlmsghdr_flags_index)
 }
-func (nlh *NlmsghdrBuf) SetSeq(nlmsg_seq uint32) {
+func (nlh *NlmsgBuf) SetSeq(nlmsg_seq uint32) {
 	SetUint32(*nlh, nlmsghdr_seq_index, nlmsg_seq)
 }
-func (nlh *NlmsghdrBuf) Seq() uint32 {
+func (nlh *NlmsgBuf) Seq() uint32 {
 	return GetUint32(*nlh, nlmsghdr_seq_index)
 }
-func (nlh *NlmsghdrBuf) SetPid(nlmsg_pid uint32) {
+func (nlh *NlmsgBuf) SetPid(nlmsg_pid uint32) {
 	SetUint32(*nlh, nlmsghdr_pid_index, nlmsg_pid)
 }
-func (nlh *NlmsghdrBuf) Pid() uint32 {
+func (nlh *NlmsgBuf) Pid() uint32 {
 	return GetUint32(*nlh, nlmsghdr_pid_index)
 }
-func (nlh *NlmsghdrBuf) SetPayload(payload []byte) {
+func (nlh *NlmsgBuf) SetPayload(payload []byte) {
 	copy((*(*[]byte)(nlh))[nlmsghdr_payload_index:], payload)
 }
-func (nlh *NlmsghdrBuf) Payload() []byte {
+func (nlh *NlmsgBuf) Payload() []byte {
 	return (*(*[]byte)(nlh))[nlmsghdr_payload_index:]
 }
 
