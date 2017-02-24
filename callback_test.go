@@ -171,8 +171,8 @@ var _ = Describe("callback", func() {
 		// NLMSG_OVERRUN	0x4
 		// NLMSG_MIN_TYPE	0x10
 
-		ctl_cb := func(nlh *Nlmsg, msgtype uint16, data interface{}) (int, syscall.Errno) {
-			switch msgtype {
+		ctl_cb := func(nlh *Nlmsg, data interface{}) (int, syscall.Errno) {
+			switch nlh.Type {
 			case NLMSG_NOOP:
 				return MNL_CB_ERROR, 0
 			case NLMSG_OVERRUN:

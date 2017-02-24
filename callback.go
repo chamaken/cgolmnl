@@ -27,7 +27,7 @@ type MnlCb func(*Nlmsg, interface{}) (int, syscall.Errno)
 type MnlCtlCb func(*Nlmsg, uint16, interface{}) (int, syscall.Errno)
 
 type msgCbData struct {
-	ctlcb MnlCtlCb
+	ctlcb MnlCb
 	cb MnlCb
 	data interface{}
 }
@@ -57,7 +57,7 @@ func GoCtlCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 		return MNL_CB_ERROR
 	}
 	h := nlmsgPointer(nlh)
-	ret, err := args.ctlcb(h, h.Type, args.data)
+	ret, err := args.ctlcb(h, args.data)
 	if err != 0 {
 		C.SetErrno(C.int(err))
 	}
@@ -81,7 +81,7 @@ func GoCtlCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 // to EPROTO. If the dump was interrupted, errno is set to EINTR and you should
 // request a new fresh dump again.
 func CbRun2(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{},
-	cb_ctl MnlCtlCb, ctltypes []uint16) (int, error) {
+	cb_ctl MnlCb, ctltypes []uint16) (int, error) {
 	if len(ctltypes) >= C.NLMSG_MIN_TYPE {
 		return MNL_CB_ERROR, syscall.EINVAL
 	}

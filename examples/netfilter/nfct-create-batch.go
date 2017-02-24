@@ -68,8 +68,8 @@ func put_msg(nlh *mnl.Nlmsg, i uint16, seq uint32) {
 	nlh.PutU32(C.CTA_TIMEOUT, inet.Htonl(1000))
 }
 
-func cb_ctl(nlh *mnl.Nlmsg, msgtype uint16, data interface{}) (int, syscall.Errno) {
-	switch msgtype {
+func cb_ctl(nlh *mnl.Nlmsg, data interface{}) (int, syscall.Errno) {
+	switch nlh.Type {
 	case C.NLMSG_NOOP:
 	case C.NLMSG_OVERRUN:
 		return mnl.MNL_CB_OK, 0
@@ -84,14 +84,6 @@ func cb_ctl(nlh *mnl.Nlmsg, msgtype uint16, data interface{}) (int, syscall.Errn
 		return mnl.MNL_CB_STOP, 0
 	}
 	return mnl.MNL_CB_OK, 0
-}
-
-func cb_err(nlh *mnl.Nlmsg, data interface{}) int {
-	err := (*mnl.Nlmsgerr)(nlh.Payload())
-	if err.Error != 0 {
-		fmt.Printf("message with seq %d has failed: %s", nlh.Seq, syscall.Errno(-err.Error))
-	}
-	return mnl.MNL_CB_OK
 }
 
 func send_batch(nl *mnl.Socket, b *mnl.NlmsgBatch, portid uint32) {

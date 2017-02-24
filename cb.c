@@ -41,8 +41,6 @@ cb_run_wrapper(const void *buf, size_t numbytes, uint32_t seq,
  * http://stackoverflow.com/questions/1023261/is-there-a-way-to-do-currying-in-c
  * http://gcc.gnu.org/onlinedocs/gcc/Nested-Functions.html#Nested-Functions
  */
-// static const mnl_cb_t go_ctlcb_array[NLMSG_MIN_TYPE] = { (mnl_cb_t)GoCtlCb2 };
-static mnl_cb_t go_ctlcb_array[NLMSG_MIN_TYPE] = { [0 ... NLMSG_MIN_TYPE - 1] = (mnl_cb_t)GoCtlCb };
 
 int
 cb_run2_wrapper(const void *buf, size_t numbytes, uint32_t seq,
