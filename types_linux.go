@@ -22,19 +22,14 @@ type (
 	Socklen_t C.socklen_t
 )
 
-// Netlink message
-type nlmsghdr C.struct_nlmsghdr
-
+type Nlmsghdr C.struct_nlmsghdr
 const SizeofNlmsg = C.sizeof_struct_nlmsghdr
 
+type Nlmsgerr C.struct_nlmsgerr
 const SizeofNlmsgerr = C.sizeof_struct_nlmsgerr
 
-type Nlmsgerr C.struct_nlmsgerr
-
+type NlPktinfo C.struct_nl_pktinfo
 const SizeofNlPktinfo = C.sizeof_struct_nl_pktinfo
 
-type NlPktinfo C.struct_nl_pktinfo
-
-const SizeofNlattr = C.sizeof_struct_nlattr
-
 type nlattr C.struct_nlattr
+const SizeofNlattr = C.sizeof_struct_nlattr

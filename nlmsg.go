@@ -6,6 +6,7 @@ package cgolmnl
 #include <stdlib.h>
 #include <stdio.h>
 #include <libmnl/libmnl.h>
+#include "helper.h"
 */
 import "C"
 
@@ -24,19 +25,25 @@ func NlmsgSize(size Size_t) Size_t {
 
 // size_t mnl_nlmsg_get_payload_len(const struct nlmsghdr *nlh)
 func nlmsgGetPayloadLen(nlh *Nlmsg) Size_t {
-	return Size_t(C.mnl_nlmsg_get_payload_len((*C.struct_nlmsghdr)(unsafe.Pointer(nlh))))
+	return Size_t(
+		C.mnl_nlmsg_get_payload_len(
+			(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr))))
 }
 
 // void *
 // mnl_nlmsg_put_extra_header(struct nlmsghdr *nlh, size_t size)
 func nlmsgPutExtraHeader(nlh *Nlmsg, size Size_t) unsafe.Pointer {
-	return C.mnl_nlmsg_put_extra_header((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.size_t(size))
+	return C.mnl_nlmsg_put_extra_header(
+		(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+		C.size_t(size))
 }
 
 // void *mnl_nlmsg_get_payload(const struct nlmsghdr *nlh)
 func nlmsgGetPayload(nlh *Nlmsg) unsafe.Pointer {
-	return C.mnl_nlmsg_get_payload((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)))
+	return C.mnl_nlmsg_get_payload(
+		(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)))
 }
+// XXX
 func nlmsgGetPayloadBytes(nlh *Nlmsg) []byte {
 	return SharedBytes(nlmsgGetPayload(nlh), int(nlmsgGetPayloadLen(nlh)))
 }
@@ -44,8 +51,11 @@ func nlmsgGetPayloadBytes(nlh *Nlmsg) []byte {
 // void *
 // mnl_nlmsg_get_payload_offset(const struct nlmsghdr *nlh, size_t offset)
 func nlmsgGetPayloadOffset(nlh *Nlmsg, offset Size_t) unsafe.Pointer {
-	return C.mnl_nlmsg_get_payload_offset((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.size_t(offset))
+	return C.mnl_nlmsg_get_payload_offset(
+		(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+		C.size_t(offset))
 }
+// XXX
 func nlmsgGetPayloadOffsetBytes(nlh *Nlmsg, offset Size_t) []byte {
 	return SharedBytes(nlmsgGetPayloadOffset(nlh, offset), int(nlmsgGetPayloadLen(nlh)-Size_t(MnlAlign(uint32(offset)))))
 }
@@ -59,32 +69,45 @@ func nlmsgOk(nlh *Nlmsg, size int) bool {
 	if size < SizeofNlmsg {
 		return false
 	}
-	return bool(C.mnl_nlmsg_ok((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.int(size)))
+	return bool(
+		C.mnl_nlmsg_ok(
+			(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+			C.int(size)))
 }
 
 // struct nlmsghdr *
 // mnl_nlmsg_next(const struct nlmsghdr *nlh, int *len)
 func nlmsgNext(nlh *Nlmsg, size int) (*Nlmsg, int) {
 	c_size := C.int(size)
-	h := (*Nlmsg)(unsafe.Pointer(C.mnl_nlmsg_next((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), &c_size)))
-	return h, int(c_size)
+	h := (*C.struct_nlmsghdr)(unsafe.Pointer(
+		C.mnl_nlmsg_next(
+			(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+			&c_size)))
+	return nlmsgPointer(h), int(c_size)
 }
 
 // void *mnl_nlmsg_get_payload_tail(const struct nlmsghdr *nlh)
 func nlmsgGetPayloadTail(nlh *Nlmsg) unsafe.Pointer {
-	return C.mnl_nlmsg_get_payload_tail((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)))
+	return C.mnl_nlmsg_get_payload_tail(
+		(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)))
 }
 
 // bool
 // mnl_nlmsg_seq_ok(const struct nlmsghdr *nlh, uint32_t seq)
 func nlmsgSeqOk(nlh *Nlmsg, seq uint32) bool {
-	return bool(C.mnl_nlmsg_seq_ok((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.uint(seq)))
+	return bool(
+		C.mnl_nlmsg_seq_ok(
+			(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+			C.uint(seq)))
 }
 
 // bool
 // mnl_nlmsg_portid_ok(const struct nlmsghdr *nlh, uint32_t portid)
 func nlmsgPortidOk(nlh *Nlmsg, portid uint32) bool {
-	return bool(C.mnl_nlmsg_portid_ok((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.uint(portid)))
+	return bool(
+		C.mnl_nlmsg_portid_ok(
+			(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+			C.uint(portid)))
 }
 
 // void
@@ -100,7 +123,9 @@ func nlmsgFprintBytes(fd *os.File, data []byte, extra_header_size Size_t) {
 	nlmsgFprint(fd, unsafe.Pointer(&data[0]), Size_t(len(data)), extra_header_size)
 }
 func nlmsgFprintNlmsg(fd *os.File, nlh *Nlmsg, extra_header_size Size_t) {
-	nlmsgFprint(fd, unsafe.Pointer(nlh), Size_t(nlh.Len), extra_header_size)
+	nlmsgFprint(
+		fd, unsafe.Pointer(nlh.Nlmsghdr),
+		Size_t(nlh.Len), extra_header_size)
 }
 
 // Netlink message batch helpers
@@ -181,4 +206,8 @@ func nlmsgBatchCurrent(b *NlmsgBatch) unsafe.Pointer {
 // bool mnl_nlmsg_batch_is_empty(struct mnl_nlmsg_batch *b)
 func nlmsgBatchIsEmpty(b *NlmsgBatch) bool {
 	return bool(C.mnl_nlmsg_batch_is_empty(b.c))
+}
+
+func nlmsgBatchLimit(b *NlmsgBatch) Size_t {
+	return Size_t(C.mnl_nlmsg_batch_limit(b.c))
 }

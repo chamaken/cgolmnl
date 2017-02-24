@@ -7,6 +7,7 @@ package cgolmnl
 */
 import "C"
 import (
+	"reflect"
 	"errors"
 	"os"
 	"syscall"
@@ -661,7 +662,13 @@ func (b *NlmsgBatch) Current() unsafe.Pointer {
 }
 
 func (b *NlmsgBatch) CurrentNlmsg() *Nlmsg {
-	return (*Nlmsg)(nlmsgBatchCurrent(b))
+	var d []byte
+	buf := (*reflect.SliceHeader)(unsafe.Pointer(&d))
+	len := int(nlmsgBatchLimit(b) - nlmsgBatchSize(b))
+	buf.Cap = len
+	buf.Len = len
+	buf.Data = uintptr(nlmsgBatchCurrent(b))
+	return NlmsgBytes(d)
 }
 
 // check if there is any message in the batch
@@ -671,11 +678,6 @@ func (b *NlmsgBatch) IsEmpty() bool {
 	return nlmsgBatchIsEmpty(b)
 }
 
-// create a new Nlmsg from []byte
-func NlmsgBytes(b []byte) *Nlmsg {
-	return (*Nlmsg)(unsafe.Pointer(&b[0]))
-}
-
 // reserve and prepare room for Netlink header
 //
 // This function sets to zero the room that is required to put the Netlink
@@ -683,7 +685,29 @@ func NlmsgBytes(b []byte) *Nlmsg {
 // initializes the nlmsg_len field to the size of the Netlink header. This
 // function returns a pointer to the Netlink header structure.
 func (nlh *Nlmsg) PutHeader() {
-	C.mnl_nlmsg_put_header(unsafe.Pointer(nlh))
+	C.mnl_nlmsg_put_header(unsafe.Pointer(nlh.Nlmsghdr))
+}
+
+// create a new Nlmsg from []byte
+func NlmsgBytes(b []byte) *Nlmsg {
+	var d []byte
+	nlh := (*Nlmsghdr)(unsafe.Pointer(&b[0]))
+	buf := (*reflect.SliceHeader)(unsafe.Pointer(&d))
+	buf.Cap = int(nlh.Len)
+	buf.Len = int(nlh.Len)
+	buf.Data = uintptr(unsafe.Pointer(&b[0]))
+	return &Nlmsg{nlh, d}
+}
+
+// create a new Nlmsg from raw nlmsg pointer
+func nlmsgPointer(nlh *C.struct_nlmsghdr) *Nlmsg {
+	var b []byte
+	p := (*Nlmsghdr)(unsafe.Pointer(nlh))
+	buf := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	buf.Cap = int(p.Len)
+	buf.Len = int(p.Len)
+	buf.Data = uintptr(unsafe.Pointer(nlh))
+	return &Nlmsg{p, b}
 }
 
 // reserve and prepare room for Netlink header
@@ -696,7 +720,9 @@ func NewNlmsgBytes(buf []byte) (*Nlmsg, error) {
 	if len(buf) < int(MNL_NLMSG_HDRLEN) {
 		return nil, syscall.EINVAL
 	}
-	return (*Nlmsg)(unsafe.Pointer(C.mnl_nlmsg_put_header(unsafe.Pointer(&buf[0])))), nil
+	nlh := Nlmsg{(*Nlmsghdr)(unsafe.Pointer(&buf[0])), buf}
+	C.mnl_nlmsg_put_header(unsafe.Pointer(&buf[0]))
+	return &nlh, nil
 }
 
 // create and reserve room for Netlink header

@@ -254,7 +254,7 @@ var _ = Describe("Attr", func() {
 		It("has apropriate length in filling buffer", func() {
 			// filling buf
 			for i := 1; i < 11; i++ {
-				_nlh := (*Nlmsg)(b.Current())
+				_nlh := b.CurrentNlmsg()
 				_nlh.PutHeader()
 				Expect(b.Next()).To(BeTrue())
 				Expect(b.Size()).To(Equal(Size_t(int(MNL_NLMSG_HDRLEN) * i)))
@@ -264,7 +264,7 @@ var _ = Describe("Attr", func() {
 		})
 		It("next should indicate false after filling up", func() {
 			for i := 0; i < 11; i++ {
-				_nlh := (*Nlmsg)(b.Current())
+				_nlh := b.CurrentNlmsg()
 				_nlh.PutHeader()
 				b.Next()
 			}
@@ -275,7 +275,7 @@ var _ = Describe("Attr", func() {
 		})
 		It("should one header after filling up and reset", func() {
 			for i := 0; i < 11; i++ {
-				_nlh := (*Nlmsg)(b.Current())
+				_nlh := b.CurrentNlmsg()
 				_nlh.PutHeader()
 				b.Next()
 			}

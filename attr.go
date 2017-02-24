@@ -98,7 +98,8 @@ func GoAttrCb(nla *C.struct_nlattr, argp unsafe.Pointer) C.int {
 //	          mnl_attr_cb_t cb, void *data)
 func attrParse(nlh *Nlmsg, offset Size_t, cb MnlAttrCb, data interface{}) (int, error) {
 	args := uintptr(unsafe.Pointer(&attrCbData{cb, data}))
-	ret, err := C.attr_parse_wrapper((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
+	ret, err := C.attr_parse_wrapper(
+		(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
 		C.size_t(offset), C.uintptr_t(args))
 	return int(ret), err
 }
@@ -159,7 +160,9 @@ func attrGetStr(attr *Nlattr) string {
 // void
 // mnl_attr_put(struct nlmsghdr *nlh, uint16_t type, size_t len, const void *data)
 func attrPut(nlh *Nlmsg, attr_type uint16, size Size_t, data unsafe.Pointer) {
-	C.mnl_attr_put((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.uint16_t(attr_type), C.size_t(size), data)
+	C.mnl_attr_put(
+		(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+		C.uint16_t(attr_type), C.size_t(size), data)
 }
 func attrPutPtr(nlh *Nlmsg, attr_type uint16, data interface{}) {
 	v := reflect.ValueOf(data)
@@ -170,31 +173,37 @@ func attrPutPtr(nlh *Nlmsg, attr_type uint16, data interface{}) {
 	attrPut(nlh, attr_type, Size_t(t.Size()), unsafe.Pointer(v.Pointer()))
 }
 func attrPutBytes(nlh *Nlmsg, attr_type uint16, data []byte) {
-	C.mnl_attr_put((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
+	C.mnl_attr_put(
+		(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
 		C.uint16_t(attr_type), C.size_t(len(data)), unsafe.Pointer(&data[0]))
 }
 
 // void mnl_attr_put_u8(struct nlmsghdr *nlh, uint16_t type, uint8_t data)
 func attrPutU8(nlh *Nlmsg, attr_type uint16, data uint8) {
-	C.mnl_attr_put_u8((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
-		C.uint16_t(attr_type), C.uint8_t(data))
+	C.mnl_attr_put_u8(
+		(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+		C.uint16_t(attr_type),
+		C.uint8_t(data))
 }
 
 // void mnl_attr_put_u16(struct nlmsghdr *nlh, uint16_t type, uint16_t data)
 func attrPutU16(nlh *Nlmsg, attr_type uint16, data uint16) {
-	C.mnl_attr_put_u16((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
+	C.mnl_attr_put_u16(
+		(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
 		C.uint16_t(attr_type), C.uint16_t(data))
 }
 
 // void mnl_attr_put_u32(struct nlmsghdr *nlh, uint16_t type, uint32_t data)
 func attrPutU32(nlh *Nlmsg, attr_type uint16, data uint32) {
-	C.mnl_attr_put_u32((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
+	C.mnl_attr_put_u32(
+		(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
 		C.uint16_t(attr_type), C.uint32_t(data))
 }
 
 // void mnl_attr_put_u64(struct nlmsghdr *nlh, uint16_t type, uint64_t data)
 func attrPutU64(nlh *Nlmsg, attr_type uint16, data uint64) {
-	C.mnl_attr_put_u64((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
+	C.mnl_attr_put_u64(
+		(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
 		C.uint16_t(attr_type), C.uint64_t(data))
 }
 
@@ -202,7 +211,8 @@ func attrPutU64(nlh *Nlmsg, attr_type uint16, data uint64) {
 func attrPutStr(nlh *Nlmsg, attr_type uint16, data string) {
 	cs := C.CString(data)
 	defer C.free(unsafe.Pointer(cs))
-	C.mnl_attr_put_str((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
+	C.mnl_attr_put_str(
+		(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
 		C.uint16_t(attr_type), cs)
 }
 
@@ -210,21 +220,28 @@ func attrPutStr(nlh *Nlmsg, attr_type uint16, data string) {
 func attrPutStrz(nlh *Nlmsg, attr_type uint16, data string) {
 	cs := C.CString(data)
 	defer C.free(unsafe.Pointer(cs))
-	C.mnl_attr_put_strz((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
+	C.mnl_attr_put_strz(
+		(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
 		C.uint16_t(attr_type), cs)
 }
 
 // struct nlattr *mnl_attr_nest_start(struct nlmsghdr *nlh, uint16_t type)
 func attrNestStart(nlh *Nlmsg, attr_type uint16) *Nlattr {
-	return (*Nlattr)(unsafe.Pointer(C.mnl_attr_nest_start((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), C.uint16_t(attr_type))))
+	return (*Nlattr)(unsafe.Pointer(
+		C.mnl_attr_nest_start(
+			(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+			C.uint16_t(attr_type))))
 }
 
 // bool
 // mnl_attr_put_check(struct nlmsghdr *nlh, size_t buflen,
 //		      uint16_t type, size_t len, const void *data)
 func attrPutCheck(nlh *Nlmsg, buflen Size_t, attr_type uint16, size Size_t, data unsafe.Pointer) bool {
-	return bool(C.mnl_attr_put_check((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
-		C.size_t(buflen), C.uint16_t(attr_type), C.size_t(size), data))
+	return bool(
+		C.mnl_attr_put_check(
+			(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+			C.size_t(buflen), C.uint16_t(attr_type),
+			C.size_t(size), data))
 }
 func attrPutCheckPtr(nlh *Nlmsg, buflen Size_t, attr_type uint16, data interface{}) bool {
 	v := reflect.ValueOf(data)
@@ -235,40 +252,51 @@ func attrPutCheckPtr(nlh *Nlmsg, buflen Size_t, attr_type uint16, data interface
 	return attrPutCheck(nlh, buflen, attr_type, Size_t(t.Size()), unsafe.Pointer(v.Pointer()))
 }
 func attrPutCheckBytes(nlh *Nlmsg, buflen Size_t, attr_type uint16, data []byte) bool {
-	return bool(C.mnl_attr_put_check((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
-		C.size_t(buflen), C.uint16_t(attr_type), C.size_t(len(data)), unsafe.Pointer(&data[0])))
+	return bool(
+		C.mnl_attr_put_check(
+			(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+			C.size_t(buflen), C.uint16_t(attr_type),
+			C.size_t(len(data)), unsafe.Pointer(&data[0])))
 }
 
 // bool
 // mnl_attr_put_u8_check(struct nlmsghdr *nlh, size_t buflen,
 // 			 uint16_t type, uint8_t data)
 func attrPutU8Check(nlh *Nlmsg, buflen Size_t, attr_type uint16, data uint8) bool {
-	return bool(C.mnl_attr_put_u8_check((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
-		C.size_t(buflen), C.uint16_t(attr_type), C.uint8_t(data)))
+	return bool(
+		C.mnl_attr_put_u8_check(
+			(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+			C.size_t(buflen), C.uint16_t(attr_type), C.uint8_t(data)))
 }
 
 // bool
 // mnl_attr_put_u16_check(struct nlmsghdr *nlh, size_t buflen,
 //			  uint16_t type, uint16_t data)
 func attrPutU16Check(nlh *Nlmsg, buflen Size_t, attr_type uint16, data uint16) bool {
-	return bool(C.mnl_attr_put_u16_check((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
-		C.size_t(buflen), C.uint16_t(attr_type), C.uint16_t(data)))
+	return bool(
+		C.mnl_attr_put_u16_check(
+			(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+			C.size_t(buflen), C.uint16_t(attr_type), C.uint16_t(data)))
 }
 
 // bool
 // mnl_attr_put_u32_check(struct nlmsghdr *nlh, size_t buflen,
 //			  uint16_t type, uint32_t data)
 func attrPutU32Check(nlh *Nlmsg, buflen Size_t, attr_type uint16, data uint32) bool {
-	return bool(C.mnl_attr_put_u32_check((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
-		C.size_t(buflen), C.uint16_t(attr_type), C.uint32_t(data)))
+	return bool(
+		C.mnl_attr_put_u32_check(
+			(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+			C.size_t(buflen), C.uint16_t(attr_type), C.uint32_t(data)))
 }
 
 // bool
 // mnl_attr_put_u64_check(struct nlmsghdr *nlh, size_t buflen,
 //			  uint16_t type, uint64_t data)
 func attrPutU64Check(nlh *Nlmsg, buflen Size_t, attr_type uint16, data uint64) bool {
-	return bool(C.mnl_attr_put_u64_check((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
-		C.size_t(buflen), C.uint16_t(attr_type), C.uint64_t(data)))
+	return bool(
+		C.mnl_attr_put_u64_check(
+			(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+			C.size_t(buflen), C.uint16_t(attr_type), C.uint64_t(data)))
 }
 
 // bool
@@ -277,8 +305,10 @@ func attrPutU64Check(nlh *Nlmsg, buflen Size_t, attr_type uint16, data uint64) b
 func attrPutStrCheck(nlh *Nlmsg, buflen Size_t, attr_type uint16, data string) bool {
 	cs := C.CString(data)
 	defer C.free(unsafe.Pointer(cs))
-	return bool(C.mnl_attr_put_str_check((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
-		C.size_t(buflen), C.uint16_t(attr_type), cs))
+	return bool(
+		C.mnl_attr_put_str_check(
+			(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+			C.size_t(buflen), C.uint16_t(attr_type), cs))
 }
 
 // bool
@@ -287,25 +317,33 @@ func attrPutStrCheck(nlh *Nlmsg, buflen Size_t, attr_type uint16, data string) b
 func attrPutStrzCheck(nlh *Nlmsg, buflen Size_t, attr_type uint16, data string) bool {
 	cs := C.CString(data)
 	defer C.free(unsafe.Pointer(cs))
-	return bool(C.mnl_attr_put_strz_check((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
-		C.size_t(buflen), C.uint16_t(attr_type), cs))
+	return bool(
+		C.mnl_attr_put_strz_check(
+			(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+			C.size_t(buflen), C.uint16_t(attr_type), cs))
 }
 
 // struct nlattr *
 // mnl_attr_nest_start_check(struct nlmsghdr *nlh, size_t buflen, uint16_t type)
 func attrNestStartCheck(nlh *Nlmsg, buflen Size_t, attr_type uint16) *Nlattr {
-	return (*Nlattr)(unsafe.Pointer(C.mnl_attr_nest_start_check((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)),
-		C.size_t(buflen), C.uint16_t(attr_type))))
+	return (*Nlattr)(unsafe.Pointer(
+		C.mnl_attr_nest_start_check(
+			(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+			C.size_t(buflen), C.uint16_t(attr_type))))
 }
 
 // void
 // mnl_attr_nest_end(struct nlmsghdr *nlh, struct nlattr *start)
 func attrNestEnd(nlh *Nlmsg, start *Nlattr) {
-	C.mnl_attr_nest_end((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), (*C.struct_nlattr)(unsafe.Pointer(start)))
+	C.mnl_attr_nest_end(
+		(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+		(*C.struct_nlattr)(unsafe.Pointer(start)))
 }
 
 // void
 // mnl_attr_nest_cancel(struct nlmsghdr *nlh, struct nlattr *start)
 func attrNestCancel(nlh *Nlmsg, start *Nlattr) {
-	C.mnl_attr_nest_cancel((*C.struct_nlmsghdr)(unsafe.Pointer(nlh)), (*C.struct_nlattr)(unsafe.Pointer(start)))
+	C.mnl_attr_nest_cancel(
+		(*C.struct_nlmsghdr)(unsafe.Pointer(nlh.Nlmsghdr)),
+		(*C.struct_nlattr)(unsafe.Pointer(start)))
 }

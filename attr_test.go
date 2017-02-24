@@ -460,7 +460,7 @@ var _ = Describe("Attr", func() {
 		var _tbuf NlattrBuf
 		BeforeEach(func() {
 			nlh.PutHeader()
-			nlh.Put(3, SizeofNlmsg, unsafe.Pointer(rand_nlh))
+			nlh.Put(3, SizeofNlmsg, unsafe.Pointer(rand_nlh.Nlmsghdr))
 			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
 		})
 		It("nlh len should be 16 + 4 + 16", func() {
@@ -481,7 +481,7 @@ var _ = Describe("Attr", func() {
 		var _tbuf NlattrBuf
 		BeforeEach(func() {
 			nlh.PutHeader()
-			nlh.PutPtr(3, rand_nlh)
+			nlh.PutPtr(3, rand_nlh.Nlmsghdr)
 			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
 		})
 		It("nlh len should be 16 + 4 + 16", func() {

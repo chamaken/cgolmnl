@@ -39,7 +39,8 @@ func GoCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 	if args.cb == nil {
 		return MNL_CB_OK
 	}
-	ret, err := args.cb((*Nlmsg)(unsafe.Pointer(nlh)), args.data) // returns (int, syscall.Errno)
+	h := nlmsgPointer(nlh)
+	ret, err := args.cb(h, args.data) // returns (int, syscall.Errno)
 	if err != 0 {
 		// C.errno = int(err) // cannot refer to errno directly; see documentation
 		C.SetErrno(C.int(err))
@@ -55,7 +56,7 @@ func GoCtlCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 		C.SetErrno(C.int(syscall.EOPNOTSUPP))
 		return MNL_CB_ERROR
 	}
-	h := (*Nlmsg)(unsafe.Pointer(nlh))
+	h := nlmsgPointer(nlh)
 	ret, err := args.ctlcb(h, h.Type, args.data)
 	if err != 0 {
 		C.SetErrno(C.int(err))
