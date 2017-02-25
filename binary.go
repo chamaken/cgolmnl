@@ -11,7 +11,7 @@ import (
 
 func (nlh *Nlmsg) MarshalBinary() ([]byte, error) {
 	dst := make([]byte, nlh.Len)
-	copy(dst, C.GoBytes(unsafe.Pointer(nlh), C.int(nlh.Len)))
+	copy(dst, C.GoBytes(unsafe.Pointer(nlh.Nlmsghdr), C.int(nlh.Len)))
 	return dst, nil
 }
 
@@ -28,7 +28,7 @@ func (nlh *Nlmsg) UnmarshalBinary(data []byte) error {
 	h := (*reflect.SliceHeader)(unsafe.Pointer(&dst))
 	h.Cap = int(nlh.Len)
 	h.Len = int(nlh.Len)
-	h.Data = uintptr(unsafe.Pointer(nlh))
+	h.Data = uintptr(unsafe.Pointer(nlh.Nlmsghdr))
 	copy(dst, data)
 
 	return nil

@@ -44,7 +44,7 @@ func socketSendto(nl *Socket, buf []byte) (Ssize_t, error) {
 	return Ssize_t(ret), err
 }
 func socketSendNlmsg(nl *Socket, nlh *Nlmsg) (Ssize_t, error) {
-	ret, err := C.mnl_socket_sendto((*C.struct_mnl_socket)(nl), unsafe.Pointer(nlh), C.size_t(nlh.Len))
+	ret, err := C.mnl_socket_sendto((*C.struct_mnl_socket)(nl), unsafe.Pointer(nlh.Nlmsghdr), C.size_t(nlh.Len))
 	return Ssize_t(ret), err
 }
 
