@@ -118,12 +118,12 @@ var _ = Describe("Attr", func() {
 	BeforeEach(func() {
 		r = rand.New(rand.NewSource(time.Now().Unix()))
 		hbuf = NewNlmsgBuf(BUFLEN)
-		nlh = NlmsgBytes(*hbuf)
+		nlh, _ = NewNlmsgBytes(*hbuf)
 		rand_hbuf = NewNlmsgBuf(BUFLEN)
 		for i := 0; i < BUFLEN; i++ {
 			(*(*[]byte)(rand_hbuf))[i] = byte(r.Int() % 256)
 		}
-		rand_nlh = NlmsgBytes(*rand_hbuf)
+		rand_nlh, _ = NewNlmsgBytes(*rand_hbuf)
 
 		abuf = NewNlattrBuf(BUFLEN)
 		nla = NlattrPointer(*abuf)
@@ -687,7 +687,7 @@ var _ = Describe("Attr", func() {
 		var _tbuf NlattrBuf
 		BeforeEach(func() {
 			nlh.PutHeader()
-			if nlh.PutCheck(Size_t(len(*hbuf)), 1, 3, unsafe.Pointer(&b[0])) == false {
+			if nlh.PutCheck(1, 3, unsafe.Pointer(&b[0])) == false {
 				panic("invalid test assumption")
 			}
 			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
@@ -706,11 +706,11 @@ var _ = Describe("Attr", func() {
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsgBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
-			_nlh := NlmsgBytes(*_hbuf)
-			_nlh.PutHeader()
+			nlh, _ := NewNlmsgBytes(*_hbuf)
+			nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
-			Expect(nlh.PutCheck(Size_t(MNL_NLMSG_HDRLEN+MNL_ATTR_HDRLEN), 1, 3, unsafe.Pointer(&b[0]))).To(Equal(false))
+			Expect(nlh.PutCheck(1, 3, unsafe.Pointer(&b[0]))).To(Equal(false))
 			Expect(*(*[]byte)(_hbuf)).To(BeEquivalentTo(pb))
 		})
 	})
@@ -719,7 +719,7 @@ var _ = Describe("Attr", func() {
 		var _tbuf NlattrBuf
 		BeforeEach(func() {
 			nlh.PutHeader()
-			if nlh.PutU8Check(Size_t(len(*hbuf)), uint16(MNL_TYPE_U8), 7) == false {
+			if nlh.PutU8Check(uint16(MNL_TYPE_U8), 7) == false {
 				panic("invalid test assumption")
 			}
 			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
@@ -738,11 +738,11 @@ var _ = Describe("Attr", func() {
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsgBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
-			_nlh := NlmsgBytes(*_hbuf)
-			_nlh.PutHeader()
+			nlh, _ := NewNlmsgBytes(*_hbuf)
+			nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
-			Expect(nlh.PutU8Check(Size_t(MNL_NLMSG_HDRLEN+MNL_ATTR_HDRLEN), uint16(MNL_TYPE_U8), 7)).To(Equal(false))
+			Expect(nlh.PutU8Check(uint16(MNL_TYPE_U8), 7)).To(Equal(false))
 			Expect(*(*[]byte)(_hbuf)).To(BeEquivalentTo(pb))
 		})
 	})
@@ -751,7 +751,7 @@ var _ = Describe("Attr", func() {
 		var _tbuf NlattrBuf
 		BeforeEach(func() {
 			nlh.PutHeader()
-			if nlh.PutU16Check(Size_t(len(*hbuf)), uint16(MNL_TYPE_U16), 12345) == false {
+			if nlh.PutU16Check(uint16(MNL_TYPE_U16), 12345) == false {
 				panic("invalid test assumption")
 			}
 			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
@@ -770,11 +770,11 @@ var _ = Describe("Attr", func() {
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsgBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
-			_nlh := NlmsgBytes(*_hbuf)
-			_nlh.PutHeader()
+			nlh, _ := NewNlmsgBytes(*_hbuf)
+			nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
-			Expect(nlh.PutU16Check(Size_t(MNL_NLMSG_HDRLEN+MNL_ATTR_HDRLEN), uint16(MNL_TYPE_U16), 12345)).To(Equal(false))
+			Expect(nlh.PutU16Check(uint16(MNL_TYPE_U16), 12345)).To(Equal(false))
 			Expect(*(*[]byte)(_hbuf)).To(BeEquivalentTo(pb))
 		})
 	})
@@ -783,7 +783,7 @@ var _ = Describe("Attr", func() {
 		var _tbuf NlattrBuf
 		BeforeEach(func() {
 			nlh.PutHeader()
-			if nlh.PutU32Check(Size_t(len(*hbuf)), uint16(MNL_TYPE_U32), 0x12345678) == false {
+			if nlh.PutU32Check(uint16(MNL_TYPE_U32), 0x12345678) == false {
 				panic("invalid test assumption")
 			}
 			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
@@ -802,11 +802,11 @@ var _ = Describe("Attr", func() {
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsgBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
-			_nlh := NlmsgBytes(*_hbuf)
-			_nlh.PutHeader()
+			nlh, _ := NewNlmsgBytes(*_hbuf)
+			nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
-			Expect(nlh.PutU32Check(Size_t(MNL_NLMSG_HDRLEN+MNL_ATTR_HDRLEN), uint16(MNL_TYPE_U32), 0x12345678)).To(Equal(false))
+			Expect(nlh.PutU32Check(uint16(MNL_TYPE_U32), 0x12345678)).To(Equal(false))
 			Expect(*(*[]byte)(_hbuf)).To(BeEquivalentTo(pb))
 		})
 	})
@@ -815,7 +815,7 @@ var _ = Describe("Attr", func() {
 		var _tbuf NlattrBuf
 		BeforeEach(func() {
 			nlh.PutHeader()
-			if nlh.PutU64Check(Size_t(len(*hbuf)), uint16(MNL_TYPE_U64), 0x123456789abcdef0) == false {
+			if nlh.PutU64Check(uint16(MNL_TYPE_U64), 0x123456789abcdef0) == false {
 				panic("invalid test assumption")
 			}
 			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
@@ -834,11 +834,11 @@ var _ = Describe("Attr", func() {
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsgBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
-			_nlh := NlmsgBytes(*_hbuf)
-			_nlh.PutHeader()
+			nlh, _ := NewNlmsgBytes(*_hbuf)
+			nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
-			Expect(nlh.PutU64Check(Size_t(MNL_NLMSG_HDRLEN+MNL_ATTR_HDRLEN), uint16(MNL_TYPE_U64), 0x123456789abcdef0)).To(Equal(false))
+			Expect(nlh.PutU64Check(uint16(MNL_TYPE_U64), 0x123456789abcdef0)).To(Equal(false))
 			Expect(*(*[]byte)(_hbuf)).To(BeEquivalentTo(pb))
 		})
 	})
@@ -848,7 +848,7 @@ var _ = Describe("Attr", func() {
 		s := "abcdEFGH"
 		BeforeEach(func() {
 			nlh.PutHeader()
-			if nlh.PutStrCheck(Size_t(len(*hbuf)), uint16(MNL_TYPE_STRING), s) == false {
+			if nlh.PutStrCheck(uint16(MNL_TYPE_STRING), s) == false {
 				panic("invalid test assumption")
 			}
 			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
@@ -875,11 +875,11 @@ var _ = Describe("Attr", func() {
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsgBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
-			_nlh := NlmsgBytes(*_hbuf)
-			_nlh.PutHeader()
+			nlh, _ := NewNlmsgBytes(*_hbuf)
+			nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
-			Expect(nlh.PutStrCheck(Size_t(MNL_NLMSG_HDRLEN+MNL_ATTR_HDRLEN), uint16(MNL_TYPE_STRING), s)).To(Equal(false))
+			Expect(nlh.PutStrCheck(uint16(MNL_TYPE_STRING), s)).To(Equal(false))
 			Expect(*(*[]byte)(_hbuf)).To(BeEquivalentTo(pb))
 		})
 	})
@@ -889,7 +889,7 @@ var _ = Describe("Attr", func() {
 		s := "abcdEFGH"
 		BeforeEach(func() {
 			nlh.PutHeader()
-			if nlh.PutStrzCheck(Size_t(len(*hbuf)), uint16(MNL_TYPE_NUL_STRING), s) == false {
+			if nlh.PutStrzCheck(uint16(MNL_TYPE_NUL_STRING), s) == false {
 				panic("invalid test assumption")
 			}
 			_tbuf = NlattrBuf((*hbuf)[MNL_NLMSG_HDRLEN:])
@@ -916,11 +916,11 @@ var _ = Describe("Attr", func() {
 		})
 		It("buflen just MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN should return false and nothing has changed", func() {
 			_hbuf := NewNlmsgBuf(int(MNL_NLMSG_HDRLEN + MNL_ATTR_HDRLEN))
-			_nlh := NlmsgBytes(*_hbuf)
-			_nlh.PutHeader()
+			nlh, _ := NewNlmsgBytes(*_hbuf)
+			nlh.PutHeader()
 			pb := make([]byte, len(*_hbuf))
 			copy(pb, *_hbuf)
-			Expect(nlh.PutStrzCheck(Size_t(MNL_NLMSG_HDRLEN+MNL_ATTR_HDRLEN), uint16(MNL_TYPE_NUL_STRING), s)).To(Equal(false))
+			Expect(nlh.PutStrzCheck(uint16(MNL_TYPE_NUL_STRING), s)).To(Equal(false))
 			Expect(*(*[]byte)(_hbuf)).To(BeEquivalentTo(pb))
 		})
 	})

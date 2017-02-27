@@ -36,12 +36,12 @@ var _ = Describe("Attr", func() {
 	BeforeEach(func() {
 		r = rand.New(rand.NewSource(time.Now().Unix()))
 		hbuf = NewNlmsgBuf(BUFLEN)
-		nlh = NlmsgBytes(*hbuf)
+		nlh, _ = NewNlmsgBytes(*hbuf)
 		rand_hbuf = NewNlmsgBuf(BUFLEN)
 		for i := 0; i < BUFLEN; i++ {
 			(*(*[]byte)(rand_hbuf))[i] = byte(r.Int() % 256)
 		}
-		rand_nlh = NlmsgBytes(*rand_hbuf)
+		rand_nlh, _ = NewNlmsgBytes(*rand_hbuf)
 		rand_hbuf.SetLen(uint32(BUFLEN))
 
 		abuf = NewNlattrBuf(BUFLEN)

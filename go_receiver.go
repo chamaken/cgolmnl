@@ -257,22 +257,22 @@ func (nlh *Nlmsg) NestStart(attr_type uint16) *Nlattr {
 // message (nlmsg_len) by adding the size (header + payload) of the new
 // attribute. The function returns true if the attribute could be added
 // to the message, otherwise false is returned.
-func (nlh *Nlmsg) PutCheck(buflen Size_t, attr_type uint16, size Size_t, data unsafe.Pointer) bool {
-	return attrPutCheck(nlh, buflen, attr_type, size, data)
+func (nlh *Nlmsg) PutCheck(attr_type uint16, size Size_t, data unsafe.Pointer) bool {
+	return attrPutCheck(nlh, attr_type, size, data)
 }
 
 // add an attribute to netlink message
 //
 // This function wraps PutCheck().
-func (nlh *Nlmsg) PutCheckPtr(buflen Size_t, attr_type uint16, data interface{}) bool {
-	return attrPutCheckPtr(nlh, buflen, attr_type, data)
+func (nlh *Nlmsg) PutCheckPtr(attr_type uint16, data interface{}) bool {
+	return attrPutCheckPtr(nlh, attr_type, data)
 }
 
 // add an attribute to netlink message
 //
 // This function wraps PutCheck().
-func (nlh *Nlmsg) PutCheckBytes(buflen Size_t, attr_type uint16, data []byte) bool {
-	return attrPutCheckBytes(nlh, buflen, attr_type, data)
+func (nlh *Nlmsg) PutCheckBytes(attr_type uint16, data []byte) bool {
+	return attrPutCheckBytes(nlh, attr_type, data)
 }
 
 // add 8-bit unsigned int attribute to netlink message
@@ -282,8 +282,8 @@ func (nlh *Nlmsg) PutCheckBytes(buflen Size_t, attr_type uint16, data []byte) bo
 // message (nlmsg_len) by adding the size (header + payload) of the new
 // attribute. The function returns true if the attribute could be added
 // to the message, otherwise false is returned.
-func (nlh *Nlmsg) PutU8Check(buflen Size_t, attr_type uint16, data uint8) bool {
-	return attrPutU8Check(nlh, buflen, attr_type, data)
+func (nlh *Nlmsg) PutU8Check(attr_type uint16, data uint8) bool {
+	return attrPutU8Check(nlh, attr_type, data)
 }
 
 // add 16-bit unsigned int attribute to netlink message
@@ -295,8 +295,8 @@ func (nlh *Nlmsg) PutU8Check(buflen Size_t, attr_type uint16, data uint8) bool {
 // to the message, otherwise false is returned.
 // This function updates the length field of the Netlink message (nlmsg_len)
 // by adding the size (header + payload) of the new attribute.
-func (nlh *Nlmsg) PutU16Check(buflen Size_t, attr_type uint16, data uint16) bool {
-	return attrPutU16Check(nlh, buflen, attr_type, data)
+func (nlh *Nlmsg) PutU16Check(attr_type uint16, data uint16) bool {
+	return attrPutU16Check(nlh, attr_type, data)
 }
 
 // add 32-bit unsigned int attribute to netlink message
@@ -308,8 +308,8 @@ func (nlh *Nlmsg) PutU16Check(buflen Size_t, attr_type uint16, data uint16) bool
 // to the message, otherwise false is returned.
 // This function updates the length field of the Netlink message (nlmsg_len)
 // by adding the size (header + payload) of the new attribute.
-func (nlh *Nlmsg) PutU32Check(buflen Size_t, attr_type uint16, data uint32) bool {
-	return attrPutU32Check(nlh, buflen, attr_type, data)
+func (nlh *Nlmsg) PutU32Check(attr_type uint16, data uint32) bool {
+	return attrPutU32Check(nlh, attr_type, data)
 }
 
 // add 64-bit unsigned int attribute to netlink message
@@ -321,8 +321,8 @@ func (nlh *Nlmsg) PutU32Check(buflen Size_t, attr_type uint16, data uint32) bool
 // to the message, otherwise false is returned.
 // This function updates the length field of the Netlink message (nlmsg_len)
 // by adding the size (header + payload) of the new attribute.
-func (nlh *Nlmsg) PutU64Check(buflen Size_t, attr_type uint16, data uint64) bool {
-	return attrPutU64Check(nlh, buflen, attr_type, data)
+func (nlh *Nlmsg) PutU64Check(attr_type uint16, data uint64) bool {
+	return attrPutU64Check(nlh, attr_type, data)
 }
 
 // add string attribute to netlink message
@@ -334,8 +334,8 @@ func (nlh *Nlmsg) PutU64Check(buflen Size_t, attr_type uint16, data uint64) bool
 // to the message, otherwise false is returned.
 // This function updates the length field of the Netlink message (nlmsg_len)
 // by adding the size (header + payload) of the new attribute.
-func (nlh *Nlmsg) PutStrCheck(buflen Size_t, attr_type uint16, data string) bool {
-	return attrPutStrCheck(nlh, buflen, attr_type, data)
+func (nlh *Nlmsg) PutStrCheck(attr_type uint16, data string) bool {
+	return attrPutStrCheck(nlh, attr_type, data)
 }
 
 // add string attribute to netlink message
@@ -348,8 +348,8 @@ func (nlh *Nlmsg) PutStrCheck(buflen Size_t, attr_type uint16, data string) bool
 // message (nlmsg_len) by adding the size (header + payload) of the new
 // attribute. The function returns true if the attribute could be added
 // to the message, otherwise false is returned.
-func (nlh *Nlmsg) PutStrzCheck(buflen Size_t, attr_type uint16, data string) bool {
-	return attrPutStrzCheck(nlh, buflen, attr_type, data)
+func (nlh *Nlmsg) PutStrzCheck(attr_type uint16, data string) bool {
+	return attrPutStrzCheck(nlh, attr_type, data)
 }
 
 // start an attribute nest
@@ -357,8 +357,8 @@ func (nlh *Nlmsg) PutStrzCheck(buflen Size_t, attr_type uint16, data string) boo
 // This function adds the attribute header that identifies the beginning of
 // an attribute nest. If the nested attribute cannot be added then nil,
 // otherwise valid pointer to the beginning of the nest is returned.
-func (nlh *Nlmsg) NestStartCheck(buflen Size_t, attr_type uint16) *Nlattr {
-	return attrNestStartCheck(nlh, buflen, attr_type)
+func (nlh *Nlmsg) NestStartCheck(attr_type uint16) *Nlattr {
+	return attrNestStartCheck(nlh, attr_type)
 }
 
 // end an attribute nest
@@ -668,7 +668,7 @@ func (b *NlmsgBatch) CurrentNlmsg() *Nlmsg {
 	buf.Cap = len
 	buf.Len = len
 	buf.Data = uintptr(nlmsgBatchCurrent(b))
-	return NlmsgBytes(d)
+	return RawNlmsgBytes(d)
 }
 
 // check if there is any message in the batch
@@ -689,13 +689,13 @@ func (nlh *Nlmsg) PutHeader() {
 }
 
 // create a new Nlmsg from []byte
-func NlmsgBytes(b []byte) *Nlmsg {
+func RawNlmsgBytes(b []byte) *Nlmsg {
 	var d []byte
 	nlh := (*Nlmsghdr)(unsafe.Pointer(&b[0]))
-	buf := (*reflect.SliceHeader)(unsafe.Pointer(&d))
-	buf.Cap = int(nlh.Len)
-	buf.Len = int(nlh.Len)
-	buf.Data = uintptr(unsafe.Pointer(&b[0]))
+	s := (*reflect.SliceHeader)(unsafe.Pointer(&d))
+	s.Cap = int(nlh.Len)
+	s.Len = int(nlh.Len)
+	s.Data = uintptr(unsafe.Pointer(&b[0]))
 	return &Nlmsg{nlh, d}
 }
 
@@ -703,10 +703,10 @@ func NlmsgBytes(b []byte) *Nlmsg {
 func nlmsgPointer(nlh *C.struct_nlmsghdr) *Nlmsg {
 	var b []byte
 	p := (*Nlmsghdr)(unsafe.Pointer(nlh))
-	buf := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-	buf.Cap = int(p.Len)
-	buf.Len = int(p.Len)
-	buf.Data = uintptr(unsafe.Pointer(nlh))
+	s := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	s.Cap = int(p.Len)
+	s.Len = int(p.Len)
+	s.Data = uintptr(unsafe.Pointer(nlh))
 	return &Nlmsg{p, b}
 }
 
