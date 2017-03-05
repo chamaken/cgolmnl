@@ -20,7 +20,6 @@ requires
 --------
 
   * libmnl
-
   * test reqs (optional): **ginkgo (http://onsi.github.io/ginkgo/)
 
 
@@ -33,10 +32,9 @@ links
 struct
 ------
 
-nlmsghdr and nlattr has real - Nlmsghdr and Nlattr. mnl_nlmsg_batch and
-mnl_socket are opaque as NlmsgBatch and Socket (cgo say [0]byte). there are
-receivers, see go_receiver.go
-
+mnl_nlmsg_batch and mnl_socket are opaque as NlmsgBatch and Socket
+(cgo say [0]byte). Nlattr is same as C struct but Nlmsg seems a
+little bit strange. It has buf and real Nlmsghdr.
 
 
 errno
@@ -46,9 +44,9 @@ I currently use an incredibly childish C function in set_errno.c
 
     void SetErrno(int n) { errno = n; }
 
-I can not find the way of tossing up Go callback error, in other words set C's
-errno from Go. I am not good at English let me show why I need to do in the code
-snippets below
+I can not find the way of tossing up Go callback error, in other
+words set C's errno from Go. I am not good at English, let me show
+why I need to do in the code snippets below:
 
 * C library header (lib.h)
 
@@ -128,44 +126,44 @@ comparison
 
 | original				| cgolmnl			| remarks			|
 | ------------------------------------- | ----------------------------- | ----------------------------- |
-| mnl_attr_get_type			| Attr.GetType			|				|
-| mnl_attr_get_len			| Attr.GetLen			|				|
-| mnl_attr_get_payload_len		| Attr.GetPayloadLen		|				|
-| mnl_attr_get_payload			| Attr.GetPayload		|				|
-| (add)					| Attr.GetPayloadBytes		| returns []byte		|
-| mnl_attr_ok				| Attr.Ok			|				|
-| mnl_attr_next				| Attr.Next			| 				|
-| mnl_attr_type_valid			| Attr.TypeValid		| returns ret, error		|
-| mnl_attr_validate			| Attr.Validate			| returns ret, errno		|
-| mnl_attr_validate2			| Attr.Validate2		| returns ret, errno		|
-| mnl_attr_parse			| Attr.Parse			| returns ret, errno		|
-| mnl_attr_parse_nested			| Attr.ParseNested		| returns ret, errno		|
-| mnl_attr_parse_payload		| Attr.ParsePayload		| returns ret, errno		|
-| mnl_attr_get_u8			| Attr.GetU8			|				|
-| mnl_attr_get_u16			| Attr.GetU16			|				|
-| mnl_attr_get_u32			| Attr.GetU32			|				|
-| mnl_attr_get_u64			| Attr.GetU64			|				|
-| mnl_attr_get_str			| Attr.GetStr			|				|
-| mnl_attr_put				| Attr.Put			|				|
-| (add)					| Attr.PutPtr			|				|
-| (add)					| Attr.PutBytes			|				|
-| mnl_attr_put_u8			| Attr.PutU8			|				|
-| mnl_attr_put_u16			| Attr.PutU16			|				|
-| mnl_attr_put_u32			| Attr.PutU32			|				|
-| mnl_attr_put_u64			| Attr.PutU64			|				|
-| mnl_attr_put_str			| Attr.Putstr			|				|
-| mnl_attr_put_strz			| Attr.Putstrz			|				|
-| mnl_attr_nest_start			| Attr.NestStart		|				|
-| mnl_attr_put_check			| Attr.PutCheck			|				|
-| mnl_attr_put_u8_check			| Attr.PutU8Check		|				|
-| mnl_attr_put_u16_check		| Attr.PutU16Check		|				|
-| mnl_attr_put_u32_check		| Attr.PutU32Check		|				|
-| mnl_attr_put_u64_check		| Attr.PutU64Check		|				|
-| mnl_attr_put_str_check		| Attr.PutStrCheck		|				|
-| mnl_attr_put_strz_check		| Attr.PutStrzCheck		|				|
-| mnl_attr_nest_start_check		| Attr.nestStartCheck		|				|
-| mnl_attr_nest_end			| Attr.nestEnd			|				|
-| mnl_attr_nest_cancel			| Attr.nestCancel		|				|
+| mnl_attr_get_type			| Nlattr.GetType		|				|
+| mnl_attr_get_len			| Nlattr.GetLen			|				|
+| mnl_attr_get_payload_len		| Nlattr.GetPayloadLen		|				|
+| mnl_attr_get_payload			| Nlattr.GetPayload		|				|
+| (add)					| Nlattr.GetPayloadBytes	| returns []byte		|
+| mnl_attr_ok				| Nlattr.Ok			|				|
+| mnl_attr_next				| Nlattr.Next			| 				|
+| mnl_attr_type_valid			| Nlattr.TypeValid		| returns ret, error		|
+| mnl_attr_validate			| Nlattr.Validate		| returns ret, errno		|
+| mnl_attr_validate2			| Nlattr.Validate2		| returns ret, errno		|
+| mnl_attr_parse			| Nlattr.Parse			| returns ret, errno		|
+| mnl_attr_parse_nested			| Nlattr.ParseNested		| returns ret, errno		|
+| mnl_attr_parse_payload		| Nlattr.ParsePayload		| returns ret, errno		|
+| mnl_attr_get_u8			| Nlattr.GetU8			|				|
+| mnl_attr_get_u16			| Nlattr.GetU16			|				|
+| mnl_attr_get_u32			| Nlattr.GetU32			|				|
+| mnl_attr_get_u64			| Nlattr.GetU64			|				|
+| mnl_attr_get_str			| Nlattr.GetStr			|				|
+| mnl_attr_put				| Nlattr.Put			|				|
+| (add)					| Nlattr.PutPtr			|				|
+| (add)					| Nlattr.PutBytes		|				|
+| mnl_attr_put_u8			| Nlattr.PutU8			|				|
+| mnl_attr_put_u16			| Nlattr.PutU16			|				|
+| mnl_attr_put_u32			| Nlattr.PutU32			|				|
+| mnl_attr_put_u64			| Nlattr.PutU64			|				|
+| mnl_attr_put_str			| Nlattr.Putstr			|				|
+| mnl_attr_put_strz			| Nlattr.Putstrz		|				|
+| mnl_attr_nest_start			| Nlattr.NestStart		|				|
+| mnl_attr_put_check			| Nlattr.PutCheck		|				|
+| mnl_attr_put_u8_check			| Nlattr.PutU8Check		|				|
+| mnl_attr_put_u16_check		| Nlattr.PutU16Check		|				|
+| mnl_attr_put_u32_check		| Nlattr.PutU32Check		|				|
+| mnl_attr_put_u64_check		| Nlattr.PutU64Check		|				|
+| mnl_attr_put_str_check		| Nlattr.PutStrCheck		|				|
+| mnl_attr_put_strz_check		| Nlattr.PutStrzCheck		|				|
+| mnl_attr_nest_start_check		| Nlattr.nestStartCheck		|				|
+| mnl_attr_nest_end			| Nlattr.nestEnd		|				|
+| mnl_attr_nest_cancel			| Nlattr.nestCancel		|				|
 | ------------------------------------- | ----------------------------- | ----------------------------- |
 | mnl_nlmsg_size			| NlmsgSize			|				|
 | mnl_nlmsg_get_payload_len		| Nlmsg.GetPayloadLen		|				|
