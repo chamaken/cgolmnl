@@ -1,4 +1,4 @@
-// +build mnl_gt_1_0_4
+// +build ge_1_0_4
 
 package cgolmnl_test
 
