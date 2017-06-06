@@ -164,6 +164,58 @@ var _ = Describe("callback", func() {
 			Expect(ret).To(Equal(MNL_CB_ERROR))
 		})
 	})
+
+	Context("ClRun", func() {
+		It("should return MNL_CB_OK for NOOP", func() {
+			ret, err := ClRun(([]byte)(*nlmsghdr_noop), 1, 1, nil)
+			Expect(err).To(BeNil())
+			Expect(ret).To(Equal(MNL_CB_OK))
+		})
+		It("should return MNL_CB_OK for MIN_TYPE", func() {
+			ret, err := ClRun(([]byte)(*nlmsghdr_mintype), 1, 1, nil)
+			Expect(err).To(BeNil())
+			Expect(ret).To(Equal(MNL_CB_OK))
+		})
+		It("should return MNL_CB_ERROR and EPERM(1) for NLMSG_ERROR", func() {
+			ret, err := ClRun(([]byte)(*nlmsghdr_error), 1, 1, nil)
+			Expect(err).To(Equal(syscall.Errno(1)))
+			Expect(ret).To(Equal(MNL_CB_ERROR))
+		})
+
+		It("should return MNL_CB_ERROR and type is set", func() {
+			data := make([]uint16, 0)
+			cb := func(nlh *Nlmsg) (int, syscall.Errno) {
+				if data != nil {
+					data = append(data, nlh.Type)
+				}
+				if nlh.Type == 0xff {
+					return MNL_CB_ERROR, 0
+				}
+				return MNL_CB_OK, 0
+			}
+			ret, err := ClRun(([]byte)(*nlmsghdr_typeFF), 1, 1, cb)
+			Expect(err).To(BeNil())
+			Expect(ret).To(Equal(MNL_CB_ERROR))
+			Expect(data[0]).To(Equal(uint16(NLMSG_MIN_TYPE)))
+			Expect(data[1]).To(Equal(uint16(0xff)))
+		})
+		It("should return ESRCH", func() {
+			ret, err := ClRun(([]byte)(*nlmsghdr_pid2), 1, 1, nil)
+			Expect(err).To(Equal(syscall.ESRCH))
+			Expect(ret).To(Equal(MNL_CB_ERROR))
+		})
+		It("should return EPROTO", func() {
+			ret, err := ClRun(([]byte)(*nlmsghdr_seq2), 1, 1, nil)
+			Expect(err).To(Equal(syscall.EPROTO))
+			Expect(ret).To(Equal(MNL_CB_ERROR))
+		})
+		It("should return EINTR", func() {
+			ret, err := ClRun(([]byte)(*nlmsghdr_intr), 1, 1, nil)
+			Expect(err).To(Equal(syscall.EINTR))
+			Expect(ret).To(Equal(MNL_CB_ERROR))
+		})
+	})
+
 	Context("CbRun2", func() {
 		// NLMSG_NOOP		0x1
 		// NLMSG_ERROR		0x2

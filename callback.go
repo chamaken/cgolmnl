@@ -7,6 +7,12 @@ package cgolmnl
 #include <linux/netlink.h>
 #include "cb.h"
 #include "set_errno.h"
+
+extern int GoCl(struct nlmsghdr *, void *);
+static inline cgolmnl_cl_run(const void *buf, size_t numbytes, uint32_t seq, uint32_t portid, uintptr_t data)
+{
+	return mnl_cb_run(buf, numbytes, (unsigned int)seq, (unsigned int)portid, (mnl_cb_t)GoCl, (void *)data);
+}
 */
 import "C"
 
@@ -18,6 +24,7 @@ import (
 )
 
 type MnlCb func(*Nlmsg, interface{}) (int, syscall.Errno)
+type MnlCl func(*Nlmsg) (int, syscall.Errno)
 
 // callback type for CbRun2
 //
@@ -28,8 +35,8 @@ type MnlCtlCb func(*Nlmsg, uint16, interface{}) (int, syscall.Errno)
 
 type msgCbData struct {
 	ctlcb MnlCb
-	cb MnlCb
-	data interface{}
+	cb    MnlCb
+	data  interface{}
 }
 
 // callback wrapper called from original cb_run(), cb_run2().
@@ -43,6 +50,20 @@ func GoCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 	ret, err := args.cb(h, args.data) // returns (int, syscall.Errno)
 	if err != 0 {
 		// C.errno = int(err) // cannot refer to errno directly; see documentation
+		C.SetErrno(C.int(err))
+	}
+	return C.int(ret)
+}
+
+//export GoCl
+func GoCl(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
+	cl := *(*MnlCl)(argp)
+	if cl == nil {
+		return MNL_CB_OK
+	}
+	h := nlmsgPointer(nlh)
+	ret, err := cl(h) // returns (int, syscall.Errno)
+	if err != 0 {
 		C.SetErrno(C.int(err))
 	}
 	return C.int(ret)
@@ -107,5 +128,11 @@ func CbRun(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{}) (int
 	args := uintptr(unsafe.Pointer(&msgCbData{nil, cb_data, data}))
 	ret, err := C.cb_run_wrapper(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),
 		C.uint32_t(seq), C.uint32_t(portid), C.uintptr_t(args))
+	return int(ret), err
+}
+
+func ClRun(buf []byte, seq, portid uint32, cl MnlCl) (int, error) {
+	ret, err := C.cgolmnl_cl_run(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),
+		C.uint32_t(seq), C.uint32_t(portid), C.uintptr_t(uintptr(unsafe.Pointer(&cl))))
 	return int(ret), err
 }
