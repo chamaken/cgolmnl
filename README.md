@@ -192,7 +192,9 @@ comparison
 | mnl_nlmsg_batch_is_empty		| NlmsgBatch.IsEmpty		|				|
 | ------------------------------------- | ----------------------------- | ----------------------------- |
 | mnl_cb_run				| CbRun				| 				|
-| mnl_cb_run2				| CbRun2			| changed signature		|
+| mnl_cb_run2				| CbRun2			| 				|
+| (add)					| ClRun				| no callback data		|
+| (add)					| ClRun2			| no callback data		|
 | ------------------------------------- | ----------------------------- | ----------------------------- |
 | mnl_socket_get_fd			| Socket.GgetFd			|				|
 | mnl_socket_get_portid			| Socket.GetPortid		|				|
