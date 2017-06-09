@@ -68,24 +68,6 @@ func put_msg(nlh *mnl.Nlmsg, i uint16, seq uint32) {
 	nlh.PutU32(C.CTA_TIMEOUT, inet.Htonl(1000))
 }
 
-func cb_ctl(nlh *mnl.Nlmsg, data interface{}) (int, syscall.Errno) {
-	switch nlh.Type {
-	case C.NLMSG_NOOP:
-	case C.NLMSG_OVERRUN:
-		return mnl.MNL_CB_OK, 0
-
-	case C.NLMSG_ERROR:
-		err := (*mnl.Nlmsgerr)(nlh.Payload())
-		if err.Error != 0 {
-			errno := -err.Error
-			fmt.Printf("mssage with seq %d has failed: %s\n", nlh.Seq, syscall.Errno(errno))
-		}
-	case C.NLMSG_DONE:
-		return mnl.MNL_CB_STOP, 0
-	}
-	return mnl.MNL_CB_OK, 0
-}
-
 func send_batch(nl *mnl.Socket, b *mnl.NlmsgBatch, portid uint32) {
 	var err error
 	var epfd int
@@ -111,7 +93,17 @@ func send_batch(nl *mnl.Socket, b *mnl.NlmsgBatch, portid uint32) {
 		os.Exit(C.EXIT_FAILURE)
 	}
 
-	ctl_types := []uint16{C.NLMSG_ERROR}
+	ctl_cbs := []mnl.MnlCb{
+		nil, nil,
+		func(nlh *mnl.Nlmsg, data interface{}) (int, syscall.Errno) {
+			err := (*mnl.Nlmsgerr)(nlh.Payload())
+			if err.Error != 0 {
+				errno := -err.Error
+				fmt.Printf("mssage with seq %d has failed: %s\n", nlh.Seq, syscall.Errno(errno))
+			}
+
+			return mnl.MNL_CB_OK, 0
+		}}
 	ret := mnl.MNL_CB_OK
 	for ret > 0 {
 		var n int
@@ -133,7 +125,7 @@ func send_batch(nl *mnl.Socket, b *mnl.NlmsgBatch, portid uint32) {
 			fmt.Fprintf(os.Stderr, "mnl_socket_recvfrom: %s\n", err)
 			os.Exit(C.EXIT_FAILURE)
 		}
-		_, err = mnl.CbRun2(rcv_buf[:nrecv], 0, portid, nil, nil, cb_ctl, ctl_types)
+		_, err = mnl.CbRun2(rcv_buf[:nrecv], 0, portid, nil, nil, ctl_cbs)
 	}
 }
 
