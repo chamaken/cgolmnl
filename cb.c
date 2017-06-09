@@ -66,3 +66,24 @@ cb_run2_wrapper(const void *buf, size_t numbytes, uint32_t seq,
 
         return rc;
 }
+
+int
+cl_run2_wrapper(const void *buf, size_t numbytes, uint32_t seq,
+		uint32_t portid, uintptr_t data, size_t ctl_cls_len)
+{
+	int i, rc;
+        mnl_cb_t *ctl_cls = calloc(sizeof(mnl_cb_t), ctl_cls_len); /* or alloca? */
+
+        if (ctl_cls == NULL)
+                return MNL_CB_ERROR;
+
+        for (i = 0; i < ctl_cls_len; i++)
+                ctl_cls[i] = (mnl_cb_t)GoCtlCl;
+
+	rc = mnl_cb_run2(buf, numbytes, (unsigned int)seq, (unsigned int)portid,
+                         (mnl_cb_t)GoCl, (void *)data,
+                         ctl_cls, ctl_cls_len);
+        free(ctl_cls);
+
+        return rc;
+}

@@ -217,17 +217,11 @@ var _ = Describe("callback", func() {
 	})
 
 	Context("CbRun2", func() {
-		// NLMSG_NOOP		0x1
-		// NLMSG_ERROR		0x2
-		// NLMSG_DONE		0x3
-		// NLMSG_OVERRUN	0x4
-		// NLMSG_MIN_TYPE	0x10
-
 		ctl_cbs := []MnlCb{
 			nil,
 			// NLMSG_NOOP
 			func(nlh *Nlmsg, data interface{}) (int, syscall.Errno) {
-				return MNL_CB_ERROR, 0
+				return MNL_CB_ERROR, data.(syscall.Errno)
 			},
 			// NLMSG_ERROR
 			func(nlh *Nlmsg, data interface{}) (int, syscall.Errno) {
@@ -259,8 +253,8 @@ var _ = Describe("callback", func() {
 		}
 
 		It("should return MNL_CB_ERROR", func() {
-			ret, err := CbRun2(([]byte)(*nlmsghdr_noop), 1, 1, nil, nil, ctl_cbs)
-			Expect(err).To(BeNil())
+			ret, err := CbRun2(([]byte)(*nlmsghdr_noop), 1, 1, nil, syscall.EKEYREJECTED, ctl_cbs)
+			Expect(err).To(Equal(syscall.EKEYREJECTED))
 			Expect(ret).To(Equal(MNL_CB_ERROR))
 		})
 		It("should return (default) MNL_CB_OK", func() {
@@ -286,6 +280,76 @@ var _ = Describe("callback", func() {
 		})
 		It("should return EOPNOTSUPP", func() {
 			ret, err := CbRun2(([]byte)(*nlmsghdr_noop), 1, 1, nil, nil, nil)
+			Expect(err).To(Equal(syscall.EINVAL))
+			Expect(ret).To(Equal(MNL_CB_ERROR))
+		})
+	})
+
+	Context("ClRun2", func() {
+		noop_err := syscall.EKEYREJECTED
+		ctl_cls := []MnlCl{
+			nil,
+			// NLMSG_NOOP
+			func(nlh *Nlmsg) (int, syscall.Errno) {
+				return MNL_CB_ERROR, noop_err
+			},
+			// NLMSG_ERROR
+			func(nlh *Nlmsg) (int, syscall.Errno) {
+				// see original mnl_cb_error()
+				var errno syscall.Errno
+				err := (*Nlmsgerr)(nlh.Payload())
+				if nlh.Len < uint32(NlmsgSize(SizeofNlmsgerr)) {
+					return MNL_CB_ERROR, syscall.EBADMSG
+				}
+				if err.Error < 0 {
+					errno = -syscall.Errno(err.Error)
+				} else {
+					errno = syscall.Errno(err.Error)
+				}
+				if err.Error == 0 {
+					return MNL_CB_STOP, 0
+				} else {
+					return MNL_CB_ERROR, errno
+				}
+			},
+			// NLMSG_DONE
+			func(nlh *Nlmsg) (int, syscall.Errno) {
+				return MNL_CB_STOP, 0
+			},
+			// NLMSG_OVERRUN
+			func(nlh *Nlmsg) (int, syscall.Errno) {
+				return MNL_CB_ERROR, syscall.ENOBUFS
+			},
+		}
+
+		It("should return MNL_CB_ERROR", func() {
+			ret, err := ClRun2(([]byte)(*nlmsghdr_noop), 1, 1, nil, ctl_cls)
+			Expect(err).To(Equal(syscall.EKEYREJECTED))
+			Expect(ret).To(Equal(MNL_CB_ERROR))
+		})
+		It("should return (default) MNL_CB_OK", func() {
+			ctl_cls2 := []MnlCl{nil, nil, ctl_cls[NLMSG_ERROR], ctl_cls[NLMSG_DONE], ctl_cls[NLMSG_DONE]}
+			ret, err := ClRun2(([]byte)(*nlmsghdr_noop), 1, 1, nil, ctl_cls2)
+			Expect(err).To(BeNil())
+			Expect(ret).To(Equal(MNL_CB_OK))
+		})
+		It("should return MNL_CB_STOP", func() {
+			ret, err := ClRun2(([]byte)(*nlmsghdr_done), 1, 1, nil, ctl_cls)
+			Expect(err).To(BeNil())
+			Expect(ret).To(Equal(MNL_CB_STOP))
+		})
+		It("should return ENOBUFS", func() {
+			ret, err := ClRun2(([]byte)(*nlmsghdr_overrun), 1, 1, nil, ctl_cls)
+			Expect(err).To(Equal(syscall.ENOBUFS))
+			Expect(ret).To(Equal(MNL_CB_ERROR))
+		})
+		It("should return EPERM", func() {
+			ret, err := ClRun2(([]byte)(*nlmsghdr_error), 1, 1, nil, ctl_cls)
+			Expect(err).To(Equal(syscall.EPERM))
+			Expect(ret).To(Equal(MNL_CB_ERROR))
+		})
+		It("should return EOPNOTSUPP", func() {
+			ret, err := ClRun2(([]byte)(*nlmsghdr_noop), 1, 1, nil, nil)
 			Expect(err).To(Equal(syscall.EINVAL))
 			Expect(ret).To(Equal(MNL_CB_ERROR))
 		})

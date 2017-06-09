@@ -51,7 +51,10 @@ func GoCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 
 //export GoCl
 func GoCl(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
-	cl := *(*MnlCl)(argp)
+	cl := (*(*struct {
+		data MnlCl
+		ctl  []MnlCl
+	})(argp)).data
 	if cl == nil {
 		return MNL_CB_OK
 	}
@@ -72,11 +75,30 @@ func GoCtlCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 	}
 
 	h := nlmsgPointer(nlh)
-
 	ret, err := args.ctlcbs[nlh.nlmsg_type](h, args.data)
 	if err != 0 {
 		C.SetErrno(C.int(err))
 	}
+
+	return C.int(ret)
+}
+
+//export GoCtlCl
+func GoCtlCl(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
+	cl := (*(*struct {
+		data MnlCl
+		ctl  []MnlCl
+	})(argp)).ctl
+	if cl[nlh.nlmsg_type] == nil {
+		return MNL_CB_OK
+	}
+
+	h := nlmsgPointer(nlh)
+	ret, err := cl[nlh.nlmsg_type](h)
+	if err != 0 {
+		C.SetErrno(C.int(err))
+	}
+
 	return C.int(ret)
 }
 
@@ -107,6 +129,21 @@ func CbRun2(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{}, ctl
 	return int(ret), err
 }
 
+func ClRun2(buf []byte, seq, portid uint32, data_cl MnlCl, ctl_cls []MnlCl) (int, error) {
+	if ctl_cls == nil || len(ctl_cls) == 0 {
+		return MNL_CB_ERROR, syscall.EINVAL
+	}
+
+	ret, err := C.cl_run2_wrapper(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),
+		C.uint32_t(seq), C.uint32_t(portid),
+		C.uintptr_t(uintptr(unsafe.Pointer(&struct {
+			data MnlCl
+			ctl  []MnlCl
+		}{data_cl, ctl_cls}))),
+		C.size_t(len(ctl_cls)))
+	return int(ret), err
+}
+
 // callback runqueue for netlink messages (simplified version)
 //
 // This function is like CbRun2() but it does not allow you to set
@@ -127,6 +164,10 @@ func CbRun(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{}) (int
 
 func ClRun(buf []byte, seq, portid uint32, cl MnlCl) (int, error) {
 	ret, err := C.cl_run_wrapper(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),
-		C.uint32_t(seq), C.uint32_t(portid), C.uintptr_t(uintptr(unsafe.Pointer(&cl))))
+		C.uint32_t(seq), C.uint32_t(portid),
+		C.uintptr_t(uintptr(unsafe.Pointer(&struct {
+			data MnlCl
+			ctl  []MnlCl
+		}{cl, nil}))))
 	return int(ret), err
 }
