@@ -17,10 +17,10 @@ static inline cgolmnl_cl_run(const void *buf, size_t numbytes, uint32_t seq, uin
 import "C"
 
 import (
-	"syscall"
-	"unsafe"
 	// "fmt"
 	// "os"
+	"syscall"
+	"unsafe"
 )
 
 type MnlCb func(*Nlmsg, interface{}) (int, syscall.Errno)
@@ -34,9 +34,9 @@ type MnlCl func(*Nlmsg) (int, syscall.Errno)
 type MnlCtlCb func(*Nlmsg, uint16, interface{}) (int, syscall.Errno)
 
 type msgCbData struct {
-	ctlcb MnlCb
-	cb    MnlCb
-	data  interface{}
+	ctlcbs []MnlCb
+	cb     MnlCb
+	data   interface{}
 }
 
 // callback wrapper called from original cb_run(), cb_run2().
@@ -73,12 +73,13 @@ func GoCl(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 //export GoCtlCb
 func GoCtlCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 	args := *(*msgCbData)(argp)
-	if args.ctlcb == nil {
-		C.SetErrno(C.int(syscall.EOPNOTSUPP))
-		return MNL_CB_ERROR
+	if args.ctlcbs[nlh.nlmsg_type] == nil {
+		return MNL_CB_OK
 	}
+
 	h := nlmsgPointer(nlh)
-	ret, err := args.ctlcb(h, args.data)
+
+	ret, err := args.ctlcbs[nlh.nlmsg_type](h, args.data)
 	if err != 0 {
 		C.SetErrno(C.int(err))
 	}
@@ -101,15 +102,14 @@ func GoCtlCb(nlh *C.struct_nlmsghdr, argp unsafe.Pointer) C.int {
 // is set to ESRCH. If the sequence number is not the expected, errno is set
 // to EPROTO. If the dump was interrupted, errno is set to EINTR and you should
 // request a new fresh dump again.
-func CbRun2(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{},
-	cb_ctl MnlCb, ctltypes []uint16) (int, error) {
-	if len(ctltypes) >= C.NLMSG_MIN_TYPE {
+func CbRun2(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{}, ctl_cbs []MnlCb) (int, error) {
+	if ctl_cbs == nil || len(ctl_cbs) == 0 {
 		return MNL_CB_ERROR, syscall.EINVAL
 	}
-	args := uintptr(unsafe.Pointer(&msgCbData{cb_ctl, cb_data, data}))
+	args := uintptr(unsafe.Pointer(&msgCbData{ctl_cbs, cb_data, data}))
 	ret, err := C.cb_run2_wrapper(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),
 		C.uint32_t(seq), C.uint32_t(portid), C.uintptr_t(args),
-		(*C.uint16_t)(&ctltypes[0]), C.size_t(len(ctltypes)))
+		C.size_t(len(ctl_cbs)))
 	return int(ret), err
 }
 
