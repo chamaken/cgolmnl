@@ -7,7 +7,11 @@ extern int attr_parse_payload_wrapper(const void *payload, size_t payload_len, u
 
 typedef int (*mnl_ctl_cb_t)(const struct nlmsghdr *nlh, uint16_t type, void *data);
 extern int cb_run2_wrapper(const void *buf, size_t numbytes, uint32_t seq,
-			   uint32_t portid, uintptr_t data, size_t ctl_types_len);
+			   uint32_t portid, uintptr_t data, size_t ctl_cbs_len);
+extern int cl_run2_wrapper(const void *buf, size_t numbytes, uint32_t seq,
+			   uint32_t portid, uintptr_t data, size_t ctl_cls_len);
 extern int cb_run_wrapper(const void *buf, size_t numbytes, uint32_t seq,
 			  uint32_t portid, uintptr_t data);
+extern int cl_run_wrapper(const void *buf, size_t numbytes, uint32_t seq,
+                          uint32_t portid, uintptr_t data);
 #endif

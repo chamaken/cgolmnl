@@ -7,12 +7,6 @@ package cgolmnl
 #include <linux/netlink.h>
 #include "cb.h"
 #include "set_errno.h"
-
-extern int GoCl(struct nlmsghdr *, void *);
-static inline cgolmnl_cl_run(const void *buf, size_t numbytes, uint32_t seq, uint32_t portid, uintptr_t data)
-{
-	return mnl_cb_run(buf, numbytes, (unsigned int)seq, (unsigned int)portid, (mnl_cb_t)GoCl, (void *)data);
-}
 */
 import "C"
 
@@ -132,7 +126,7 @@ func CbRun(buf []byte, seq, portid uint32, cb_data MnlCb, data interface{}) (int
 }
 
 func ClRun(buf []byte, seq, portid uint32, cl MnlCl) (int, error) {
-	ret, err := C.cgolmnl_cl_run(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),
+	ret, err := C.cl_run_wrapper(unsafe.Pointer(&buf[0]), C.size_t(len(buf)),
 		C.uint32_t(seq), C.uint32_t(portid), C.uintptr_t(uintptr(unsafe.Pointer(&cl))))
 	return int(ret), err
 }

@@ -36,6 +36,12 @@ cb_run_wrapper(const void *buf, size_t numbytes, uint32_t seq,
 	return mnl_cb_run(buf, numbytes, (unsigned int)seq, (unsigned int)portid, (mnl_cb_t)GoCb, (void *)data);
 }
 
+int
+cl_run_wrapper(const void *buf, size_t numbytes, uint32_t seq, uint32_t portid, uintptr_t data)
+{
+	return mnl_cb_run(buf, numbytes, (unsigned int)seq, (unsigned int)portid, (mnl_cb_t)GoCl, (void *)data);
+}
+
 
 /*
  * http://stackoverflow.com/questions/1023261/is-there-a-way-to-do-currying-in-c
