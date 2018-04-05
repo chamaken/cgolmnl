@@ -195,7 +195,7 @@ comparison
 | mnl_cb_run2				| CbRun2			| changed signature		|
 | ------------------------------------- | ----------------------------- | ----------------------------- |
 | mnl_socket_get_fd			| Socket.GgetFd			|				|
-| mnl_socket_get_portid			| Socket.GetPortid		|				|
+| mnl_socket_get_portid			| Socket.Portid			|				|
 | mnl_socket_open			| NewSocket			| 				|
 | mnl_socket_open2			| NewSocket2			| 				|
 | mnl_socket_fdopen			| NewSocketFd			| 				|
